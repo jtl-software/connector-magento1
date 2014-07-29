@@ -208,9 +208,8 @@ class Category
         Magento::getInstance();        
         
         $stores = MapperDatabase::getInstance()->getStoreMapping();
-        reset($stores);
+        $defaultStoreId = reset($stores);
         $defaultLocale = key($stores);
-        $defaultStoreId = array_shift($stores);
 
         Magento::getInstance()->setCurrentStore($defaultStoreId);
 
@@ -229,29 +228,14 @@ class Category
 
         $result = array();
         foreach ($categoryIds as $categoryId) {
-            $container = new CategoryContainer();
-
             $model = \Mage::getModel('catalog/category')
                 ->load($categoryId);
 
             $category = new ConnectorCategory();
-            $category->_id = $model->entity_id;
-            $category->_parentCategoryId = $model->parent_id != $rootCategoryId ? $model->parent_id : null;
-            $category->_sort = $model->position;
-
-            $container->add('category', $category->getPublic(array('_fields')));
-
-            $categoryI18n = new ConnectorCategoryI18n();
-            $categoryI18n->_localeName = $defaultLocale;
-            $categoryI18n->_categoryId = $categoryId;
-            $categoryI18n->_name = $model->getName();
-            $categoryI18n->_urlPath = $model->getUrlKey();
-            $categoryI18n->_description = $model->getDescription();
-            $categoryI18n->_metaDescription = $model->getMetaDescription();
-            $categoryI18n->_metaKeywords = $model->getMetaKeywords();
-            $categoryI18n->_titleTag = $model->getMetaTitle();                
-
-            $container->add('category_i18n', $categoryI18n->getPublic(array('_fields')));
+            $category
+                ->setId(new Identity($model->entity_id))
+                ->setParentCategoryId($model->parent_id != $rootCategoryId ? new Identity($model->parent_id) : null)
+                ->setSort(intval($model->position));
 
             foreach ($stores as $locale => $storeId) {
                 $model = \Mage::getModel('catalog/category');
@@ -259,19 +243,20 @@ class Category
                 $model->load($categoryId);
 
                 $categoryI18n = new ConnectorCategoryI18n();
-                $categoryI18n->_localeName = $locale;
-                $categoryI18n->_categoryId = $categoryId;
-                $categoryI18n->_name = $model->getName();
-                $categoryI18n->_url = $model->getUrlKey();
-                $categoryI18n->_description = $model->getDescription();
-                $categoryI18n->_metaDescription = $model->getMetaDescription();
-                $categoryI18n->_metaKeywords = $model->getMetaKeywords();
-                $categoryI18n->_titleTag = $model->getMetaTitle();                
+                $categoryI18n
+                    ->setLocaleName($locale)
+                    ->setCategoryId(new Identity($categoryId))
+                    ->setName($model->getName())
+                    ->setUrl($model->getUrlKey())
+                    ->setDescription($model->getDescription());
+                    //->setMetaDescription($model->getMetaDescription())
+                    //->setMetaKeywords($model->getMetaKeywords())
+                    //->setTitleTag($model->getMetaTitle());
 
-                $container->add('category_i18n', $categoryI18n->getPublic(array('_fields')));
+                $category->addI18ns($categoryI18n);
             }
 
-            $result[] = $container->getPublic(array('items'), array('_fields'));
+            $result[] = $category->getPublic();
         }
 
         return $result;
