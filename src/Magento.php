@@ -2,7 +2,7 @@
 
 /**
  * @copyright 2010-2013 JTL-Software GmbH
- * @package jtl\Magento
+ * @package jtl\Connector\Magento
  */
 namespace jtl\Connector\Magento;
 
