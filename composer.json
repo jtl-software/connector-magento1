@@ -35,7 +35,7 @@
     "minimum-stability": "dev",
     "autoload": {
         "psr-4": {
-            "jtl\\Connector": "src/"
+            "jtl\\Connector\\Magento\\": "src/"
         }
     }
 }
