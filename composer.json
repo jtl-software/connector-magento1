@@ -32,17 +32,10 @@
         "twig/twig": "1.*",
         "twig/extensions": "1.*"
     },
-    "require-dev": {
-        "phpunit/phpunit": ">=3.6.0",
-        "phpunit/dbunit": "*",
-        "phpunit/phpunit-selenium": "*",
-        "phpunit/phpunit-story": "*"
-    },
     "minimum-stability": "dev",
     "autoload": {
-        "psr-0": {
-            "jtl\\Connector": "src/",
-            "jtl\\Magento": "src/"
+        "psr-4": {
+            "jtl\\Connector": "src/"
         }
     }
 }
