@@ -6,15 +6,15 @@
  */
 namespace jtl\Connector\Magento\Mapper;
 
-use \jtl\Core\Model\QueryFilter;
-use \jtl\Connector\Magento\Mapper\Database as MapperDatabase;
-use \jtl\Connector\Model\CustomerOrder as ConnectorCustomerOrder;
-use \jtl\Connector\Model\CustomerOrderBillingAddress as ConnectorCustomerOrderBillingAddress;
-use \jtl\Connector\Model\CustomerOrderItem as ConnectorCustomerOrderItem;
-use \jtl\Connector\Model\CustomerOrderItemVariation as ConnectorCustomerOrderItemVariation;
-use \jtl\Connector\Model\CustomerOrderShippingAddress as ConnectorCustomerOrderShippingAddress;
-use \jtl\Connector\ModelContainer\CustomerOrderContainer;
-use \jtl\Magento\Magento;
+use jtl\Core\Model\QueryFilter;
+use jtl\Connector\Magento\Magento;
+use jtl\Connector\Magento\Mapper\Database as MapperDatabase;
+use jtl\Connector\Model\CustomerOrder as ConnectorCustomerOrder;
+use jtl\Connector\Model\CustomerOrderBillingAddress as ConnectorCustomerOrderBillingAddress;
+use jtl\Connector\Model\CustomerOrderItem as ConnectorCustomerOrderItem;
+use jtl\Connector\Model\CustomerOrderItemVariation as ConnectorCustomerOrderItemVariation;
+use jtl\Connector\Model\CustomerOrderShippingAddress as ConnectorCustomerOrderShippingAddress;
+use jtl\Connector\ModelContainer\CustomerOrderContainer;
 
 /**
  * Description of Order

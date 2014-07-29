@@ -6,12 +6,12 @@
  */
 namespace jtl\Connector\Magento\Controller;
 
-use \jtl\Core\Model\QueryFilter;
-use \jtl\Core\Rpc\Error;
-use \jtl\Core\Utilities\ClassName;
-use \jtl\Connector\Model\Statistic;
-use \jtl\Connector\Result\Action;
-use \jtl\Connector\Magento\Mapper\Order as OrderMapper;
+use jtl\Core\Model\QueryFilter;
+use jtl\Core\Rpc\Error;
+use jtl\Core\Utilities\ClassName;
+use jtl\Connector\Model\Statistic;
+use jtl\Connector\Result\Action;
+use jtl\Connector\Magento\Mapper\Order as OrderMapper;
 
 /**
  * Description of CustomerOrder

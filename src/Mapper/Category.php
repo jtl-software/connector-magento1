@@ -6,15 +6,15 @@
  */
 namespace jtl\Connector\Magento\Mapper;
 
-use \jtl\Core\Logger\Logger;
-use \jtl\Connector\Magento\Mapper\Database as MapperDatabase;
-use \jtl\Connector\Magento\Utilities\ArrayTools;
-use \jtl\Connector\Model\Category as ConnectorCategory;
-use \jtl\Connector\Model\CategoryI18n as ConnectorCategoryI18n;
-use \jtl\Connector\Model\Identity;
-use \jtl\Connector\ModelContainer\CategoryContainer;
-use \jtl\Connector\Result\Transaction;
-use \jtl\Magento\Magento;
+use jtl\Core\Logger\Logger;
+use jtl\Connector\Magento\Magento;
+use jtl\Connector\Magento\Mapper\Database as MapperDatabase;
+use jtl\Connector\Magento\Utilities\ArrayTools;
+use jtl\Connector\Model\Category as ConnectorCategory;
+use jtl\Connector\Model\CategoryI18n as ConnectorCategoryI18n;
+use jtl\Connector\Model\Identity;
+use jtl\Connector\ModelContainer\CategoryContainer;
+use jtl\Connector\Result\Transaction;
 
 /**
  * Description of Category

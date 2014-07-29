@@ -6,9 +6,9 @@
  */
 namespace jtl\Connector\Magento\Installer\Step;
 
-use \jtl\Connector\Installer\Step\FormStep;
-use \jtl\Connector\Magento\Mapper\Database as MappingDatabase;
-use \jtl\Magento\Magento;
+use jtl\Connector\Magento\Magento;
+use jtl\Connector\Installer\Step\FormStep;
+use jtl\Connector\Magento\Mapper\Database as MappingDatabase;
 
 /**
  * Description of MappingDatabaseStep

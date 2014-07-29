@@ -6,8 +6,8 @@
  */
 namespace jtl\Connector\Magento\Mapper;
 
-use \jtl\Core\Utilities\Singleton;
-use \jtl\Connector\Magento\Database\Sqlite3;
+use jtl\Core\Utilities\Singleton;
+use jtl\Connector\Magento\Database\Sqlite3;
 
 /**
  * Description of Database

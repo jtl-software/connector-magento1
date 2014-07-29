@@ -6,13 +6,13 @@
  */
 namespace jtl\Connector\Magento\Mapper;
 
-use \jtl\Connector\Magento\Mapper\Database as MapperDatabase;
-use \jtl\Connector\Model\Currency as ConnectorCurrency;
-use \jtl\Connector\Model\CustomerGroup as ConnectorCustomerGroup;
-use \jtl\Connector\Model\CustomerGroupI18n as ConnectorCustomerGroupI18n;
-use \jtl\Connector\Model\Language as ConnectorLanguage;
-use \jtl\Connector\ModelContainer\GlobalDataContainer;
-use \jtl\Magento\Magento;
+use jtl\Connector\Magento\Magento;
+use jtl\Connector\Magento\Mapper\Database as MapperDatabase;
+use jtl\Connector\Model\Currency as ConnectorCurrency;
+use jtl\Connector\Model\CustomerGroup as ConnectorCustomerGroup;
+use jtl\Connector\Model\CustomerGroupI18n as ConnectorCustomerGroupI18n;
+use jtl\Connector\Model\Language as ConnectorLanguage;
+use jtl\Connector\ModelContainer\GlobalDataContainer;
 
 /**
  * Description of GlobalData

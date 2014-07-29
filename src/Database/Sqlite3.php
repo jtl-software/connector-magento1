@@ -6,7 +6,7 @@
  */
 namespace jtl\Connector\Magento\Database;
 
-use \jtl\Core\Exception\DatabaseException;
+use jtl\Core\Exception\DatabaseException;
 
 /**
  * Sqlite 3 Database Class

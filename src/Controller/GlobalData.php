@@ -6,11 +6,11 @@
  */
 namespace jtl\Connector\Magento\Controller;
 
-use \jtl\Core\Rpc\Error;
-use \jtl\Core\Utilities\ClassName;
-use \jtl\Connector\Model\Statistic;
-use \jtl\Connector\Result\Action;
-use \jtl\Connector\Magento\Mapper\GlobalData as GlobalDataMapper;
+use jtl\Core\Rpc\Error;
+use jtl\Core\Utilities\ClassName;
+use jtl\Connector\Model\Statistic;
+use jtl\Connector\Result\Action;
+use jtl\Connector\Magento\Mapper\GlobalData as GlobalDataMapper;
 
 /**
  * Description of GlobalData

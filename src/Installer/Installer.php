@@ -6,7 +6,7 @@
  */
 namespace jtl\Connector\Magento\Installer;
 
-use \jtl\Connector\Installer\Installer as CoreInstaller;
+use jtl\Connector\Installer\Installer as CoreInstaller;
 
 /**
  * Description of Installer

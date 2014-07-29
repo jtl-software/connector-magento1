@@ -6,19 +6,19 @@
  */
 namespace jtl\Connector\Magento\Mapper;
 
-use \jtl\Core\Logger\Logger;
-use \jtl\Connector\Magento\Mapper\Database as MapperDatabase;
-use \jtl\Connector\Magento\Utilities\ArrayTools;
-use \jtl\Connector\Model\Identity;
-use \jtl\Connector\Model\Product as ConnectorProduct;
-use \jtl\Connector\Model\Product2Category as ConnectorProduct2Category;
-use \jtl\Connector\Model\ProductI18n as ConnectorProductI18n;
-use \jtl\Connector\Model\ProductPrice as ConnectorProductPrice;
-use \jtl\Connector\Model\ProductVariation as ConnectorProductVariation;
-use \jtl\Connector\Model\ProductVariationValue as ConnectorProductVariationValue;
-use \jtl\Connector\ModelContainer\ProductContainer;
-use \jtl\Connector\Result\Transaction;
-use \jtl\Magento\Magento;
+use jtl\Core\Logger\Logger;
+use jtl\Connector\Magento\Magento;
+use jtl\Connector\Magento\Mapper\Database as MapperDatabase;
+use jtl\Connector\Magento\Utilities\ArrayTools;
+use jtl\Connector\Model\Identity;
+use jtl\Connector\Model\Product as ConnectorProduct;
+use jtl\Connector\Model\Product2Category as ConnectorProduct2Category;
+use jtl\Connector\Model\ProductI18n as ConnectorProductI18n;
+use jtl\Connector\Model\ProductPrice as ConnectorProductPrice;
+use jtl\Connector\Model\ProductVariation as ConnectorProductVariation;
+use jtl\Connector\Model\ProductVariationValue as ConnectorProductVariationValue;
+use jtl\Connector\ModelContainer\ProductContainer;
+use jtl\Connector\Result\Transaction;
 
 /**
  * Description of Product

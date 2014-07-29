@@ -6,10 +6,10 @@
  */
 namespace jtl\Connector\Magento\Mapper;
 
-use \jtl\Connector\Magento\Mapper\Database as MapperDatabase;
-use \jtl\Connector\ModelContainer\ImageContainer;
-use \jtl\Connector\Model\Image as ConnectorImage;
-use \jtl\Magento\Magento;
+use jtl\Connector\Magento\Magento;
+use jtl\Connector\Magento\Mapper\Database as MapperDatabase;
+use jtl\Connector\ModelContainer\ImageContainer;
+use jtl\Connector\Model\Image as ConnectorImage;
 
 /**
  * Description of Image

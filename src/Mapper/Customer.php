@@ -6,12 +6,12 @@
  */
 namespace jtl\Connector\Magento\Mapper;
 
-use \jtl\Connector\Magento\Mapper\Database as MapperDatabase;
+use jtl\Connector\Magento\Mapper\Database as MapperDatabase;
 
-use \jtl\Core\Model\QueryFilter;
-use \jtl\Connector\Model\Customer as ConnectorCustomer;
-use \jtl\Connector\ModelContainer\CustomerContainer;
-use \jtl\Magento\Magento;
+use jtl\Core\Model\QueryFilter;
+use jtl\Connector\Magento\Magento;
+use jtl\Connector\Model\Customer as ConnectorCustomer;
+use jtl\Connector\ModelContainer\CustomerContainer;
 
 /**
  * Description of Customer

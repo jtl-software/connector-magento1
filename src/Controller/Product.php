@@ -6,16 +6,16 @@
  */
 namespace jtl\Connector\Magento\Controller;
 
-use \jtl\Core\Exception\TransactionException;
-use \jtl\Core\Model\QueryFilter;
-use \jtl\Core\Rpc\Error;
-use \jtl\Core\Utilities\ClassName;
-use \jtl\Connector\Magento\Mapper\Product as ProductMapper;
-use \jtl\Connector\Model\Statistic;
-use \jtl\Connector\ModelContainer\ProductContainer;
-use \jtl\Connector\Result\Action;
-use \jtl\Connector\Result\Transaction as TransactionResult;
-use \jtl\Connector\Transaction\Handler as TransactionHandler;
+use jtl\Core\Exception\TransactionException;
+use jtl\Core\Model\QueryFilter;
+use jtl\Core\Rpc\Error;
+use jtl\Core\Utilities\ClassName;
+use jtl\Connector\Magento\Mapper\Product as ProductMapper;
+use jtl\Connector\Model\Statistic;
+use jtl\Connector\ModelContainer\ProductContainer;
+use jtl\Connector\Result\Action;
+use jtl\Connector\Result\Transaction as TransactionResult;
+use jtl\Connector\Transaction\Handler as TransactionHandler;
 
 /**
  * Description of Product

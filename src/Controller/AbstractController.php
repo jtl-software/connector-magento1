@@ -6,7 +6,7 @@
  */
 namespace jtl\Connector\Magento\Controller;
 
-use \jtl\Core\Controller\Controller;
+use jtl\Core\Controller\Controller;
 
 /**
  * Description of AbstractController
