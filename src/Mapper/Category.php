@@ -253,7 +253,7 @@ class Category
                     //->setMetaKeywords($model->getMetaKeywords())
                     //->setTitleTag($model->getMetaTitle());
 
-                $category->addI18ns($categoryI18n);
+                $category->addI18n($categoryI18n);
             }
 
             $result[] = $category->getPublic();
