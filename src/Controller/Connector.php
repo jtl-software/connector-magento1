@@ -23,7 +23,7 @@ class Connector extends AbstractController
         // 'Customer',
         // 'CustomerOrder',
         // 'GlobalData',
-        // 'Image',
+        'Image',
         // 'Product'
     );
 

@@ -97,11 +97,11 @@ class Product extends AbstractController
             $available = $mapper->getAvailableCount();
 
             $statistic = new Statistic();
-            $statistic->_controllerName = lcfirst(ClassName::getFromNS(get_called_class()));
-            $statistic->_available = $available;
-            $statistic->_pending = $available;
+            $statistic->setControllerName(lcfirst(ClassName::getFromNS(get_called_class())));
+            $statistic->setAvailable($mapper->getAvailableCount());
+            $statistic->setPending(0);
 
-            $action->setResult($statistic->getPublic(array('_fields', '_isEncrypted')));
+            $action->setResult($statistic->getPublic());
         }
         catch (\Exception $exc) {
             $err = new Error();

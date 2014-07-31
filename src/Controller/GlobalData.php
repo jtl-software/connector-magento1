@@ -60,14 +60,14 @@ class GlobalData extends AbstractController
             $mapper = new GlobalDataMapper();
             
             $statistic = new Statistic();
-            $statistic->_controllerName = lcfirst(ClassName::getFromNS(get_called_class()));
-            $statistic->_available = 1; // There can be only one GlobalData container object per shop
-            $statistic->_pending = 1;
+            $statistic->setControllerName(lcfirst(ClassName::getFromNS(get_called_class())));
+            $statistic->setAvailable(1); // There can be only one GlobalData container object per shop
+            $statistic->setPending(1);
 
             if ($statistic->_controllerName == 'globalData')
                 $statistic->_controllerName = 'global';
 
-            $action->setResult($statistic->getPublic(array('_fields', '_isEncrypted')));
+            $action->setResult($statistic->getPublic());
         }
         catch (\Exception $exc) {
             $err = new Error();

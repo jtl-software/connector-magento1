@@ -9,6 +9,7 @@ namespace jtl\Connector\Magento\Mapper;
 use jtl\Connector\Magento\Magento;
 use jtl\Connector\Magento\Mapper\Database as MapperDatabase;
 use jtl\Connector\ModelContainer\ImageContainer;
+use jtl\Connector\Model\Identity;
 use jtl\Connector\Model\Image as ConnectorImage;
 
 /**
@@ -44,19 +45,16 @@ class Image
 
             foreach ($galleryImages as $galleryImage) {
             	$image = new ConnectorImage();
-            	$image->_id = 'product-' . $galleryImage->value_id;
-            	$image->_masterImageId = 0;
-            	$image->_relationType = 'product';
-            	$image->_foreignKey = $productItem->entity_id;
-            	$image->_filename = $galleryImage->url;
-            	$image->_isMainImage = ($galleryImage->file === $defaultImagePath);
-            	$image->_sort = $galleryImage->position_default;
+                $image->setId(new Identity('product-' . $galleryImage->value_id));
+                $image->setMasterImageId(0);
+                $image->setRelationType('product');
+                $image->setForeignKey($productItem->entity_id);
+                $image->setFilename($galleryImage->url);
+                $image->setIsMainImage($galleryImage->file === $defaultImagePath);
+                $image->setSort($galleryImage->position_default);
 
                 $result[] = $image->getPublic();
-//            	$container->add('image', $image->getPublic(array('_fields')));
             }
-
-//            $result[] = $container->getPublic(array('items'), array('_fields'));
         }
 
 
@@ -82,17 +80,15 @@ class Image
             $container = new ImageContainer();
 
             $image = new ConnectorImage();
-            $image->_id = 'category-' . $category_id;
-        	$image->_masterImageId = 0;
-        	$image->_relationType = 'category';
-        	$image->_foreignKey = $category_id;
-        	$image->_filename = $model->getImageUrl();
-        	$image->_isMainImage = true;
-        	$image->_sort = 1;
+            $image->setId(new Identity('category-' . $category_id));
+            $image->setMasterImageId(0);
+            $image->setRelationType('category');
+            $image->setForeignKey($category_id);
+            $image->setFilename($model->getImageUrl());
+            $image->setIsMainImage(true);
+            $image->setSort(1);
 
             $result[] = $image->getPublic();
-        	// $container->add('image', $image->getPublic(array('_fields')));
-         //    $result[] = $container->getPublic(array('items'), array('_fields'));
         }
 
         return $result;

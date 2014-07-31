@@ -40,11 +40,11 @@ class Customer extends AbstractController
             $mapper = new CustomerMapper();
             
             $statistic = new Statistic();
-            $statistic->_controllerName = lcfirst(ClassName::getFromNS(get_called_class()));
-            $statistic->_available = $mapper->getAvailableCount();
-            $statistic->_pending = 0;
+            $statistic->setControllerName(lcfirst(ClassName::getFromNS(get_called_class())));
+            $statistic->setAvailable($mapper->getAvailableCount());
+            $statistic->setPending(0);
 
-            $action->setResult($statistic->getPublic(array('_fields', '_isEncrypted')));
+            $action->setResult($statistic->getPublic());
         }
         catch (\Exception $exc) {
             $err = new Error();
