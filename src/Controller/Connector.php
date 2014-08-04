@@ -23,8 +23,8 @@ class Connector extends AbstractController
         'Customer',
         'CustomerOrder',
         'GlobalData',
-        'Image'
-        // 'Product'
+        'Image',
+        'Product'
     );
 
     public function push($params)

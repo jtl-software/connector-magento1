@@ -257,56 +257,51 @@ class Product
         foreach ($products as $productItem) {
             $productItem->load();
 
-            $container = new ProductContainer();
-
             $created_at = new \DateTime($productItem->created_at);
 
             $product = new ConnectorProduct();
-            $product->_id = $productItem->entity_id;
-            $product->_masterProductId = null;
-            $product->_setArticleId = null;
-            $product->_sku = $productItem->sku;
-            $product->_recommendedRetailPrice = (double)$productItem->msrp;
-            $product->_minimumOrderQuantity = (double)($productItem->use_config_min_sale_qty == 1 ? 0 : $productItem->min_sale_qty);
-            $product->_takeOffQuantity = 1.0;
-            $product->_vat = $this->getTaxRateByClassId($productItem->tax_class_id);
-            $product->_basePriceDivisor = 0.0;
-            $product->_packagingUnit = 0.0;
-            $product->_shippingWeight = 0.0;
-            $product->_productWeight = 0.0;
-            $product->_isMasterProduct = false;
-            $product->_isNew = false;
-            $product->_isTopProduct = false;
-            $product->_permitNegativeStock = false;
-            $product->_considerVariationStock = false;
-            $product->_considerBasePrice = false;
-            $product->_created = $created_at->format('c');
-            $product->_availableFrom = $created_at->format('c');
-            $product->_bestBefore = false;
+            $product->setId(new Identity($productItem->entity_id));
+            $product->setMasterProductId(null);
+            $product->setSetArticleId(null);
+            $product->setSku($productItem->sku);
+            $product->setRecommendedRetailPrice((double)$productItem->msrp);
+            $product->setMinimumOrderQuantity((double)($productItem->use_config_min_sale_qty == 1 ? 0 : $productItem->min_sale_qty));
+            $product->setTakeOffQuantity(1.0);
+            $product->setVat($this->getTaxRateByClassId($productItem->tax_class_id));
+            $product->setShippingWeight(0.0);
+            $product->setProductWeight(0.0);
+            $product->setIsMasterProduct(false);
+            $product->setIsNew(false);
+            $product->setIsTopProduct(false);
+            $product->setPermitNegativeStock(false);
+            $product->setConsiderVariationStock(false);
+            $product->setConsiderBasePrice(false);
+            $product->setCreated($created_at);
+            $product->setAvailableFrom($created_at);
+            // $product->setBestBefore(false);
 
-            $product->_inflowQuantity = 0.0;
-            $product->_supplierStockLevel = 0.0;
+            // $product->setInflowQuantity(0.0);
+            // $product->setSupplierStockLevel(0.0);
 
             $stockItem = \Mage::getModel('cataloginventory/stock_item')
                 ->loadByProduct($productItem);
-            $product->_stockLevel = $stockItem->qty;
-            $product->_isDivisible = $stockItem->is_qty_decimal == '1';
-            $product->_considerStock = $stockItem->getManageStock() == '1';
-            $product->_minimumOrderQuantity = $stockItem->getMinSaleQty();
-            $product->_permitNegativeStock = $stockItem->getBackorders() == \Mage_CatalogInventory_Model_Stock::BACKORDERS_YES_NONOTIFY;
-            $product->_packagingUnit = $stockItem->getQtyIncrements();
-
-            $container->add('product', $product->getPublic(array('_fields')));
+            $product->setStockLevel(doubleval($stockItem->qty));
+            $product->setIsDivisible($stockItem->is_qty_decimal == '1');
+            $product->setConsiderStock($stockItem->getManageStock() == '1');
+            $product->setMinimumOrderQuantity($stockItem->getMinSaleQty());
+            $product->setPermitNegativeStock($stockItem->getBackorders() == \Mage_CatalogInventory_Model_Stock::BACKORDERS_YES_NONOTIFY);
+            // $product->setPackagingUnit($stockItem->getQtyIncrements());
 
             // ProductI18n
             $productI18n = new ConnectorProductI18n();
-            $productI18n->_localeName = $defaultLocale;
-            $productI18n->_productId = $productItem->entity_id;
-            $productI18n->_name = $productItem->getName();
-            $productI18n->_url = $productItem->getUrlPath();
-            $productI18n->_description = $productItem->getDescription();
-            $productI18n->_shortDescription = $productItem->getShortDescription();
-            $container->add('product_i18n', $productI18n->getPublic(array('_fields')));
+            $productI18n->setLocaleName($defaultLocale);
+            $productI18n->setProductId(new Identity($productItem->entity_id));
+            $productI18n->setName($productItem->getName());
+            $productI18n->setUrlPath($productItem->getUrlPath());
+            $productI18n->setDescription($productItem->getDescription());
+            $productI18n->setShortDescription($productItem->getShortDescription());
+
+            $product->addI18n($productI18n);
 
             foreach ($stores as $locale => $storeId) {
                 Magento::getInstance()->setCurrentStore($storeId);
@@ -315,24 +310,24 @@ class Product
                     ->load($productItem->entity_id);
 
                 $productI18n = new ConnectorProductI18n();
-                $productI18n->_localeName = $locale;
-                $productI18n->_productId = $productItem->entity_id;
-                $productI18n->_name = $productModel->getName();
-                $productI18n->_url = $productModel->getUrlPath();
-                $productI18n->_description = $productModel->getDescription();
-                $productI18n->_shortDescription = $productModel->getShortDescription();
+                $productI18n->setLocaleName($locale);
+                $productI18n->setProductId(new Identity($productItem->entity_id));
+                $productI18n->setName($productModel->getName());
+                $productI18n->setUrlPath($productModel->getUrlPath());
+                $productI18n->setDescription($productModel->getDescription());
+                $productI18n->setShortDescription($productModel->getShortDescription());
 
-                $container->add('product_i18n', $productI18n->getPublic(array('_fields')));
+                $product->addI18n($productI18n);
             }
 
             // ProductPrice
             $productPrice = new ConnectorProductPrice();
-            $productPrice->_id = $productItem->entity_id . '-' . max(1, (int)$productItem->min_sale_qty);
-            $productPrice->_customerGroupId = null;
-            $productPrice->_productId = $productItem->entity_id;
-            $productPrice->_netPrice = $productItem->price / (1 + $product->_vat / 100.0);
-            $productPrice->_quantity = max(1, (int)$productItem->min_sale_qty);
-            $container->add('product_price', $productPrice->getPublic(array('_fields')));
+            $productPrice->setCustomerGroupId(null);
+            $productPrice->setProductId(new Identity($productItem->entity_id));
+            $productPrice->setNetPrice($productItem->price / (1 + $product->_vat / 100.0));
+            $productPrice->setQuantity(max(1, (int)$productItem->min_sale_qty));
+
+            $product->addPrice($productPrice);
 
             // Product2Category
             $productModel = \Mage::getModel('catalog/product')
@@ -341,14 +336,14 @@ class Product
 
             foreach ($category_ids as $id) {
                 $product2Category = new ConnectorProduct2Category();
-                $product2Category->_id = null;
-                $product2Category->_categoryId = $id;
-                $product2Category->_productId = $productItem->entity_id;
+                $product2Category->setId(null);
+                $product2Category->setCategoryId(new Identity($id));
+                $product2Category->setProductId(new Identity($productItem->entity_id));
 
-                $container->add('product2_category', $product2Category->getPublic(array('_fields')));
+                $product->addCategory($product2Category);
             }
 
-            $result[] = $container->getPublic(array('items'), array('_fields'));
+            $result[] = $product->getPublic();
         }
 
         return $result;

@@ -69,57 +69,54 @@ class Order
 
             $customerOrder = new ConnectorCustomerOrder();
             $customerOrder->setId(new Identity($order->entity_id));
-            $customerOrder->setBasketId(NULL);
             $customerOrder->setCustomerId(new Identity(intval($order->customer_id)));
             $customerOrder->setShippingAddressId(new Identity($order->shipping_address_id));
             $customerOrder->setBillingAddressId(new Identity($order->billing_address_id));
-            $customerOrder->setShippingMethodId(2);
-            $customerOrder->setLocaleName(array_search($order->store_id, $stores));
+            // $customerOrder->setShippingMethodId(2);
+            // $customerOrder->setLocaleName(array_search($order->store_id, $stores));
             $customerOrder->setCurrencyIso($order->order_currency_code);
-            $customerOrder->setPaymentMethodType(NULL);
-            $customerOrder->setCredit(0.00);
-            $customerOrder->setTotalSum($order->grand_total);
-            $customerOrder->setShippingMethodName($order->shipping_description);
-            $customerOrder->setPaymentMethodName('');
+            // $customerOrder->setCredit(0.00);
+            // $customerOrder->setTotalSum($order->grand_total);
+            // $customerOrder->setShippingMethodName($order->shipping_description);
+            // $customerOrder->setPaymentMethodType('');
             $customerOrder->setOrderNumber($order->increment_id);
             $customerOrder->setShippingInfo('');
             $customerOrder->setShippingDate(NULL);
             $customerOrder->setPaymentDate(NULL);
-            $customerOrder->setRatingNotificationDate(NULL);
-            $customerOrder->setTracking('');
-            $customerOrder->setNote('');
-            $customerOrder->setLogistic('');
-            $customerOrder->setTrackingURL('');
-            $customerOrder->setIp($order->remote_ip);
-            $customerOrder->setIsFetched(false);
+            // $customerOrder->setRatingNotificationDate(NULL);
+            // $customerOrder->setTracking('');
+            // $customerOrder->setNote('');
+            // $customerOrder->setLogistic('');
+            // $customerOrder->setTrackingURL('');
+            // $customerOrder->setIp($order->remote_ip);
+            // $customerOrder->setIsFetched(false);
             $customerOrder->setStatus(NULL);
             $customerOrder->setCreated($created_at);
 
             $payment = $order->getPayment();
             $code = $payment->getMethodInstance()->getCode();
 
-            if (array_key_exists($code, $this->paymentMethods))
-                $customerOrder->setPaymentModuleId($this->paymentMethods[$code]);
-            else
-                $customerOrder->setPaymentModuleId('pm_bank_transfer');
+            // if (array_key_exists($code, $this->paymentMethods))
+            //     $customerOrder->setPaymentModuleType($this->paymentMethods[$code]);
+            // else
+            //     $customerOrder->setPaymentModuleType('pm_bank_transfer');
 
             foreach ($order->getAllItems() as $magento_item) {
                 $item = new ConnectorCustomerOrderItem();
                 $item->setId(new Identity($magento_item->item_id));
                 $item->setCustomerOrderId(new Identity($order->entity_id));
-                $item->setBasketId(NULL);
                 $item->setProductId(new Identity($magento_item->product_id));
-                $item->setShippingClassId(NULL);
+                // $item->setShippingClassId(NULL);
                 $item->setName($magento_item->name);
                 $item->setSku($magento_item->sku);
-                $item->setVat($magento_item->tax_percent);
+                $item->setVat((double)$magento_item->tax_percent);
                 $item->setPrice($magento_item->getOriginalPrice() / (1 + $item->setvat / 100.0));
                 $item->setQuantity($magento_item->getQtyToInvoice());
                 $item->setType('product');
                 $item->setUnique(NULL);
-                $item->setConfigItemId(0);
+                $item->setConfigItemId(NULL);
 
-                $customerOrder->addItem($item);
+                $customerOrder->addPosition($item);
 
                 $productOptions = $magento_item->getProductOptions();
                 if (array_key_exists('options', $productOptions)) {
@@ -145,9 +142,8 @@ class Order
             $item = new ConnectorCustomerOrderItem();
             $item->setId(new Identity($order->entity_id . '-shipment'));
             $item->setCustomerOrderId(new Identity($order->entity_id));
-            $item->setBasketId(NULL);
             $item->setProductId(NULL);
-            $item->setShippingClassId(NULL);
+            // $item->setShippingClassId(NULL);
             $item->setName($order->shipping_description);
             $item->setSku('');
             $item->setVat((double)$shippingTaxRate);
@@ -155,9 +151,9 @@ class Order
             $item->setQuantity(1);
             $item->setType('shipment');
             $item->setUnique(NULL);
-            $item->setConfigId(0);
+            $item->setConfigItemId(NULL);
 
-            $order->addItem($item);
+            $customerOrder->addPosition($item);
 
             $shippingAddressEntry = $order->getShippingAddress();
             $shippingAddress = new ConnectorCustomerOrderShippingAddress();
@@ -180,7 +176,7 @@ class Order
             $shippingAddress->setFax(NULL);
             $shippingAddress->setEMail($shippingAddressEntry->email);
 
-            $order->addShippingAddress($shippingAddress);
+            $customerOrder->addShippingAddress($shippingAddress);
 
             $billingAddressEntry = $order->getBillingAddress();
             $billingAddress = new ConnectorCustomerOrderBillingAddress();
@@ -203,9 +199,9 @@ class Order
             $billingAddress->setFax(NULL);
             $billingAddress->setEMail($billingAddressEntry->email);
 
-            $order->addBillingAddress($billingAddress);
+            $customerOrder->addBillingAddress($billingAddress);
 
-            $result[] = $order->getPublic();
+            $result[] = $customerOrder->getPublic();
         }
 
         return $result;
