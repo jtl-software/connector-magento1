@@ -36,38 +36,12 @@ class GlobalData
 		$currencies = $this->pullCurrencies();
         foreach ($currencies as $currency)
             $globalData->addCurrency($currency);
-/*
+
 		$customerGroups = $this->pullCustomerGroups();
         foreach ($customerGroups as $customerGroup)
             $globalData->addCustomerGroup($customerGroup);
-*/
+
 		return array($globalData->getPublic());
-	}
-
-	public function pullCustomerGroupI18ns()
-	{
-		Magento::getInstance();
-        $stores = MapperDatabase::getInstance()->getStoreMapping();
-
-        $groups = \Mage::getResourceModel('customer/group_collection');
-        $result = array();
-        foreach ($stores as $locale => $store_id) {
-        	Magento::getInstance()->setCurrentStore($store_id);
-			
-			foreach ($groups as $group) {
-				if ($group->customer_group_id == 0)
-					continue;
-
-				$customerGroupI18n = new ConnectorCustomerGroupI18n();
-				$customerGroupI18n->_localeName = $locale;
-				$customerGroupI18n->_customerGroupId = $group->customer_group_id;
-				$customerGroupI18n->_name = $group->customer_group_code;
-
-				$result[] = $customerGroupI18n->getPublic(array('_fields'));
-			}
-        }
-
-        return $result;
 	}
 
 	public function pullCustomerGroups()
@@ -101,6 +75,8 @@ class GlobalData
                 $customerGroupI18n->setLocaleName($locale);
                 $customerGroupI18n->setCustomerGroupId(new Identity($model->getCustomerGroupId(), null));
                 $customerGroupI18n->setName($model->getCustomerGroupCode());
+
+                $customerGroup->addI18n($customerGroupI18n);
             }
         }
 
