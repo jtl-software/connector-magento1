@@ -20,10 +20,10 @@ class Connector extends AbstractController
 {
     private $controllers = array(
         'Category',
-        // 'Customer',
-        // 'CustomerOrder',
-        // 'GlobalData',
-        'Image',
+        'Customer',
+        'CustomerOrder',
+        'GlobalData',
+        'Image'
         // 'Product'
     );
 
