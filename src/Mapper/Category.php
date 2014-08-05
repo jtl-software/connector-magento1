@@ -247,7 +247,7 @@ class Category
                     ->setLocaleName($locale)
                     ->setCategoryId(new Identity($categoryId))
                     ->setName($model->getName())
-                    ->setUrl($model->getUrlKey())
+                    ->setUrlPath($model->getUrlKey())
                     ->setDescription($model->getDescription());
                     //->setMetaDescription($model->getMetaDescription())
                     //->setMetaKeywords($model->getMetaKeywords())

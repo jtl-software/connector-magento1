@@ -104,9 +104,9 @@ class GlobalData
                 ->setName($shopCurrency->getName())
                 // ->setIso($shopCurrency->getShortName())
                 ->setNameHtml(htmlentities(mb_convert_encoding($shopCurrency->getSymbol(), 'ISO-8859-15', 'UTF-8'), ENT_COMPAT, 'ISO-8859-15'))
-                ->setDecimalSeparator(',')
-                ->setThousandsSeparator('.')
-                ->setBeforeAmount(false)
+                ->setDelimiterCent(',')
+                ->setDelimiterThousand('.')
+                ->setHasCurrencySignBeforeValue(false)
                 ->setIsDefault(($currency->_iso === $defaultCurrencyCode))
                 ->setFactor($defaultCurrency->getRate($shopCurrency->getShortName()));
 

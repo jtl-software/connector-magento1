@@ -116,7 +116,7 @@ class Order
                 $item->setUnique(NULL);
                 $item->setConfigItemId(NULL);
 
-                $customerOrder->addPosition($item);
+                $customerOrder->addItem($item);
 
                 $productOptions = $magento_item->getProductOptions();
                 if (array_key_exists('options', $productOptions)) {
@@ -148,12 +148,12 @@ class Order
             $item->setSku('');
             $item->setVat((double)$shippingTaxRate);
             $item->setPrice($shippingGrossAmount / (1 + $shippingTaxRate / 100.0));
-            $item->setQuantity(1);
+            $item->setQuantity(1.0);
             $item->setType('shipment');
             $item->setUnique(NULL);
             $item->setConfigItemId(NULL);
 
-            $customerOrder->addPosition($item);
+            $customerOrder->addItem($item);
 
             $shippingAddressEntry = $order->getShippingAddress();
             $shippingAddress = new ConnectorCustomerOrderShippingAddress();
