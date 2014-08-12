@@ -103,7 +103,7 @@ class GlobalData
                 ->setId(new Identity(strtolower($currencyCode), null))
                 ->setName($shopCurrency->getName())
                 // ->setIso($shopCurrency->getShortName())
-                ->setNameHtml(htmlentities(mb_convert_encoding($shopCurrency->getSymbol(), 'ISO-8859-15', 'UTF-8'), ENT_COMPAT, 'ISO-8859-15'))
+                ->setNameHtml($shopCurrency->getShortName())
                 ->setDelimiterCent(',')
                 ->setDelimiterThousand('.')
                 ->setHasCurrencySignBeforeValue(false)
