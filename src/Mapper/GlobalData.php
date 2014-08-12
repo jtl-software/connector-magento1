@@ -102,7 +102,7 @@ class GlobalData
             $currency
                 ->setId(new Identity(strtolower($currencyCode), null))
                 ->setName($shopCurrency->getName())
-                // ->setIso($shopCurrency->getShortName())
+                ->setIso($shopCurrency->getShortName())
                 ->setNameHtml($shopCurrency->getShortName())
                 ->setDelimiterCent(',')
                 ->setDelimiterThousand('.')
@@ -121,11 +121,14 @@ class GlobalData
 		Magento::getInstance();
         $stores = MapperDatabase::getInstance()->getStoreMapping();
 
+        $defaultLocale = MapperDatabase::getInstance()->getDefaultLocale();
+
         $result = array();
         foreach ($stores as $localeName => $store_id) {
         	$language = new ConnectorLanguage();
         	$language->setId(new Identity($store_id, null));
             $language->setLocaleName($localeName);
+            $language->setIsDefault($localeName == $defaultLocale);
 			$locale = new \Zend_Locale($localeName);
 
 			$language->setNameGerman($locale->getTranslation($locale->getLanguage(), 'language', 'de'));
