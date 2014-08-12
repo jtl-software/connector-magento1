@@ -39,6 +39,12 @@ class Connector extends BaseConnector
      */
     protected $_action;
     
+    /**
+     *
+     * @var string
+     */
+    protected $_config;
+    
     protected function __construct()
     {
         $this->initializeConfiguration();
