@@ -6,6 +6,7 @@
  */
 namespace jtl\Connector\Magento\Controller;
 
+use jtl\Core\Model\QueryFilter;
 use jtl\Core\Rpc\Error;
 use jtl\Core\Utilities\ClassName;
 use jtl\Connector\Magento\Mapper\Category as CategoryMapper;
@@ -83,8 +84,11 @@ class Category extends AbstractController
         $action->setHandled(true);
     
         try {
+            $filter = new QueryFilter();
+            $filter->set($params);
+
             $mapper = new CategoryMapper();
-            $categories = $mapper->pull();
+            $categories = $mapper->pull($filter);
             
             $action->setResult($categories);
         }

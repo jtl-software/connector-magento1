@@ -7,6 +7,7 @@
 namespace jtl\Connector\Magento\Mapper;
 
 use jtl\Core\Logger\Logger;
+use jtl\Core\Model\QueryFilter;
 use jtl\Connector\Magento\Magento;
 use jtl\Connector\Magento\Mapper\Database as MapperDatabase;
 use jtl\Connector\Magento\Utilities\ArrayTools;
@@ -203,7 +204,7 @@ class Category
         }
     }
 
-    public function pull()
+    public function pull(QueryFilter $filter)
     {
         Magento::getInstance();        
         
@@ -219,11 +220,22 @@ class Category
             ->getCollection()
             ->addAttributeToSelect('all_children')
             ->addAttributeToFilter('parent_id', $rootCategoryId)
+            ->addAttributeToSort('position', 'asc')
             ->load();
 
         $categoryIds = array();
         foreach ($categoryCollection as $category) {
             $categoryIds  = array_merge_recursive($categoryIds, explode(',', $category->getAllChildren()));
+        }
+
+        // Apply query filter
+        if ($filter->isOffset()) {
+            if ($filter->isLimit()) {
+                $categoryIds = array_splice($categoryIds, $filter->getOffset(), $filter->getLimit());
+            }
+            else {
+                $categoryIds = array_splice($categoryIds, $filter->getOffset());
+            }
         }
 
         $result = array();
