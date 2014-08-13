@@ -7,6 +7,7 @@
 namespace jtl\Connector\Magento\Mapper;
 
 use jtl\Core\Logger\Logger;
+use jtl\Core\Model\QueryFilter;
 use jtl\Connector\Magento\Magento;
 use jtl\Connector\Magento\Mapper\Database as MapperDatabase;
 use jtl\Connector\Magento\Utilities\ArrayTools;
@@ -229,7 +230,7 @@ class Product
         return $result;
     }
 
-    public function pull()
+    public function pull(QueryFilter $filter)
     {
         Magento::getInstance();        
         
@@ -240,7 +241,16 @@ class Product
 
         Magento::getInstance()->setCurrentStore($defaultStoreId);
 
-        $products = \Mage::getResourceModel('catalog/product_collection');
+        $products = \Mage::getResourceModel('catalog/product_collection')
+            ->joinTable('catalog/product_relation', 'child_id=entity_id', array(
+                'parent_id' => 'parent_id'
+            ), null, 'left')
+            ->addAttributeToFilter(array(
+                array(
+                    'attribute' => 'parent_id',
+                    'null' => null
+                )
+            ));
         /*$productCollection = $productModel->getCollection()
             ->addAttributeToSelect('*')
             ->joinTable('cataloginventory/stock_item', 'product_id=entity_id', array(
@@ -257,11 +267,13 @@ class Product
         foreach ($products as $productItem) {
             $productItem->load();
 
+            Logger::write(var_export($productItem, true));
+
             $created_at = new \DateTime($productItem->created_at);
 
             $product = new ConnectorProduct();
             $product->setId(new Identity($productItem->entity_id));
-            $product->setMasterProductId(null);
+            $product->setMasterProductId(!is_null($productItem->parent_id) ? new Identity($productItem->parent_id) : null);
             $product->setSetArticleId(null);
             $product->setSku($productItem->sku);
             $product->setRecommendedRetailPrice((double)$productItem->msrp);
@@ -356,7 +368,17 @@ class Product
         try {
             $productModel = \Mage::getModel('catalog/product');
             $productCollection = $productModel->getCollection()
-                ->addAttributeToSelect('*');
+                ->addAttributeToSelect('*')
+                ->addAttributeToFilter('status', \Mage_Catalog_Model_Product_Status::STATUS_ENABLED)
+                ->joinTable('catalog/product_relation', 'child_id=entity_id', array(
+                    'parent_id' => 'parent_id'
+                ), null, 'left')
+                ->addAttributeToFilter(array(
+                    array(
+                        'attribute' => 'parent_id',
+                        'null' => null
+                    )
+                ));
 
             return $productCollection->count();
         }
