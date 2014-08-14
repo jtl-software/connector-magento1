@@ -216,7 +216,6 @@ class Product
     public function push(ProductContainer $container)
     {
         Magento::getInstance();        
-        
         $stores = MapperDatabase::getInstance()->getStoreMapping();
         reset($stores);
         $defaultLocale = key($stores);
@@ -230,15 +229,104 @@ class Product
         return $result;
     }
 
-    public function pull(QueryFilter $filter)
+    private function magentoToConnector(\Mage_Core_Model_Product $productItem, array $stores)
+    {
+        $created_at = new \DateTime($productItem->created_at);
+
+        $product = new ConnectorProduct();
+        $product->setId(new Identity($productItem->entity_id));
+        $product->setMasterProductId(!is_null($productItem->parent_id) ? new Identity($productItem->parent_id) : null);
+        $product->setSetArticleId(null);
+        $product->setSku($productItem->sku);
+        $product->setRecommendedRetailPrice((double)$productItem->msrp);
+        $product->setMinimumOrderQuantity((double)($productItem->use_config_min_sale_qty == 1 ? 0 : $productItem->min_sale_qty));
+        $product->setTakeOffQuantity(1.0);
+        $product->setVat($this->getTaxRateByClassId($productItem->tax_class_id));
+        $product->setShippingWeight(0.0);
+        $product->setProductWeight(0.0);
+        $product->setIsMasterProduct(false);
+        $product->setIsNew(false);
+        $product->setIsTopProduct(false);
+        $product->setPermitNegativeStock(false);
+        $product->setConsiderVariationStock(false);
+        $product->setConsiderBasePrice(false);
+        $product->setCreated($created_at);
+        $product->setAvailableFrom($created_at);
+        // $product->setBestBefore(false);
+
+        // $product->setInflowQuantity(0.0);
+        // $product->setSupplierStockLevel(0.0);
+
+        $stockItem = \Mage::getModel('cataloginventory/stock_item')
+            ->loadByProduct($productItem);
+        $product->setStockLevel(doubleval($stockItem->qty));
+        $product->setIsDivisible($stockItem->is_qty_decimal == '1');
+        $product->setConsiderStock($stockItem->getManageStock() == '1');
+        $product->setMinimumOrderQuantity($stockItem->getMinSaleQty());
+        $product->setPermitNegativeStock($stockItem->getBackorders() == \Mage_CatalogInventory_Model_Stock::BACKORDERS_YES_NONOTIFY);
+        // $product->setPackagingUnit($stockItem->getQtyIncrements());
+
+        // ProductI18n
+        $productI18n = new ConnectorProductI18n();
+        $productI18n->setLocaleName($defaultLocale);
+        $productI18n->setProductId(new Identity($productItem->entity_id));
+        $productI18n->setName($productItem->getName());
+        $productI18n->setUrlPath($productItem->getUrlPath());
+        $productI18n->setDescription($productItem->getDescription());
+        $productI18n->setShortDescription($productItem->getShortDescription());
+
+        $product->addI18n($productI18n);
+
+        foreach ($stores as $locale => $storeId) {
+            Magento::getInstance()->setCurrentStore($storeId);
+
+            $productModel = \Mage::getModel('catalog/product')
+                ->load($productItem->entity_id);
+
+            $productI18n = new ConnectorProductI18n();
+            $productI18n->setLocaleName($locale);
+            $productI18n->setProductId(new Identity($productItem->entity_id));
+            $productI18n->setName($productModel->getName());
+            $productI18n->setUrlPath($productModel->getUrlPath());
+            $productI18n->setDescription($productModel->getDescription());
+            $productI18n->setShortDescription($productModel->getShortDescription());
+
+            $product->addI18n($productI18n);
+        }
+
+        // ProductPrice
+        $productPrice = new ConnectorProductPrice();
+        $productPrice->setCustomerGroupId(null);
+        $productPrice->setProductId(new Identity($productItem->entity_id));
+        $productPrice->setNetPrice($productItem->price / (1 + $product->_vat / 100.0));
+        $productPrice->setQuantity(max(1, (int)$productItem->min_sale_qty));
+
+        $product->addPrice($productPrice);
+
+        // Product2Category
+        $productModel = \Mage::getModel('catalog/product')
+            ->load($productItem->entity_id);
+        $category_ids = $productModel->getCategoryIds();
+
+        foreach ($category_ids as $id) {
+            $product2Category = new ConnectorProduct2Category();
+            $product2Category->setId(null);
+            $product2Category->setCategoryId(new Identity($id));
+            $product2Category->setProductId(new Identity($productItem->entity_id));
+
+            $product->addCategory($product2Category);
+        }
+
+        return $product;
+    }
+
+    private function pullParentProducts(QueryFilter $filter)
     {
         Magento::getInstance();        
-        
         $stores = MapperDatabase::getInstance()->getStoreMapping();
         reset($stores);
         $defaultLocale = key($stores);
         $defaultStoreId = array_shift($stores);
-
         Magento::getInstance()->setCurrentStore($defaultStoreId);
 
         $products = \Mage::getResourceModel('catalog/product_collection')
@@ -266,99 +354,58 @@ class Product
         $result = array();
         foreach ($products as $productItem) {
             $productItem->load();
+            
+            $product = $this->magentoToConnector($productItem, $stores);
 
-            Logger::write(var_export($productItem, true));
-
-            $created_at = new \DateTime($productItem->created_at);
-
-            $product = new ConnectorProduct();
-            $product->setId(new Identity($productItem->entity_id));
-            $product->setMasterProductId(!is_null($productItem->parent_id) ? new Identity($productItem->parent_id) : null);
-            $product->setSetArticleId(null);
-            $product->setSku($productItem->sku);
-            $product->setRecommendedRetailPrice((double)$productItem->msrp);
-            $product->setMinimumOrderQuantity((double)($productItem->use_config_min_sale_qty == 1 ? 0 : $productItem->min_sale_qty));
-            $product->setTakeOffQuantity(1.0);
-            $product->setVat($this->getTaxRateByClassId($productItem->tax_class_id));
-            $product->setShippingWeight(0.0);
-            $product->setProductWeight(0.0);
-            $product->setIsMasterProduct(false);
-            $product->setIsNew(false);
-            $product->setIsTopProduct(false);
-            $product->setPermitNegativeStock(false);
-            $product->setConsiderVariationStock(false);
-            $product->setConsiderBasePrice(false);
-            $product->setCreated($created_at);
-            $product->setAvailableFrom($created_at);
-            // $product->setBestBefore(false);
-
-            // $product->setInflowQuantity(0.0);
-            // $product->setSupplierStockLevel(0.0);
-
-            $stockItem = \Mage::getModel('cataloginventory/stock_item')
-                ->loadByProduct($productItem);
-            $product->setStockLevel(doubleval($stockItem->qty));
-            $product->setIsDivisible($stockItem->is_qty_decimal == '1');
-            $product->setConsiderStock($stockItem->getManageStock() == '1');
-            $product->setMinimumOrderQuantity($stockItem->getMinSaleQty());
-            $product->setPermitNegativeStock($stockItem->getBackorders() == \Mage_CatalogInventory_Model_Stock::BACKORDERS_YES_NONOTIFY);
-            // $product->setPackagingUnit($stockItem->getQtyIncrements());
-
-            // ProductI18n
-            $productI18n = new ConnectorProductI18n();
-            $productI18n->setLocaleName($defaultLocale);
-            $productI18n->setProductId(new Identity($productItem->entity_id));
-            $productI18n->setName($productItem->getName());
-            $productI18n->setUrlPath($productItem->getUrlPath());
-            $productI18n->setDescription($productItem->getDescription());
-            $productI18n->setShortDescription($productItem->getShortDescription());
-
-            $product->addI18n($productI18n);
-
-            foreach ($stores as $locale => $storeId) {
-                Magento::getInstance()->setCurrentStore($storeId);
-
-                $productModel = \Mage::getModel('catalog/product')
-                    ->load($productItem->entity_id);
-
-                $productI18n = new ConnectorProductI18n();
-                $productI18n->setLocaleName($locale);
-                $productI18n->setProductId(new Identity($productItem->entity_id));
-                $productI18n->setName($productModel->getName());
-                $productI18n->setUrlPath($productModel->getUrlPath());
-                $productI18n->setDescription($productModel->getDescription());
-                $productI18n->setShortDescription($productModel->getShortDescription());
-
-                $product->addI18n($productI18n);
+            if (!is_null($product)) {
+                $result[] = $product->getPublic();
             }
-
-            // ProductPrice
-            $productPrice = new ConnectorProductPrice();
-            $productPrice->setCustomerGroupId(null);
-            $productPrice->setProductId(new Identity($productItem->entity_id));
-            $productPrice->setNetPrice($productItem->price / (1 + $product->_vat / 100.0));
-            $productPrice->setQuantity(max(1, (int)$productItem->min_sale_qty));
-
-            $product->addPrice($productPrice);
-
-            // Product2Category
-            $productModel = \Mage::getModel('catalog/product')
-                ->load($productItem->entity_id);
-            $category_ids = $productModel->getCategoryIds();
-
-            foreach ($category_ids as $id) {
-                $product2Category = new ConnectorProduct2Category();
-                $product2Category->setId(null);
-                $product2Category->setCategoryId(new Identity($id));
-                $product2Category->setProductId(new Identity($productItem->entity_id));
-
-                $product->addCategory($product2Category);
-            }
-
-            $result[] = $product->getPublic();
         }
 
         return $result;
+    }
+
+    private function pullChildProducts(QueryFilter $filter)
+    {
+        Magento::getInstance();        
+        $stores = MapperDatabase::getInstance()->getStoreMapping();
+        reset($stores);
+        $defaultLocale = key($stores);
+        $defaultStoreId = array_shift($stores);
+        Magento::getInstance()->setCurrentStore($defaultStoreId);
+        
+        $parentId = $filter->getFilter('parentId');
+        $product = \Mage::getModel('catalog/product')->load($parentId);
+        if (is_null($product)) {
+            return array();
+        }
+
+        $childProducts = \Mage::getModel('catalog/product_type_configurable')
+                    ->getUsedProducts(null,$product);  
+
+        $result = array();
+        foreach ($childProducts as $productItem) {            
+            $product = $this->magentoToConnector($productItem, $stores);
+
+            if (!is_null($product)) {
+                $result[] = $product->getPublic();
+            }
+        }
+
+        return $result;
+    }
+
+    public function pull(QueryFilter $filter)
+    {
+        // Determine if we should pull children or not
+        if (!is_null($filter) && $filter->isFilter('fetchChildren') && $filter->isFilter('parentId') > 0) {
+            $filter = new QueryFilter();
+            $filter->addFilter('parentId', 34);
+            return $this->pullChildProducts($filter);
+        }
+        else {
+            return $this->pullParentProducts($filter);
+        }
     }
 
     public function getAvailableCount()
