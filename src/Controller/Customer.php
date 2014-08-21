@@ -56,15 +56,12 @@ class Customer extends AbstractController
         return $action;
     }
 
-    public function pull($params)
+    public function pull($filter)
     {
         $action = new Action();
         $action->setHandled(true);
         
         try {
-            $filter = new QueryFilter();
-            $filter->set($params);
-
             $mapper = new CustomerMapper();
             $customers = $mapper->pull($filter);
             

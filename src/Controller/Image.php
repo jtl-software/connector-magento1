@@ -34,14 +34,14 @@ class Image extends AbstractController
         
     }
 
-    public function pull($params)
+    public function pull($filter)
     {
         $action = new Action();
         $action->setHandled(true);
         
         try {
             $mapper = new ImageMapper();
-            $images = $mapper->pull();
+            $images = $mapper->pull($filter);
             
             $action->setResult($images);
         }

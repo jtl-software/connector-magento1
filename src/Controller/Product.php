@@ -57,14 +57,14 @@ class Product extends AbstractController
         
     }
 
-    public function pull($params)
+    public function pull($filter)
     {
         $action = new Action();
         $action->setHandled(true);
         
         try {
             $mapper = new ProductMapper();
-            $products = $mapper->pull();
+            $products = $mapper->pull($filter);
             
             $action->setResult($products);
         }

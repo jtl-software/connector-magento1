@@ -30,14 +30,14 @@ class GlobalData extends AbstractController
         
     }
 
-    public function pull($params)
+    public function pull($filter)
     {
         $action = new Action();
         $action->setHandled(true);
         
         try {
             $mapper = new GlobalDataMapper();
-            $data = $mapper->pull();
+            $data = $mapper->pull($filter);
             
             $action->setResult($data);
         }
