@@ -17,7 +17,10 @@ use jtl\Connector\Model\Product2Category as ConnectorProduct2Category;
 use jtl\Connector\Model\ProductI18n as ConnectorProductI18n;
 use jtl\Connector\Model\ProductPrice as ConnectorProductPrice;
 use jtl\Connector\Model\ProductVariation as ConnectorProductVariation;
+use jtl\Connector\Model\ProductVariationI18n as ConnectorProductVariationI18n;
 use jtl\Connector\Model\ProductVariationValue as ConnectorProductVariationValue;
+use jtl\Connector\Model\ProductVariationValueExtraCharge as ConnectorProductVariationValueExtraCharge;
+use jtl\Connector\Model\ProductVariationValueI18n as ConnectorProductVariationValueI18n;
 use jtl\Connector\ModelContainer\ProductContainer;
 use jtl\Connector\Result\Transaction;
 
@@ -217,9 +220,8 @@ class Product
     {
         Magento::getInstance();        
         $stores = MapperDatabase::getInstance()->getStoreMapping();
-        reset($stores);
+        $defaultStoreId = reset($stores);
         $defaultLocale = key($stores);
-        $defaultStoreId = array_shift($stores);
 
         $product = $container->getMainModel();
         if ($product->getId()->getEndpoint() === '')
@@ -229,8 +231,13 @@ class Product
         return $result;
     }
 
-    private function magentoToConnector(\Mage_Core_Model_Product $productItem, array $stores)
+    private function magentoToConnector(\Mage_Core_Model_Product $productItem)
     {
+        Magento::getInstance();        
+        $stores = MapperDatabase::getInstance()->getStoreMapping();
+        $defaultStoreId = reset($stores);
+        $defaultLocale = key($stores);
+        
         $created_at = new \DateTime($productItem->created_at);
 
         $product = new ConnectorProduct();
@@ -252,31 +259,18 @@ class Product
         $product->setConsiderBasePrice(false);
         $product->setCreated($created_at);
         $product->setAvailableFrom($created_at);
-        // $product->setBestBefore(false);
-
-        // $product->setInflowQuantity(0.0);
-        // $product->setSupplierStockLevel(0.0);
+        $product->setBestBefore(null);
 
         $stockItem = \Mage::getModel('cataloginventory/stock_item')
             ->loadByProduct($productItem);
         $product->setStockLevel(doubleval($stockItem->qty));
         $product->setIsDivisible($stockItem->is_qty_decimal == '1');
         $product->setConsiderStock($stockItem->getManageStock() == '1');
-        $product->setMinimumOrderQuantity($stockItem->getMinSaleQty());
+        $product->setMinimumOrderQuantity((int)$stockItem->getMinSaleQty());
         $product->setPermitNegativeStock($stockItem->getBackorders() == \Mage_CatalogInventory_Model_Stock::BACKORDERS_YES_NONOTIFY);
         // $product->setPackagingUnit($stockItem->getQtyIncrements());
 
         // ProductI18n
-        $productI18n = new ConnectorProductI18n();
-        $productI18n->setLocaleName($defaultLocale);
-        $productI18n->setProductId(new Identity($productItem->entity_id));
-        $productI18n->setName($productItem->getName());
-        $productI18n->setUrlPath($productItem->getUrlPath());
-        $productI18n->setDescription($productItem->getDescription());
-        $productI18n->setShortDescription($productItem->getShortDescription());
-
-        $product->addI18n($productI18n);
-
         foreach ($stores as $locale => $storeId) {
             Magento::getInstance()->setCurrentStore($storeId);
 
@@ -303,10 +297,79 @@ class Product
 
         $product->addPrice($productPrice);
 
+        // ProductVariation
+        if (in_array($productItem->getTypeId(), array('configurable'))) {
+            $productAttributeOptions = array();
+            $typeInstance = $productItem->getTypeInstance(false);
+            $productAttributeOptions = $typeInstance->getConfigurableAttributesAsArray($productItem);
+
+            Logger::write('options: ' . json_encode($productAttributeOptions));
+
+            // Iterate over all variations
+            $variations = array();
+            foreach ($productAttributeOptions as $attributeIndex => $attributeOption) {
+                $productVariation = new ConnectorProductVariation();
+                $productVariation
+                    ->setId(new Identity($attributeOption['id']))
+                    ->setProductId(new Identity($productItem->entity_id))
+                    ->setSort((int)$attributeOption['position']);
+
+                // TODO: Load real attribute type
+                $productVariation->setType('select');
+
+                $attrModel = \Mage::getModel('catalog/resource_eav_attribute')
+                    ->load($attributeOption['attribute_id']);
+
+                foreach ($stores as $locale => $storeId) {
+                    $productVariationI18n = new ConnectorProductVariationI18n();
+                    $productVariationI18n
+                        ->setLocaleName($locale)
+                        ->setName($attrModel->getStoreLabel($storeId))
+                        ->setProductVariationId(new Identity($attributeOption['id']));
+
+                    $productVariation->addI18n($productVariationI18n);
+                }
+
+                $valueLabels = array();
+                foreach ($stores as $locale => $storeId) {
+                    $valueLabels[$locale] = \Mage::getModel('eav/config')->getAttribute('catalog_product', $attributeOption['attribute_code'])
+                        ->setStoreId($storeId)
+                        ->getSource()
+                        ->getAllOptions(false);
+                }
+
+                foreach ($attributeOption['values'] as $valueIndex => $value) {
+                    $productVariationValue = new ConnectorProductVariationValue();
+                    $productVariationValue
+                        ->setId(new Identity($value['value_id']))
+                        ->setProductVariationId(new Identity($attributeOption['id']))
+                        ->setSort($valueIndex);
+
+                    foreach ($stores as $locale => $storeId) {
+                        $productVariationValueI18n = new ConnectorProductVariationValueI18n();
+                        $productVariationValueI18n
+                            ->setProductVariationValueId(new Identity($value['value_id']))
+                            ->setLocaleName($locale)
+                            ->setName($valueLabels[$locale][$valueIndex]['label']);
+
+                        $productVariationValue->addI18n($productVariationValueI18n);
+                    }
+
+                    $productVariationValueExtraCharge = new ConnectorProductVariationValueExtraCharge();
+                    $productVariationValueExtraCharge
+                        ->setProductVariationValueId(new Identity($value['value_id']))
+                        ->setExtraChargeNet($value['pricing_value'] / (1 + $product->_vat / 100.0));
+                    $productVariationValue->addExtraCharge($productVariationValueExtraCharge);
+
+                    $productVariation->addValue($productVariationValue);
+                }
+
+                $product->addVariation($productVariation);
+            }
+        }
+
         // Product2Category
-        $productModel = \Mage::getModel('catalog/product')
-            ->load($productItem->entity_id);
-        $category_ids = $productModel->getCategoryIds();
+        $category_ids = $productItem->getCategoryIds();
 
         foreach ($category_ids as $id) {
             $product2Category = new ConnectorProduct2Category();
@@ -324,9 +387,8 @@ class Product
     {
         Magento::getInstance();        
         $stores = MapperDatabase::getInstance()->getStoreMapping();
-        reset($stores);
+        $defaultStoreId = reset($stores);
         $defaultLocale = key($stores);
-        $defaultStoreId = array_shift($stores);
         Magento::getInstance()->setCurrentStore($defaultStoreId);
 
         $products = \Mage::getResourceModel('catalog/product_collection')
@@ -339,23 +401,12 @@ class Product
                     'null' => null
                 )
             ));
-        /*$productCollection = $productModel->getCollection()
-            ->addAttributeToSelect('*')
-            ->joinTable('cataloginventory/stock_item', 'product_id=entity_id', array(
-                'qty' => 'qty',
-                'is_qty_decimal' => 'is_qty_decimal',
-                'use_config_min_sale_qty' => 'use_config_min_sale_qty',
-                'min_sale_qty' => 'min_sale_qty',
-                'notify_stock_qty'=>'notify_stock_qty',
-                'use_config' => 'use_config_notify_stock_qty',
-                'low_stock_date' => 'low_stock_date'
-            )); */
 
         $result = array();
         foreach ($products as $productItem) {
             $productItem->load();
             
-            $product = $this->magentoToConnector($productItem, $stores);
+            $product = $this->magentoToConnector($productItem);
 
             if (!is_null($product)) {
                 $result[] = $product->getPublic();
@@ -369,9 +420,8 @@ class Product
     {
         Magento::getInstance();        
         $stores = MapperDatabase::getInstance()->getStoreMapping();
-        reset($stores);
+        $defaultStoreId = reset($stores);
         $defaultLocale = key($stores);
-        $defaultStoreId = array_shift($stores);
         Magento::getInstance()->setCurrentStore($defaultStoreId);
         
         $parentId = $filter->getFilter('parentId');
@@ -385,7 +435,7 @@ class Product
 
         $result = array();
         foreach ($childProducts as $productItem) {            
-            $product = $this->magentoToConnector($productItem, $stores);
+            $product = $this->magentoToConnector($productItem);
 
             if (!is_null($product)) {
                 $result[] = $product->getPublic();
