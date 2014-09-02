@@ -6,6 +6,8 @@
  */
 namespace jtl\Connector\Magento\Controller;
 
+use jtl\Core\Model\DataModel;
+use jtl\Core\Model\QueryFilter;
 use jtl\Core\Rpc\Error;
 use jtl\Connector\Result\Action;
 use jtl\Connector\Magento\Mapper\GlobalData as GlobalDataMapper;
@@ -27,12 +29,12 @@ class Connector extends AbstractController
         'Product'
     );
 
-    public function push($params)
+    public function push(DataModel $model)
     {
         
     }
 
-    public function pull($params)
+    public function pull(QueryFilter $filter)
     {
 
     }

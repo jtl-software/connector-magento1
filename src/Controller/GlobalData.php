@@ -6,6 +6,8 @@
  */
 namespace jtl\Connector\Magento\Controller;
 
+use jtl\Core\Model\DataModel;
+use jtl\Core\Model\QueryFilter;
 use jtl\Core\Rpc\Error;
 use jtl\Core\Utilities\ClassName;
 use jtl\Connector\Model\Statistic;
@@ -20,7 +22,7 @@ use jtl\Connector\Magento\Mapper\GlobalData as GlobalDataMapper;
  */
 class GlobalData extends AbstractController
 {
-    public function push($params)
+    public function push(DataModel $model)
     {
         
     }
@@ -30,7 +32,7 @@ class GlobalData extends AbstractController
         
     }
 
-    public function pull($filter)
+    public function pull(QueryFilter $filter)
     {
         $action = new Action();
         $action->setHandled(true);

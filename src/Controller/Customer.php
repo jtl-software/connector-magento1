@@ -6,6 +6,7 @@
  */
 namespace jtl\Connector\Magento\Controller;
 
+use jtl\Core\Model\DataModel;
 use jtl\Core\Model\QueryFilter;
 use jtl\Core\Rpc\Error;
 use jtl\Core\Utilities\ClassName;
@@ -21,7 +22,7 @@ use jtl\Connector\Magento\Mapper\Customer as CustomerMapper;
  */
 class Customer extends AbstractController
 {
-    public function push($params)
+    public function push(DataModel $model)
     {
         
     }
@@ -56,7 +57,7 @@ class Customer extends AbstractController
         return $action;
     }
 
-    public function pull($filter)
+    public function pull(QueryFilter $filter)
     {
         $action = new Action();
         $action->setHandled(true);

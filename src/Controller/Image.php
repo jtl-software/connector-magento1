@@ -7,6 +7,8 @@
 namespace jtl\Connector\Magento\Controller;
 
 use jtl\Core\Exception\TransactionException;
+use jtl\Core\Model\DataModel;
+use jtl\Core\Model\QueryFilter;
 use jtl\Core\Result\Transaction as TransactionResult;
 use jtl\Core\Rpc\Error;
 use jtl\Core\Utilities\ClassName;
@@ -34,7 +36,7 @@ class Image extends AbstractController
         
     }
 
-    public function pull($filter)
+    public function pull(QueryFilter $filter)
     {
         $action = new Action();
         $action->setHandled(true);
@@ -56,7 +58,7 @@ class Image extends AbstractController
         return $action;
     }
 
-    public function push($params)
+    public function push(DataModel $model)
     {
 
     }

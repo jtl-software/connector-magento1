@@ -6,6 +6,7 @@
  */
 namespace jtl\Connector\Magento\Controller;
 
+use jtl\Core\Model\DataModel;
 use jtl\Core\Model\QueryFilter;
 use jtl\Core\Rpc\Error;
 use jtl\Core\Utilities\ClassName;
@@ -78,7 +79,7 @@ class Category extends AbstractController
         return $action;
     }
 
-    public function pull($filter)
+    public function pull(QueryFilter $filter)
     {
         $action = new Action();
         $action->setHandled(true);
@@ -99,7 +100,7 @@ class Category extends AbstractController
         return $action;
     }
 
-    public function push($params)
+    public function push(DataModel $model)
     {
 
     }    
