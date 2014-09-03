@@ -72,24 +72,24 @@ class Order
             $customerOrder->setCustomerId(new Identity(intval($order->customer_id)));
             $customerOrder->setShippingAddressId(new Identity($order->shipping_address_id));
             $customerOrder->setBillingAddressId(new Identity($order->billing_address_id));
-            // $customerOrder->setShippingMethodId(2);
-            // $customerOrder->setLocaleName(array_search($order->store_id, $stores));
+            $customerOrder->setShippingMethodCode(''); // TODO
+            $customerOrder->setLocaleName(array_search($order->store_id, $stores));
             $customerOrder->setCurrencyIso($order->order_currency_code);
-            // $customerOrder->setCredit(0.00);
-            // $customerOrder->setTotalSum($order->grand_total);
-            // $customerOrder->setShippingMethodName($order->shipping_description);
-            // $customerOrder->setPaymentMethodType('');
+            $customerOrder->setCredit(0.00);
+            $customerOrder->setTotalSum((double)$order->grand_total);
+            $customerOrder->setShippingMethodName($order->shipping_description);
+            $customerOrder->setPaymentModuleCode(''); // TODO
             $customerOrder->setOrderNumber($order->increment_id);
             $customerOrder->setShippingInfo('');
             $customerOrder->setShippingDate(NULL);
             $customerOrder->setPaymentDate(NULL);
-            // $customerOrder->setRatingNotificationDate(NULL);
-            // $customerOrder->setTracking('');
-            // $customerOrder->setNote('');
+            $customerOrder->setRatingNotificationDate(NULL);
+            $customerOrder->setTracking(''); // TODO
+            $customerOrder->setNote(''); // TODO
             // $customerOrder->setLogistic('');
-            // $customerOrder->setTrackingURL('');
-            // $customerOrder->setIp($order->remote_ip);
-            // $customerOrder->setIsFetched(false);
+            $customerOrder->setTrackingURL(''); // TODO
+            $customerOrder->setIp($order->remote_ip);
+            $customerOrder->setIsFetched(false);
             $customerOrder->setStatus(NULL);
             $customerOrder->setCreated($created_at);
 
@@ -110,7 +110,7 @@ class Order
                 $item->setName($magento_item->name);
                 $item->setSku($magento_item->sku);
                 $item->setVat((double)$magento_item->tax_percent);
-                $item->setPrice($magento_item->getOriginalPrice() / (1 + $item->setvat / 100.0));
+                $item->setPrice($magento_item->getOriginalPrice() / (1 + $item->getVat() / 100.0));
                 $item->setQuantity($magento_item->getQtyToInvoice());
                 $item->setType('product');
                 $item->setUnique(NULL);
@@ -131,6 +131,33 @@ class Order
                         $variation->setSurcharge(0.00);
 
                         $item->addVariation($variation);
+                    }
+                }
+
+                if ($magento_item->product_type == 'configurable') {
+                    // Varcombi
+                    $product = \Mage::getModel('catalog/product')
+                        ->load($magento_item->product_id);
+                    $block = \Mage::app()->getLayout()->createBlock('catalog/product_view_type_configurable');
+                    $block->setProduct($product);
+                    $config = json_decode($block->getJsonConfig(), true);
+
+                    $attributeValues = $productOptions['info_buyRequest']['super_attribute'];
+                    foreach ($config['attributes'] as $attribute_id => $attribute) {
+                        foreach ($attribute['options'] as $option) {
+                            if ($attributeValues[$attribute_id] == $option['id']) {
+                                $variation = new ConnectorCustomerOrderItemVariation();
+                                $variation->setId(new Identity($magento_item->item_id . '-' . $option['id']));
+                                $variation->setCustomerOrderItemId(new Identity($magento_item->item_id));
+                                $variation->setProductVariationId(new Identity($attribute_id));
+                                $variation->setProductVariationValueId(new Identity($option['id']));
+                                $variation->setProductVariationName($attribute['label']);
+                                $variation->setProductVariationValueName($option['label']);
+                                $variation->setSurcharge((double)($option['price'] / (1 + $item->getVat() / 100.0)));
+
+                                $item->addVariation($variation);
+                            }
+                        }
                     }
                 }
             }
