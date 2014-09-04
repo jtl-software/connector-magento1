@@ -136,6 +136,9 @@ class Order
 
                 if ($magento_item->product_type == 'configurable') {
                     // Varcombi
+                    
+                    // Since we can assume that the frontend code is optimized, we should employ
+                    // these APIs to load configurable product's information
                     $product = \Mage::getModel('catalog/product')
                         ->load($magento_item->product_id);
                     $block = \Mage::app()->getLayout()->createBlock('catalog/product_view_type_configurable');
