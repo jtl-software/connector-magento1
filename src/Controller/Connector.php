@@ -44,7 +44,7 @@ class Connector extends AbstractController
         
     }
 
-    public function statistic($params)
+    public function statistic(QueryFilter $filter)
     {
         $action = new Action();
         $action->setHandled(true);
@@ -57,7 +57,7 @@ class Connector extends AbstractController
                 $obj = new $controller();
 
                 if (method_exists($obj, 'statistic')) {
-                    $method_result = $obj->statistic($params);
+                    $method_result = $obj->statistic($filter);
 
                     $result[] = $method_result->getResult();
                 }

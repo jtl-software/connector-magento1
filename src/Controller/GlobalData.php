@@ -53,7 +53,7 @@ class GlobalData extends AbstractController
         return $action;
     }
 
-    public function statistic($params)
+    public function statistic(QueryFilter $filter)
     {
         $action = new Action();
         $action->setHandled(true);

@@ -32,7 +32,7 @@ class Customer extends AbstractController
         
     }
 
-    public function statistic($params)
+    public function statistic(QueryFilter $filter)
     {
         $action = new Action();
         $action->setHandled(true);
