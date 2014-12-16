@@ -84,14 +84,13 @@ class Order
             $customerOrder->setShippingDate(NULL);
             $customerOrder->setPaymentDate(NULL);
             $customerOrder->setRatingNotificationDate(NULL);
-            $customerOrder->setTracking(''); // TODO
             $customerOrder->setNote(''); // TODO
             // $customerOrder->setLogistic('');
-            $customerOrder->setTrackingURL(''); // TODO
+            $customerOrder->setTrackingUrl(''); // TODO
             $customerOrder->setIp($order->remote_ip);
             $customerOrder->setIsFetched(false);
             $customerOrder->setStatus(NULL);
-            $customerOrder->setCreated($created_at);
+            $customerOrder->setCreatîonDate($created_at);
 
             $payment = $order->getPayment();
             $code = $payment->getMethodInstance()->getCode();

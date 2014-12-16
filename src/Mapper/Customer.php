@@ -64,7 +64,7 @@ class Customer
 			$customer = new ConnectorCustomer();
 			$customer->setId(new Identity($customerEntry->entity_id));
 			$customer->setCustomerGroupId(new Identity($customerEntry->group_id));
-			// $customer->setLocaleName(array_search($customerEntry->store_id, $stores) ?: key($stores));
+			$customer->setLocaleName(array_search($customerEntry->store_id, $stores) ?: key($stores));
 			$customer->setCustomerNumber(NULL);
 			// $customer->setPassword($customerEntry->password_hash);
             // $customer->setBirthday($birthday);

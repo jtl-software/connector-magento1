@@ -243,16 +243,16 @@ class Product
         $product = new ConnectorProduct();
         $product->setId(new Identity($productItem->entity_id));
         $product->setMasterProductId(!is_null($productItem->parent_id) ? new Identity($productItem->parent_id) : null);
-        $product->setSetArticleId(null);
+        $product->setPartsListId(null);
         $product->setSku($productItem->sku);
         $product->setRecommendedRetailPrice((double)$productItem->msrp);
         $product->setMinimumOrderQuantity((double)($productItem->use_config_min_sale_qty == 1 ? 0 : $productItem->min_sale_qty));
-        $product->setTakeOffQuantity(1.0);
+        $product->setPackagingQuantity(1.0);
         $product->setVat($this->getTaxRateByClassId($productItem->tax_class_id));
         $product->setShippingWeight(0.0);
         $product->setProductWeight(0.0);
         $product->setIsMasterProduct(false);
-        $product->setIsNew(false);
+        $product->setIsNewProduct(false);
         $product->setIsTopProduct(false);
         $product->setPermitNegativeStock(false);
         $product->setConsiderVariationStock(false);
@@ -290,7 +290,7 @@ class Product
 
         // ProductPrice
         $productPrice = new ConnectorProductPrice();
-        $productPrice->setCustomerGroupId(null);
+        $productPrice->setCustomerGroupId(new Identity('')); // TODO: Insert configured default customer group
         $productPrice->setProductId(new Identity($productItem->entity_id));
         $productPrice->setNetPrice($productItem->price / (1 + $product->_vat / 100.0));
         $productPrice->setQuantity(max(1, (int)$productItem->min_sale_qty));
@@ -373,7 +373,7 @@ class Product
 
         foreach ($category_ids as $id) {
             $product2Category = new ConnectorProduct2Category();
-            $product2Category->setId(null);
+            $product2Category->setId(new Identity(sprintf('%u-%u', $productItem->entity_id, $id)));
             $product2Category->setCategoryId(new Identity($id));
             $product2Category->setProductId(new Identity($productItem->entity_id));
 
@@ -407,6 +407,7 @@ class Product
             $productItem->load();
             
             $product = $this->magentoToConnector($productItem);
+            $product->setMasterProductId(new Identity(''));
 
             if (!is_null($product)) {
                 $result[] = $product->getPublic();
