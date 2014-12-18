@@ -90,7 +90,7 @@ class Order
             $customerOrder->setIp($order->remote_ip);
             $customerOrder->setIsFetched(false);
             $customerOrder->setStatus(NULL);
-            $customerOrder->setCreatîonDate($created_at);
+            $customerOrder->setCreationDate($created_at);
 
             $payment = $order->getPayment();
             $code = $payment->getMethodInstance()->getCode();
