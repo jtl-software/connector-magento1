@@ -6,17 +6,17 @@
  */
 namespace jtl\Connector\Magento;
 
-use jtl\Core\Config\Config;
-use jtl\Core\Config\Loader\Json as ConfigJson;
-use jtl\Core\Config\Loader\System as ConfigSystem;
-use jtl\Core\Exception\TransactionException;
-use jtl\Core\Rpc\RequestPacket;
 use jtl\Connector\Base\Connector as BaseConnector;
-use jtl\Core\Utilities\RpcMethod;
-use jtl\Core\Controller\Controller as CoreController;
-use jtl\Connector\Transaction\Handler as TransactionHandler;
+use jtl\Connector\Core\Config\Config;
+use jtl\Connector\Core\Config\Loader\Json as ConfigJson;
+use jtl\Connector\Core\Config\Loader\System as ConfigSystem;
+use jtl\Connector\Core\Exception\TransactionException;
+use jtl\Connector\Core\Rpc\RequestPacket;
+use jtl\Connector\Core\Utilities\RpcMethod;
+use jtl\Connector\Core\Controller\Controller as CoreController;
 use jtl\Connector\ModelContainer\MainContainer;
 use jtl\Connector\Magento\Config\Loader\Config as ConfigLoader;
+use jtl\Connector\Transaction\Handler as TransactionHandler;
 
 /**
  * Magento Connector

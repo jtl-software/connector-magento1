@@ -7,10 +7,10 @@
 require_once (__DIR__ . "/../vendor/autoload.php");
 
 use jtl\Connector\Application\Application;
-use jtl\Core\Rpc\RequestPacket;
-use jtl\Core\Rpc\ResponsePacket;
-use jtl\Core\Rpc\Error;
-use jtl\Core\Http\Response;
+use jtl\Connector\Core\Rpc\RequestPacket;
+use jtl\Connector\Core\Rpc\ResponsePacket;
+use jtl\Connector\Core\Rpc\Error;
+use jtl\Connector\Core\Http\Response;
 use jtl\Connector\Magento\Connector;
 
 define('CONNECTOR_DIR', __DIR__ . '/../vendor/jtl/connector/');
