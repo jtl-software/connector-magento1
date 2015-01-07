@@ -6,6 +6,7 @@ composer.lock
 composer.phar
 config/config.json
 db/mapper.s3db
+dist/**
 docs/**
 nbproject/**
 netbeans/**
