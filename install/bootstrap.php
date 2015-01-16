@@ -4,7 +4,12 @@
  * @copyright 2010-2013 JTL-Software GmbH
  */
 
-require_once (__DIR__ . "/../vendor/autoload.php");
+if (file_exists(__DIR__ . "/../vendor/autoload.php")) {
+    require_once (__DIR__ . "/../vendor/autoload.php");
+}
+else {
+    require_once ('phar://../index.php/vendor/autoload.php');
+}
 
 use \jtl\Connector\Magento\Installer\Installer as ConnectorInstaller;
 

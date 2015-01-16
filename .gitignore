@@ -5,9 +5,11 @@ build/**
 composer.lock
 composer.phar
 config/config.json
-db/mapper.s3db
+db/*
 dist/**
 docs/**
+install/db/*
+logs/*
 nbproject/**
 netbeans/**
 .htaccess

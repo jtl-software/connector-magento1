@@ -8,7 +8,7 @@ namespace jtl\Connector\Magento\Mapper;
 
 use jtl\Connector\Magento\Mapper\Database as MapperDatabase;
 
-use jtl\Core\Model\QueryFilter;
+use jtl\Connector\Core\Model\QueryFilter;
 use jtl\Connector\Magento\Magento;
 use jtl\Connector\Model\Customer as ConnectorCustomer;
 use jtl\Connector\Model\Identity;
@@ -79,7 +79,7 @@ class Customer
 			// $customer->setHasCustomerAccount(true);
 			$customer->setHasNewsletterSubscription(false);
 			$customer->setDiscount(0.00);
-			$customer->setCreated($created_at);
+			$customer->setCreationDate($created_at);
 
 			if (!is_null($customerEntry->default_billing)) {
 				$address = $customerEntry->getDefaultBillingAddress();

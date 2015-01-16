@@ -6,7 +6,7 @@
  */
 namespace jtl\Connector\Magento\Mapper;
 
-use jtl\Core\Model\QueryFilter;
+use jtl\Connector\Core\Model\QueryFilter;
 use jtl\Connector\Magento\Magento;
 use jtl\Connector\Magento\Mapper\Database as MapperDatabase;
 use jtl\Connector\Model\CustomerOrder as ConnectorCustomerOrder;
@@ -88,7 +88,7 @@ class Order
             // $customerOrder->setLogistic('');
             $customerOrder->setTrackingUrl(''); // TODO
             $customerOrder->setIp($order->remote_ip);
-            $customerOrder->setIsFetched(false);
+            // $customerOrder->setIsFetched(false);
             $customerOrder->setStatus(NULL);
             $customerOrder->setCreationDate($created_at);
 

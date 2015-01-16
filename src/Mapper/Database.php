@@ -6,7 +6,7 @@
  */
 namespace jtl\Connector\Magento\Mapper;
 
-use jtl\Core\Utilities\Singleton;
+use jtl\Connector\Core\Utilities\Singleton;
 use jtl\Connector\Magento\Database\Sqlite3;
 
 /**
@@ -31,10 +31,10 @@ class Database extends Singleton
      */
     protected function __construct()
     {
-        $filename = ENDPOINT_DIR . '/db/mapper.s3db';
+        $filename = CONNECTOR_DIR . '/db/mapper.s3db';
 
-        if (!is_dir(ENDPOINT_DIR . '/db')) {
-            mkdir(ENDPOINT_DIR . '/db');
+        if (!is_dir(CONNECTOR_DIR . '/db')) {
+            mkdir(CONNECTOR_DIR . '/db');
         }
         
         if (!file_exists($filename)) {

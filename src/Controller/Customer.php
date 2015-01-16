@@ -6,10 +6,10 @@
  */
 namespace jtl\Connector\Magento\Controller;
 
-use jtl\Core\Model\DataModel;
-use jtl\Core\Model\QueryFilter;
-use jtl\Core\Rpc\Error;
-use jtl\Core\Utilities\ClassName;
+use jtl\Connector\Core\Model\DataModel;
+use jtl\Connector\Core\Model\QueryFilter;
+use jtl\Connector\Core\Rpc\Error;
+use jtl\Connector\Core\Utilities\ClassName;
 use jtl\Connector\Result\Action;
 use jtl\Connector\Model\Statistic;
 use jtl\Connector\Magento\Mapper\Customer as CustomerMapper;

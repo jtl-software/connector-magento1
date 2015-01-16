@@ -6,8 +6,8 @@
  */
 namespace jtl\Connector\Magento\Mapper;
 
-use jtl\Core\Logger\Logger;
-use jtl\Core\Model\QueryFilter;
+use jtl\Connector\Core\Logger\Logger;
+use jtl\Connector\Core\Model\QueryFilter;
 use jtl\Connector\Magento\Magento;
 use jtl\Connector\Magento\Mapper\Database as MapperDatabase;
 use jtl\Connector\Magento\Utilities\ArrayTools;
@@ -16,6 +16,7 @@ use jtl\Connector\Model\Product as ConnectorProduct;
 use jtl\Connector\Model\Product2Category as ConnectorProduct2Category;
 use jtl\Connector\Model\ProductI18n as ConnectorProductI18n;
 use jtl\Connector\Model\ProductPrice as ConnectorProductPrice;
+use jtl\Connector\Model\ProductPriceItem as ConnectorProductPriceItem;
 use jtl\Connector\Model\ProductVariation as ConnectorProductVariation;
 use jtl\Connector\Model\ProductVariationI18n as ConnectorProductVariationI18n;
 use jtl\Connector\Model\ProductVariationValue as ConnectorProductVariationValue;
@@ -257,9 +258,9 @@ class Product
         $product->setPermitNegativeStock(false);
         $product->setConsiderVariationStock(false);
         $product->setConsiderBasePrice(false);
-        $product->setCreated($created_at);
+        $product->setCreationDate($created_at);
         $product->setAvailableFrom($created_at);
-        $product->setBestBefore(null);
+        $product->setBestBeforeDate(null);
 
         $stockItem = \Mage::getModel('cataloginventory/stock_item')
             ->loadByProduct($productItem);
@@ -292,8 +293,11 @@ class Product
         $productPrice = new ConnectorProductPrice();
         $productPrice->setCustomerGroupId(new Identity('')); // TODO: Insert configured default customer group
         $productPrice->setProductId(new Identity($productItem->entity_id));
-        $productPrice->setNetPrice($productItem->price / (1 + $product->_vat / 100.0));
-        $productPrice->setQuantity(max(1, (int)$productItem->min_sale_qty));
+
+        $productPriceItem = new ConnectorProductPriceItem();
+        $productPriceItem->setNetPrice($productItem->price / (1 + $product->getVat() / 100.0));
+        $productPriceItem->setQuantity(max(1, (int)$productItem->min_sale_qty));
+        $productPrice->addItem($productPriceItem);
 
         $product->addPrice($productPrice);
 
@@ -358,7 +362,7 @@ class Product
                     $productVariationValueExtraCharge = new ConnectorProductVariationValueExtraCharge();
                     $productVariationValueExtraCharge
                         ->setProductVariationValueId(new Identity($value['value_id']))
-                        ->setExtraChargeNet($value['pricing_value'] / (1 + $product->_vat / 100.0));
+                        ->setExtraChargeNet($value['pricing_value'] / (1 + $product->getVat() / 100.0));
                     $productVariationValue->addExtraCharge($productVariationValueExtraCharge);
 
                     $productVariation->addValue($productVariationValue);

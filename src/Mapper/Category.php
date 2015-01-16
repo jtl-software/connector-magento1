@@ -6,8 +6,8 @@
  */
 namespace jtl\Connector\Magento\Mapper;
 
-use jtl\Core\Logger\Logger;
-use jtl\Core\Model\QueryFilter;
+use jtl\Connector\Core\Logger\Logger;
+use jtl\Connector\Core\Model\QueryFilter;
 use jtl\Connector\Magento\Magento;
 use jtl\Connector\Magento\Mapper\Database as MapperDatabase;
 use jtl\Connector\Magento\Utilities\ArrayTools;

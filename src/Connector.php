@@ -65,7 +65,7 @@ class Connector extends BaseConnector
             if (empty($config)) {
                 // Application object is not initialized. Bypass by manually creating
                 // the Config object
-                $json = new ConfigJson(realpath(APP_DIR . '/../config/') . '/config.json');
+                $json = new ConfigJson(realpath(CONNECTOR_DIR . '/config/') . '/config.json');
                 $config = new Config(array(
                   $json,
                   new ConfigSystem()
@@ -76,7 +76,7 @@ class Connector extends BaseConnector
         
         // Read Magento configuration
         if (!$config->existsLoaderByName('MagentoConfig')) {
-            $config->addLoader(new ConfigLoader(APP_DIR . '/../config/config.Magento.ini.php'));
+            $config->addLoader(new ConfigLoader(CONNECTOR_DIR . '/config/config.Magento.ini.php'));
         }
 
         if (!isset($_SESSION['config'])) {

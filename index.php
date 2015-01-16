@@ -5,6 +5,6 @@
  * @package jtl\Connector\Magento
  */
 
-define("APP_DIR", __DIR__ . '/src/');
+defined('CONNECTOR_DIR') || define("CONNECTOR_DIR", __DIR__);
 
-include (APP_DIR . "/bootstrap.php");
+include (__DIR__ . "/src/bootstrap.php");

@@ -13,9 +13,6 @@ use jtl\Connector\Core\Rpc\Error;
 use jtl\Connector\Core\Http\Response;
 use jtl\Connector\Magento\Connector;
 
-define('CONNECTOR_DIR', __DIR__ . '/../vendor/jtl/connector/');
-define('ENDPOINT_DIR', realpath(__DIR__ . '/../'));
-
 function exception_handler(\Exception $exception)
 {
     $trace = $exception->getTrace();

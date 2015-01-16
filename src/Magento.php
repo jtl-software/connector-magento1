@@ -6,8 +6,8 @@
  */
 namespace jtl\Connector\Magento;
 
-use jtl\Core\Config\Config;
-use jtl\Core\Utilities\Singleton;
+use jtl\Connector\Core\Config\Config;
+use jtl\Connector\Core\Utilities\Singleton;
 use jtl\Connector\Magento\Connector as MagentoConnector;
 use jtl\Connector\Magento\Mapper\Database as MapperDatabase;
 
@@ -52,11 +52,17 @@ class Magento extends Singleton
         $config = $connector->getConfig();
         $this->setConfig($config);
         
-        $magentoPath = $config->read('connector_root');
-        
-        if (file_exists($magentoPath . '/app/Mage.php')) {
-            include_once($magentoPath . '/app/Mage.php');
+        $magentoPath = realpath(CONNECTOR_DIR . '/..');
+
+        while (is_dir($magentoPath) && $magentoPath != '/') {
+            if (file_exists($magentoPath . '/app/Mage.php')) {
+                include_once($magentoPath . '/app/Mage.php');
+                break;
+            }
+
+            $magentoPath = realpath($magentoPath . '/../');
         }
+
         
         umask(0);
         \Mage::app()->setCurrentStore(\Mage_Core_Model_App::ADMIN_STORE_ID);

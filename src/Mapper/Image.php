@@ -8,7 +8,6 @@ namespace jtl\Connector\Magento\Mapper;
 
 use jtl\Connector\Magento\Magento;
 use jtl\Connector\Magento\Mapper\Database as MapperDatabase;
-use jtl\Connector\ModelContainer\ImageContainer;
 use jtl\Connector\Model\Identity;
 use jtl\Connector\Model\Image as ConnectorImage;
 
@@ -35,7 +34,6 @@ class Image
         $products = \Mage::getResourceModel('catalog/product_collection');
         foreach ($products as $productItem) {
             $productItem->load();
-            $container = new ImageContainer();
 
             $galleryImages = $productItem->getMediaGalleryImages();
             if (is_null($galleryImages))
@@ -76,8 +74,6 @@ class Image
 
             if (false == $model->getImageUrl())
             	continue;
-
-            $container = new ImageContainer();
 
             $image = new ConnectorImage();
             $image->setId(new Identity('category-' . $category_id));
