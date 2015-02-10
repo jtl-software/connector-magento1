@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<config>
+    <modules>
+        <Jtl_Connector>
+            <version>1.0.0.0</version>
+        </Jtl_Connector>
+    </modules>
+
+    <frontend>
+        <routers>
+            <jtl_connector>
+                <use>standard</use>
+                <args>
+                    <module>Jtl_Connector</module>
+                    <frontName>jtlconnector</frontName>
+                </args>
+            </jtl_connector>
+        </routers>
+    </frontend>
+
+    <global>
+        <helpers>
+            <jtl_connector>
+                <class>Jtl_Connector_Helper</class>
+            </jtl_connector>
+        </helpers>
+
+        <resources>
+            <jtl_connector_setup>
+                <setup>
+                    <module>Jtl_Connector</module>
+                </setup>
+                <connection>
+                    <use>core_setup</use>
+                </connection>
+            </jtl_connector_setup>
+        </resources>
+    </global>
+
+    <adminhtml>
+        <acl>
+            <resources>
+                <admin>
+                    <children>
+                        <system>
+                            <children>
+                                <config>
+                                    <children>
+                                        <jtl_connector>
+                                            <title>JTL-Connector</title>
+                                        </jtl_connector>
+                                    </children>
+                                </config>
+                            </children>
+                        </system>
+                    </children>
+                </admin>
+            </resources>
+        </acl>
+    </adminhtml>
+
+    <default>
+        <jtl_connector>
+            <general>
+                <enabled>0</enabled>
+            </general>
+        </jtl_connector>
+    </default>
+</config>

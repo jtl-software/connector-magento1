@@ -74,11 +74,6 @@ class Connector extends BaseConnector
                 $this->setConfig($config);
             }
         }
-        
-        // Read Magento configuration
-        if (!$config->existsLoaderByName('MagentoConfig')) {
-            $config->addLoader(new ConfigLoader(CONNECTOR_DIR . '/config/config.Magento.ini.php'));
-        }
 
         if (!isset($_SESSION['config'])) {
             $_SESSION['config'] = $config;
@@ -122,7 +117,7 @@ class Connector extends BaseConnector
         $this->_controller->setMethod($this->getMethod());
         
         if ($this->_action === Method::ACTION_PUSH || $this->_action === Method::ACTION_DELETE) {
-            if (!is_array($requestpacket->getParams()) {
+            if (!is_array($requestpacket->getParams())) {
                 throw new TransactionException("Expecting request array, invalid data given");
             }
 
@@ -130,6 +125,7 @@ class Connector extends BaseConnector
             foreach ($requestpacket->getParams() as $param) {
                 $results[] = $this->_controller->{$this->_action}($param);
             }
+
             return $results;
         }
         else {

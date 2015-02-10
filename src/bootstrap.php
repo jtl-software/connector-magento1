@@ -38,8 +38,15 @@ function exception_handler(\Exception $exception)
 
 set_exception_handler('exception_handler');
 
-// Connector instance
-$connector = Connector::getInstance();
-$application = Application::getInstance();
-$application->register($connector);
-$application->run();
+try
+{
+    // Connector instance
+    $connector = Connector::getInstance();
+    $application = Application::getInstance();
+    $application->register($connector);
+    $application->run();
+}
+catch (\Exception $e)
+{
+    exception_handler($e);
+}
