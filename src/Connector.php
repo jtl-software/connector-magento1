@@ -11,6 +11,7 @@ use jtl\Connector\Core\Config\Config;
 use jtl\Connector\Core\Config\Loader\Json as ConfigJson;
 use jtl\Connector\Core\Config\Loader\System as ConfigSystem;
 use jtl\Connector\Core\Exception\TransactionException;
+use jtl\Connector\Core\Rpc\Method;
 use jtl\Connector\Core\Rpc\RequestPacket;
 use jtl\Connector\Core\Utilities\RpcMethod;
 use jtl\Connector\Core\Controller\Controller as CoreController;
@@ -120,15 +121,19 @@ class Connector extends BaseConnector
         // Set the method to our controller
         $this->_controller->setMethod($this->getMethod());
         
-        // Transaction Commit work around
-        if (($this->_action !== "commit")) {
-            return $this->_controller->{$this->_action}($requestpacket->getParams());
-        }
-        else if (TransactionHandler::exists($requestpacket) && MainContainer::isMain($this->getMethod()->getController()) && $this->_action === "commit") {
-            return $this->_controller->{$this->_action}($requestpacket->getParams(), $requestpacket->getGlobals()->getTransaction()->getId());
+        if ($this->_action === Method::ACTION_PUSH || $this->_action === Method::ACTION_DELETE) {
+            if (!is_array($requestpacket->getParams()) {
+                throw new TransactionException("Expecting request array, invalid data given");
+            }
+
+            $results = array();
+            foreach ($requestpacket->getParams() as $param) {
+                $results[] = $this->_controller->{$this->_action}($param);
+            }
+            return $results;
         }
         else {
-            throw new TransactionException("Only Main Controller can handle commit actions");
+            return $this->_controller->{$this->_action}($requestpacket->getParams());
         }
     }
     
