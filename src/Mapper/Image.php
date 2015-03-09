@@ -51,7 +51,7 @@ class Image
                 $image->setIsMainImage($galleryImage->file === $defaultImagePath);
                 $image->setSort($galleryImage->position_default);
 
-                $result[] = $image->getPublic();
+                $result[] = $image;
             }
         }
 
@@ -84,7 +84,7 @@ class Image
             $image->setIsMainImage(true);
             $image->setSort(1);
 
-            $result[] = $image->getPublic();
+            $result[] = $image;
         }
 
         return $result;

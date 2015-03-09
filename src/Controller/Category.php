@@ -48,7 +48,7 @@ class Category extends AbstractController
         return $action;
     }
 
-    public function delete($params)
+    public function delete(DataModel $model)
     {
         
     }
@@ -65,9 +65,8 @@ class Category extends AbstractController
             $statistic = new Statistic();
             $statistic->setControllerName(lcfirst(ClassName::getFromNS(get_called_class())));
             $statistic->setAvailable($available);
-            $statistic->setPending($available);
 
-            $action->setResult($statistic->getPublic());
+            $action->setResult($statistic);
         }
         catch (\Exception $exc) {
             $err = new Error();
@@ -102,6 +101,22 @@ class Category extends AbstractController
 
     public function push(DataModel $model)
     {
+        $action = new Action();
+        $action->setHandled(true);
+        
+        try {
+            $mapper = new CategoryMapper();
+            $result = $mapper->push($model);
 
+            $action->setResult($result);
+        }
+        catch (\Exception $e) {
+            $err = new Error();
+            $err->setCode(31337); //$e->getCode());
+            $err->setMessage($e->getTraceAsString() . PHP_EOL . $e->getMessage()); //'Internal error'); //$e->getMessage());
+            $action->setError($err);
+        }
+        
+        return $action;
     }    
 }

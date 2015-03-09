@@ -27,7 +27,7 @@ class GlobalData extends AbstractController
         
     }
 
-    public function delete($params)
+    public function delete(DataModel $model)
     {
         
     }
@@ -64,12 +64,11 @@ class GlobalData extends AbstractController
             $statistic = new Statistic();
             $statistic->setControllerName(lcfirst(ClassName::getFromNS(get_called_class())));
             $statistic->setAvailable(1); // There can be only one GlobalData container object per shop
-            $statistic->setPending(1);
 
             if ($statistic->_controllerName == 'globalData')
                 $statistic->_controllerName = 'global';
 
-            $action->setResult($statistic->getPublic());
+            $action->setResult($statistic);
         }
         catch (\Exception $exc) {
             $err = new Error();

@@ -27,7 +27,7 @@ class Customer extends AbstractController
         
     }
 
-    public function delete($params)
+    public function delete(DataModel $model)
     {
         
     }
@@ -43,9 +43,8 @@ class Customer extends AbstractController
             $statistic = new Statistic();
             $statistic->setControllerName(lcfirst(ClassName::getFromNS(get_called_class())));
             $statistic->setAvailable($mapper->getAvailableCount());
-            $statistic->setPending(0);
 
-            $action->setResult($statistic->getPublic());
+            $action->setResult($statistic);
         }
         catch (\Exception $exc) {
             $err = new Error();

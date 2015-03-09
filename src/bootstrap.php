@@ -13,6 +13,19 @@ use jtl\Connector\Core\Rpc\Error;
 use jtl\Connector\Core\Http\Response;
 use jtl\Connector\Magento\Connector;
 
+// Get the error handler by pushing a dummy handler on the stack.
+// Then, set the real handler wrapping the original.
+$mageHandler = set_error_handler(function () {});
+set_error_handler(function ($errno, $errstr, $errfile, $errline) use ($mageHandler) {
+  if (E_WARNING === $errno
+    && 0 === strpos($errstr, 'include(')
+    && substr($errfile, -19) == 'Varien/Autoload.php'
+  ){
+    return null;
+  }
+  return call_user_func($mageHandler, $errno, $errstr, $errfile, $errline);
+});
+
 function exception_handler(\Exception $exception)
 {
     $trace = $exception->getTrace();

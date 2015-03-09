@@ -28,37 +28,50 @@ class Category
     private $stores;
     private $defaultLocale;
     private $defaultStoreId;
+    private $rootCategoryId;
 
     public function __construct()
     {
         Magento::getInstance();
+
+        $this->rootCategoryId = \Mage::getStoreConfig('jtl_connector/general/root_category');
 
         $this->stores = MapperDatabase::getInstance()->getStoreMapping();
         $this->defaultLocale = key($this->stores);
         $this->defaultStoreId = current($this->stores);
     }
 
-    private function insert(ConnectorCategory $category, CategoryContainer $container)
+    private function insert(ConnectorCategory $category)
     {
-        Logger::write('insert category');
-        $result = new CategoryContainer();
+        Logger::write('insert category', Logger::ERROR, 'general');
+        $result = new ConnectorCategory();
 
         $identity = $category->getId();
         $categoryId = $identity->getEndpoint();
 
+        if ($identity->getHost() == 0)
+            return;
+
         $model = \Mage::getModel('catalog/category');
 
         // Set parent category
-        $parentCategoryId = $category->getParentCategoryId()->getEndpoint() ?: \Mage::app()->getStore()->getRootCategoryId();
-        $parentCategory = \Mage::getModel('catalog/category')->load($parentCategoryId);
+        Logger::write('parent host : ' . $category->getParentCategoryId()->getHost(), Logger::ERROR, 'general');
+        if ((int)$category->getParentCategoryId()->getHost() == 0) {
+            $parentCategory = \Mage::getModel('catalog/category')
+                ->load(\Mage::getStoreConfig('jtl_connector/general/root_category'));
+        }
+        else {
+            $parentCategoryHostId = $category->getParentCategoryId()->getHost();
+            $parentCategory = \Mage::getModel('catalog/category')
+                ->loadByAttribute('jtl_erp_id', $parentCategoryHostId);
+        }
+        
         $model->setPath($parentCategory->getPath());              
 
         // Insert default language
         Logger::write('insert categoryi18ns');
-        Logger::write($container->getCategoryI18ns());
-        $categoryI18n = ArrayTools::filterOneByLocale($container->getCategoryI18ns(), $locale);
-        if ($categoryI18n === null)
-            $categoryI18n = reset($container->getCategoryI18ns());
+        Logger::write($category->getI18ns());
+        $categoryI18n = reset($category->getI18ns());
 
         $model->setStoreId(\Mage_Core_Model_App::ADMIN_STORE_ID);
         $model->setIsActive(true);
@@ -71,12 +84,13 @@ class Category
             $model->setMetaKeywords((string)$categoryI18n->getMetaKeywords());
             $model->setMetaTitle((string)$categoryI18n->getTitleTag());
         }
+        $model->setJtlErpId($category->getId()->getHost());
         $model->save();
 
-        $result->addIdentity('category', new Identity($model->getId(), $category->getId()->getHost()));
+        $result->setId(new Identity($model->getId(), $category->getId()->getHost()));
         
         foreach ($this->stores as $locale => $storeId) {
-            $categoryI18n = ArrayTools::filterOneByLocale($container->getCategoryI18ns(), $locale);
+            $categoryI18n = ArrayTools::filterByLanguage($category->getI18ns(), LocaleMapper::localeToLanguageIso($locale));
             if (!($categoryI18n instanceof ConnectorCategoryI18n)) {
                 Logger::write('skip categoryI18n ' . $locale);                
                 continue;
@@ -112,21 +126,21 @@ class Category
         return $result;
     }
 
-    private function update(ConnectorCategory $category, CategoryContainer $container)
+    private function update(ConnectorCategory $category)
     {
         Logger::write('update category');
-        $result = new CategoryContainer();
+        $result = new ConnectorCategory();
 
         $identity = $category->getId();
         $categoryId = $identity->getEndpoint();
 
         $model = \Mage::getModel('catalog/category')->load($categoryId);
-        $result->addIdentity('category', $identity);
+        //$result->addIdentity('category', $identity);
         
         foreach ($this->stores as $locale => $storeId) {
-            $categoryI18n = ArrayTools::filterOneByLocale($container->getCategoryI18ns(), $locale);
+            $categoryI18n = ArrayTools::filterByLanguage($category->getI18ns(), LocaleMapper::localeToLanguageIso($locale));
             if (!($categoryI18n instanceof ConnectorCategoryI18n)) {
-                Logger::write('skip categoryI18n ' . $locale);                
+                Logger::write('skip categoryI18n ' . $locale . ':' . get_class($categoryI18n));                
                 continue;
             }
 
@@ -162,7 +176,17 @@ class Category
         return $result;
     }
 
-    public function push(CategoryContainer $container)
+    public function existsByHost($hostId)
+    {
+        $collection = \Mage::getResourceModel('catalog/category_collection')
+            ->addAttributeToFilter('jtl_erp_id', $hostId);
+
+        Logger::write('existsByHost: ' . $hostId, Logger::ERROR, 'general');
+
+        return $collection->getSize() > 0;
+    }
+
+    public function push($category)
     {
         Magento::getInstance();        
         
@@ -171,11 +195,17 @@ class Category
         $defaultLocale = key($stores);
         $defaultStoreId = array_shift($stores);
 
-        $category = $container->getMainModel();
-        if ($category->getId()->getEndpoint() === '')
-            $result = $this->insert($category, $container);
+        $hostId = $category->getId()->getHost();
+
+        // Skip empty objects
+        if ($hostId == 0)
+            return null;
+
+        Logger::write('push category', Logger::ERROR, 'general');
+        if ($this->existsByHost($hostId))
+            $result = $this->update($category);
         else
-            $result = $this->update($category, $container);
+            $result = $this->insert($category);
         return $result;
     }
 
@@ -184,20 +214,20 @@ class Category
         Magento::getInstance();
 
         try {
-            $rootCategoryId = \Mage::app()->getStore()->getRootCategoryId();
+            $rootCategory = \Mage::getModel('catalog/category')
+                ->load($this->rootCategoryId);
             
-            $categoryCollection = \Mage::getModel('catalog/category')
-                ->getCollection()
-                ->addAttributeToSelect('all_children')
-                ->addAttributeToFilter('parent_id', $rootCategoryId)
-                ->load();
+            $categoryCollection = \Mage::getResourceModel('catalog/category_collection')
+                ->addFieldToFilter('path', array('like' => $rootCategory->getPath() . '/%'))
+                ->addAttributeToFilter('jtl_erp_id',
+                    array(
+                        array('eq' => 0),
+                        array('null' => true)
+                    ),
+                    'left'
+                )->load();
 
-            $categoryIds = array();
-            foreach ($categoryCollection as $category) {
-                $categoryIds  = array_merge_recursive($categoryIds, explode(',', $category->getAllChildren()));
-            }
-
-            return count($categoryIds);
+            return $categoryCollection->count();
         }
         catch (Exception $e) {
             return 0;
@@ -214,13 +244,18 @@ class Category
 
         Magento::getInstance()->setCurrentStore($defaultStoreId);
 
-        $rootCategoryId = \Mage::app()->getStore()->getRootCategoryId();
+        $rootCategory = \Mage::getModel('catalog/category')
+            ->load($this->rootCategoryId);
 
-        $categoryCollection = \Mage::getModel('catalog/category')
-            ->getCollection()
-            ->addAttributeToSelect('all_children')
-            ->addAttributeToFilter('parent_id', $rootCategoryId)
-            ->addAttributeToSort('position', 'asc')
+        $categoryCollection = \Mage::getResourceModel('catalog/category_collection')
+            ->addFieldToFilter('path', array('like' => $rootCategory->getPath() . '/%'))
+            ->addAttributeToFilter('jtl_erp_id',
+                array(
+                    array('eq' => 0),
+                    array('null' => true)
+                ),
+                'left'
+            )
             ->load();
 
         $categoryIds = array();
@@ -229,13 +264,8 @@ class Category
         }
 
         // Apply query filter
-        if ($filter->isOffset()) {
-            if ($filter->isLimit()) {
-                $categoryIds = array_splice($categoryIds, $filter->getOffset(), $filter->getLimit());
-            }
-            else {
-                $categoryIds = array_splice($categoryIds, $filter->getOffset());
-            }
+        if ($filter->isLimit()) {
+            $categoryIds = array_splice($categoryIds, 0, $filter->getLimit());
         }
 
         $result = array();
@@ -245,9 +275,15 @@ class Category
 
             $category = new ConnectorCategory();
             $category
-                ->setId(new Identity($model->entity_id))
-                ->setParentCategoryId($model->parent_id != $rootCategoryId ? new Identity($model->parent_id) : null)
+                ->setId(new Identity($model->entity_id, $model->jtl_erp_id))
+                ->setIsActive(true)
                 ->setSort(intval($model->position));
+
+            if ($model->parent_id != $this->rootCategoryId) {
+                $parentModel = \Mage::getModel('catalog/category')
+                    ->load($model->parent_id);
+                $category->setParentCategoryId(new Identity($model->parent_id, $parentModel->getJtlErpId()));
+            }
 
             foreach ($stores as $locale => $storeId) {
                 $model = \Mage::getModel('catalog/category');
@@ -256,8 +292,8 @@ class Category
 
                 $categoryI18n = new ConnectorCategoryI18n();
                 $categoryI18n
-                    ->setLocaleName($locale)
-                    ->setCategoryId(new Identity($categoryId))
+                    ->setLanguageIso(LocaleMapper::localeToLanguageIso($locale))
+                    ->setCategoryId(new Identity($categoryId, $model->getJtlErpId()))
                     ->setName($model->getName())
                     ->setUrlPath($model->getUrlKey())
                     ->setDescription($model->getDescription());
@@ -268,7 +304,7 @@ class Category
                 $category->addI18n($categoryI18n);
             }
 
-            $result[] = $category->getPublic();
+            $result[] = $category;
         }
 
         return $result;

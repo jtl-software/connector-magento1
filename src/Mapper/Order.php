@@ -35,7 +35,14 @@ class Order
         try {
             $orderModel = \Mage::getModel('sales/order');
             $orderCollection = $orderModel->getCollection()
-                ->addAttributeToSelect('*');
+                ->addAttributeToSelect('*')
+                ->addAttributeToFilter('jtl_erp_id',
+                    array(
+                        array('eq' => 0),
+                        array('null' => true)
+                    ),
+                    'left'
+                );
 
             return $orderCollection->count();
         }
@@ -56,7 +63,7 @@ class Order
         if (!is_null($filter)) {
             $orderCollection
                 ->getSelect()
-                ->limit($filter->getLimit(), $filter->getOffset());
+                ->limit($filter->getLimit());
         }
 
         $orders = $orderCollection->load();
@@ -72,8 +79,7 @@ class Order
             $customerOrder->setCustomerId(new Identity(intval($order->customer_id)));
             $customerOrder->setShippingAddressId(new Identity($order->shipping_address_id));
             $customerOrder->setBillingAddressId(new Identity($order->billing_address_id));
-            $customerOrder->setShippingMethodCode(''); // TODO
-            $customerOrder->setLocaleName(array_search($order->store_id, $stores));
+            $customerOrder->setLanguageIso(LocaleMapper::localeToLanguageIso(array_search($order->store_id, $stores)));
             $customerOrder->setCurrencyIso($order->order_currency_code);
             $customerOrder->setCredit(0.00);
             $customerOrder->setTotalSum((double)$order->grand_total);
@@ -81,13 +87,11 @@ class Order
             $customerOrder->setPaymentModuleCode(''); // TODO
             $customerOrder->setOrderNumber($order->increment_id);
             $customerOrder->setShippingInfo('');
-            $customerOrder->setShippingDate(NULL);
-            $customerOrder->setPaymentDate(NULL);
-            $customerOrder->setRatingNotificationDate(NULL);
+            // $customerOrder->setShippingDate(NULL);
+            // $customerOrder->setPaymentDate(NULL);
             $customerOrder->setNote(''); // TODO
             // $customerOrder->setLogistic('');
-            $customerOrder->setTrackingUrl(''); // TODO
-            $customerOrder->setIp($order->remote_ip);
+            // $customerOrder->setIp($order->remote_ip);
             // $customerOrder->setIsFetched(false);
             $customerOrder->setStatus(NULL);
             $customerOrder->setCreationDate($created_at);
@@ -113,7 +117,7 @@ class Order
                 $item->setQuantity($magento_item->getQtyToInvoice());
                 $item->setType('product');
                 $item->setUnique(NULL);
-                $item->setConfigItemId(NULL);
+                // $item->setConfigItemId(NULL);
 
                 $customerOrder->addItem($item);
 
@@ -135,31 +139,47 @@ class Order
 
                 if ($magento_item->product_type == 'configurable') {
                     // Varcombi
+                    // 
+                    try {
                     
                     // Since we can assume that the frontend code is optimized, we should employ
                     // these APIs to load configurable product's information
                     $product = \Mage::getModel('catalog/product')
                         ->load($magento_item->product_id);
-                    $block = \Mage::app()->getLayout()->createBlock('catalog/product_view_type_configurable');
-                    $block->setProduct($product);
-                    $config = json_decode($block->getJsonConfig(), true);
 
-                    $attributeValues = $productOptions['info_buyRequest']['super_attribute'];
-                    foreach ($config['attributes'] as $attribute_id => $attribute) {
-                        foreach ($attribute['options'] as $option) {
-                            if ($attributeValues[$attribute_id] == $option['id']) {
-                                $variation = new ConnectorCustomerOrderItemVariation();
-                                $variation->setId(new Identity($magento_item->item_id . '-' . $option['id']));
-                                $variation->setCustomerOrderItemId(new Identity($magento_item->item_id));
-                                $variation->setProductVariationId(new Identity($attribute_id));
-                                $variation->setProductVariationValueId(new Identity($option['id']));
-                                $variation->setProductVariationName($attribute['label']);
-                                $variation->setProductVariationValueName($option['label']);
-                                $variation->setSurcharge((double)($option['price'] / (1 + $item->getVat() / 100.0)));
+                    if ($product->product_id > 0) {
+                        // Associated product still exists
 
-                                $item->addVariation($variation);
+                        $block = \Mage::app()->getLayout()->createBlock('catalog/product_view_type_configurable');
+                        $block->setProduct($product);
+                        $config = json_decode($block->getJsonConfig(), true);
+
+                        $attributeValues = $productOptions['info_buyRequest']['super_attribute'];
+                        foreach ($config['attributes'] as $attribute_id => $attribute) {
+                            foreach ($attribute['options'] as $option) {
+                                if ($attributeValues[$attribute_id] == $option['id']) {
+                                    $variation = new ConnectorCustomerOrderItemVariation();
+                                    $variation->setId(new Identity($magento_item->item_id . '-' . $option['id']));
+                                    $variation->setCustomerOrderItemId(new Identity($magento_item->item_id));
+                                    $variation->setProductVariationId(new Identity($attribute_id));
+                                    $variation->setProductVariationValueId(new Identity($option['id']));
+                                    $variation->setProductVariationName($attribute['label']);
+                                    $variation->setProductVariationValueName($option['label']);
+                                    $variation->setSurcharge((double)($option['price'] / (1 + $item->getVat() / 100.0)));
+
+                                    $item->addVariation($variation);
+                                }
                             }
                         }
+                    }
+                    else {
+                        // Associated product has been removed
+                    }
+
+                    }
+                    catch (\Exception $e)
+                    {
+                        die(var_dump($e));
                     }
                 }
             }
@@ -171,7 +191,7 @@ class Order
             $item = new ConnectorCustomerOrderItem();
             $item->setId(new Identity($order->entity_id . '-shipment'));
             $item->setCustomerOrderId(new Identity($order->entity_id));
-            $item->setProductId(NULL);
+            // $item->setProductId(NULL);
             // $item->setShippingClassId(NULL);
             $item->setName($order->shipping_description);
             $item->setSku('');
@@ -180,7 +200,7 @@ class Order
             $item->setQuantity(1.0);
             $item->setType('shipment');
             $item->setUnique(NULL);
-            $item->setConfigItemId(NULL);
+            // $item->setConfigItemId(NULL);
 
             $customerOrder->addItem($item);
 
@@ -205,7 +225,7 @@ class Order
             $shippingAddress->setFax(NULL);
             $shippingAddress->setEMail($shippingAddressEntry->email);
 
-            $customerOrder->addShippingAddress($shippingAddress);
+            $customerOrder->setShippingAddress($shippingAddress);
 
             $billingAddressEntry = $order->getBillingAddress();
             $billingAddress = new ConnectorCustomerOrderBillingAddress();
@@ -228,9 +248,9 @@ class Order
             $billingAddress->setFax(NULL);
             $billingAddress->setEMail($billingAddressEntry->email);
 
-            $customerOrder->addBillingAddress($billingAddress);
+            $customerOrder->setBillingAddress($billingAddress);
 
-            $result[] = $customerOrder->getPublic();
+            $result[] = $customerOrder;
         }
 
         return $result;

@@ -36,6 +36,20 @@
                 </connection>
             </jtl_connector_setup>
         </resources>
+
+        <fieldsets>
+            <sales_convert_quote>
+                <jtl_erp_id>
+                    <to_order>*</to_order>
+                </jtl_erp_id>
+            </sales_convert_quote>
+
+            <sales_convert_order>
+                <jtl_erp_id>
+                    <to_quote>*</to_quote>
+                </jtl_erp_id>
+            </sales_convert_order>
+        </fieldsets>
     </global>
 
     <adminhtml>

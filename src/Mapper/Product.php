@@ -17,6 +17,7 @@ use jtl\Connector\Model\Product2Category as ConnectorProduct2Category;
 use jtl\Connector\Model\ProductI18n as ConnectorProductI18n;
 use jtl\Connector\Model\ProductPrice as ConnectorProductPrice;
 use jtl\Connector\Model\ProductPriceItem as ConnectorProductPriceItem;
+use jtl\Connector\Model\ProductStockLevel as ConnectorProductStockLevel;
 use jtl\Connector\Model\ProductVariation as ConnectorProductVariation;
 use jtl\Connector\Model\ProductVariationI18n as ConnectorProductVariationI18n;
 use jtl\Connector\Model\ProductVariationValue as ConnectorProductVariationValue;
@@ -232,7 +233,7 @@ class Product
         return $result;
     }
 
-    private function magentoToConnector(\Mage_Core_Model_Product $productItem)
+    private function magentoToConnector(\Mage_Catalog_Model_Product $productItem)
     {
         Magento::getInstance();        
         $stores = MapperDatabase::getInstance()->getStoreMapping();
@@ -242,9 +243,9 @@ class Product
         $created_at = new \DateTime($productItem->created_at);
 
         $product = new ConnectorProduct();
-        $product->setId(new Identity($productItem->entity_id));
+        $product->setId(new Identity($productItem->entity_id, $productItem->jtl_erp_id));
         $product->setMasterProductId(!is_null($productItem->parent_id) ? new Identity($productItem->parent_id) : null);
-        $product->setPartsListId(null);
+        // $product->setPartsListId(null);
         $product->setSku($productItem->sku);
         $product->setRecommendedRetailPrice((double)$productItem->msrp);
         $product->setMinimumOrderQuantity((double)($productItem->use_config_min_sale_qty == 1 ? 0 : $productItem->min_sale_qty));
@@ -260,11 +261,15 @@ class Product
         $product->setConsiderBasePrice(false);
         $product->setCreationDate($created_at);
         $product->setAvailableFrom($created_at);
-        $product->setBestBeforeDate(null);
+        $product->setIsBestBefore(false);
 
         $stockItem = \Mage::getModel('cataloginventory/stock_item')
             ->loadByProduct($productItem);
-        $product->setStockLevel(doubleval($stockItem->qty));
+
+        $stockLevel = new ConnectorProductStockLevel();
+        $stockLevel->setProductId($product->getId());
+        $stockLevel->setStockLevel(doubleval($stockItem->qty));
+        $product->setStockLevel($stockLevel);
         $product->setIsDivisible($stockItem->is_qty_decimal == '1');
         $product->setConsiderStock($stockItem->getManageStock() == '1');
         $product->setMinimumOrderQuantity((int)$stockItem->getMinSaleQty());
@@ -279,7 +284,7 @@ class Product
                 ->load($productItem->entity_id);
 
             $productI18n = new ConnectorProductI18n();
-            $productI18n->setLocaleName($locale);
+            $productI18n->setLanguageIso(LocaleMapper::localeToLanguageIso($locale));
             $productI18n->setProductId(new Identity($productItem->entity_id));
             $productI18n->setName($productModel->getName());
             $productI18n->setUrlPath($productModel->getUrlPath());
@@ -327,7 +332,7 @@ class Product
                 foreach ($stores as $locale => $storeId) {
                     $productVariationI18n = new ConnectorProductVariationI18n();
                     $productVariationI18n
-                        ->setLocaleName($locale)
+                        ->setLanguageIso(LocaleMapper::localeToLanguageIso($locale))
                         ->setName($attrModel->getStoreLabel($storeId))
                         ->setProductVariationId(new Identity($attributeOption['id']));
 
@@ -353,7 +358,7 @@ class Product
                         $productVariationValueI18n = new ConnectorProductVariationValueI18n();
                         $productVariationValueI18n
                             ->setProductVariationValueId(new Identity($value['value_id']))
-                            ->setLocaleName($locale)
+                            ->setLanguageIso(LocaleMapper::localeToLanguageIso($locale))
                             ->setName($valueLabels[$locale][$valueIndex]['label']);
 
                         $productVariationValue->addI18n($productVariationValueI18n);
@@ -376,10 +381,14 @@ class Product
         $category_ids = $productItem->getCategoryIds();
 
         foreach ($category_ids as $id) {
+            $category = \Mage::getModel('catalog/category')
+                ->addAttributeToSelect('jtl_erp_id')
+                ->load($id);
+
             $product2Category = new ConnectorProduct2Category();
             $product2Category->setId(new Identity(sprintf('%u-%u', $productItem->entity_id, $id)));
-            $product2Category->setCategoryId(new Identity($id));
-            $product2Category->setProductId(new Identity($productItem->entity_id));
+            $product2Category->setCategoryId(new Identity($id, $category->jtl_erp_id));
+            $product2Category->setProductId(new Identity($productItem->entity_id, $productItem->jtl_erp_id));
 
             $product->addCategory($product2Category);
         }
@@ -414,7 +423,7 @@ class Product
             $product->setMasterProductId(new Identity(''));
 
             if (!is_null($product)) {
-                $result[] = $product->getPublic();
+                $result[] = $product;
             }
         }
 
@@ -443,7 +452,7 @@ class Product
             $product = $this->magentoToConnector($productItem);
 
             if (!is_null($product)) {
-                $result[] = $product->getPublic();
+                $result[] = $product;
             }
         }
 
@@ -471,16 +480,17 @@ class Product
             $productModel = \Mage::getModel('catalog/product');
             $productCollection = $productModel->getCollection()
                 ->addAttributeToSelect('*')
-                ->addAttributeToFilter('status', \Mage_Catalog_Model_Product_Status::STATUS_ENABLED)
                 ->joinTable('catalog/product_relation', 'child_id=entity_id', array(
                     'parent_id' => 'parent_id'
                 ), null, 'left')
-                ->addAttributeToFilter(array(
+                ->addAttributeToFilter('jtl_erp_id',
                     array(
-                        'attribute' => 'parent_id',
-                        'null' => null
-                    )
-                ));
+                        array('eq' => 0),
+                        array('null' => true)
+                    ),
+                    'left'
+                )
+                ->addAttributeToSort('parent_id', 'ASC');
 
             return $productCollection->count();
         }

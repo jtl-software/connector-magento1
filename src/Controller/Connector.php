@@ -39,7 +39,7 @@ class Connector extends AbstractController
 
     }
 
-    public function delete($params)
+    public function delete(DataModel $model)
     {
         
     }

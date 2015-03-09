@@ -41,7 +41,7 @@ class GlobalData
         foreach ($customerGroups as $customerGroup)
             $globalData->addCustomerGroup($customerGroup);
 
-		return array($globalData->getPublic());
+		return array($globalData);
 	}
 
 	public function pullCustomerGroups()
@@ -72,7 +72,7 @@ class GlobalData
                 $model = \Mage::getModel('customer/group')->load($customerGroup->getId()->getEndpoint());
 
                 $customerGroupI18n = new ConnectorCustomerGroupI18n();
-                $customerGroupI18n->setLocaleName($locale);
+                $customerGroupI18n->setLanguageIso(LocaleMapper::localeToLanguageIso($locale));
                 $customerGroupI18n->setCustomerGroupId(new Identity($model->getCustomerGroupId(), null));
                 $customerGroupI18n->setName($model->getCustomerGroupCode());
 
@@ -127,7 +127,7 @@ class GlobalData
         foreach ($stores as $localeName => $store_id) {
         	$language = new ConnectorLanguage();
         	$language->setId(new Identity($store_id, null));
-            $language->setLocaleName($localeName);
+            $language->setLanguageIso(LocaleMapper::localeToLanguageIso($localeName));
             $language->setIsDefault($localeName == $defaultLocale);
 			$locale = new \Zend_Locale($localeName);
 

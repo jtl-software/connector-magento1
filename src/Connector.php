@@ -7,16 +7,14 @@
 namespace jtl\Connector\Magento;
 
 use jtl\Connector\Base\Connector as BaseConnector;
-use jtl\Connector\Core\Config\Config;
-use jtl\Connector\Core\Config\Loader\Json as ConfigJson;
-use jtl\Connector\Core\Config\Loader\System as ConfigSystem;
 use jtl\Connector\Core\Exception\TransactionException;
 use jtl\Connector\Core\Rpc\Method;
 use jtl\Connector\Core\Rpc\RequestPacket;
 use jtl\Connector\Core\Utilities\RpcMethod;
 use jtl\Connector\Core\Controller\Controller as CoreController;
 use jtl\Connector\ModelContainer\MainContainer;
-use jtl\Connector\Magento\Config\Loader\Config as ConfigLoader;
+use jtl\Connector\Magento\TokenLoader;
+use jtl\Connector\Magento\Mapper\PrimaryKeyMapper;
 use jtl\Connector\Transaction\Handler as TransactionHandler;
 
 /**
@@ -48,38 +46,14 @@ class Connector extends BaseConnector
     
     protected function __construct()
     {
-        $this->initializeConfiguration();
+        // Destroy Magento's session
+        if ('' != session_id()) {
+            session_destroy();
+        }
+
+        $this->setPrimaryKeyMapper(new PrimaryKeyMapper());
+        $this->setTokenLoader(new TokenLoader());
     }
-    
-    protected function initializeConfiguration()
-    {
-        $config = null;
-        if (isset($_SESSION['config'])) {
-            $config = $_SESSION['config'];
-        }
-                
-        if (empty($config)) {
-            if (!is_null($this->_config)) {
-                $config = $this->getConfig();
-            }
-
-            if (empty($config)) {
-                // Application object is not initialized. Bypass by manually creating
-                // the Config object
-                $json = new ConfigJson(realpath(CONNECTOR_DIR . '/config/') . '/config.json');
-                $config = new Config(array(
-                  $json,
-                  new ConfigSystem()
-                ));
-                $this->setConfig($config);
-            }
-        }
-
-        if (!isset($_SESSION['config'])) {
-            $_SESSION['config'] = $config;
-        }
-    }
-
 
     /**
      * (non-PHPdoc)

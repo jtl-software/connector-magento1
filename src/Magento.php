@@ -52,21 +52,7 @@ class Magento extends Singleton
         $config = $connector->getConfig();
         $this->setConfig($config);
         
-        $magentoPath = realpath(CONNECTOR_DIR . '/..');
-
-        while (is_dir($magentoPath) && $magentoPath != '/') {
-            if (file_exists($magentoPath . '/app/Mage.php')) {
-                include_once($magentoPath . '/app/Mage.php');
-                break;
-            }
-
-            $magentoPath = realpath($magentoPath . '/../');
-        }
-
-        
-        umask(0);
         \Mage::app()->setCurrentStore(\Mage_Core_Model_App::ADMIN_STORE_ID);
-        \Mage::init();
         $this->_store = \Mage::app()->getStore();
     }
     

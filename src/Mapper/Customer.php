@@ -21,21 +21,28 @@ use jtl\Connector\Model\Identity;
  */
 class Customer
 {
-	public function getAvailableCount()
-	{
-		Magento::getInstance();
+    public function getAvailableCount()
+    {
+        Magento::getInstance();
 
         try {
-	        $customerModel = \Mage::getModel('customer/customer');
-	        $customerCollection = $customerModel->getCollection()
-	            ->addAttributeToSelect('*');
+            $customerModel = \Mage::getModel('customer/customer');
+            $customerCollection = $customerModel->getCollection()
+                ->addAttributeToSelect('*')
+                ->addAttributeToFilter('jtl_erp_id',
+                    array(
+                        array('eq' => 0),
+                        array('null' => true)
+                    ),
+                    'left'
+                );
 
-	        return $customerCollection->count();
+            return $customerCollection->count();
         }
         catch (Exception $e) {
-        	return 0;
+            return 0;
         }
-	}
+    }
 
 	public function pull(QueryFilter $filter = null)
 	{
@@ -50,7 +57,7 @@ class Customer
         if (!is_null($filter)) {
         	$customerCollection
         		->getSelect()
-        		->limit($filter->getLimit(), $filter->getOffset());
+        		->limit($filter->getLimit());
         }
 
         $customerCollection->load();
@@ -58,13 +65,20 @@ class Customer
         // Build result array
         $result = array();
         foreach ($customerCollection as $customerEntry) {
+            $customerGroup = \Mage::getModel('customer/group')
+                ->load($customerEntry->group_id);
+
         	$created_at = new \DateTime($customerEntry->created_at);
             $birthday = new \DateTime($customerEntry->dob);
 
 			$customer = new ConnectorCustomer();
-			$customer->setId(new Identity($customerEntry->entity_id));
-			$customer->setCustomerGroupId(new Identity($customerEntry->group_id));
-			$customer->setLocaleName(array_search($customerEntry->store_id, $stores) ?: key($stores));
+			$customer->setId(new Identity($customerEntry->entity_id, $customerEntry->jtl_erp_id));
+			$customer->setCustomerGroupId(new Identity($customerEntry->group_id, $customerGroup->jtl_erp_id));
+			$customer->setLanguageIso(
+                LocaleMapper::localeToLanguageIso(
+                    array_search($customerEntry->store_id, $stores) ?: key($stores)
+                )
+            );
 			$customer->setCustomerNumber(NULL);
 			// $customer->setPassword($customerEntry->password_hash);
             // $customer->setBirthday($birthday);
@@ -95,7 +109,7 @@ class Customer
 				$customer->setFax(NULL);
 			}
 
-			$result[] = $customer->getPublic();
+			$result[] = $customer;
         }
         unset($customerCollection);
         
