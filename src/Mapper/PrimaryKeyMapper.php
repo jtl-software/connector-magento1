@@ -40,7 +40,7 @@ class PrimaryKeyMapper implements IPrimaryKeyMapper
                     ->load($endpointId);
 
                 $category->setJtlErpId($hostId);
-                $category->getResource()->saveAttribute($category, 'jtl_erp_id');
+                $category->save();
                 break;
             // Product
             case IdentityLinker::TYPE_PRODUCT:
@@ -49,7 +49,7 @@ class PrimaryKeyMapper implements IPrimaryKeyMapper
                     ->load($endpointId);
 
                 $product->setJtlErpId($hostId);
-                $product->getResource()->saveAttribute($product, 'jtl_erp_id');
+                $product->save();
                 break;
         }
     }
