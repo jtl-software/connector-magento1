@@ -15,6 +15,7 @@ use jtl\Connector\Core\Controller\Controller as CoreController;
 use jtl\Connector\ModelContainer\MainContainer;
 use jtl\Connector\Magento\TokenLoader;
 use jtl\Connector\Magento\Mapper\PrimaryKeyMapper;
+use jtl\Connector\Result\Action;
 use jtl\Connector\Transaction\Handler as TransactionHandler;
 
 /**
@@ -95,12 +96,19 @@ class Connector extends BaseConnector
                 throw new TransactionException("Expecting request array, invalid data given");
             }
 
+            $action = new Action();
             $results = array();
+            $errors = array();
             foreach ($requestpacket->getParams() as $param) {
-                $results[] = $this->_controller->{$this->_action}($param);
+                $result = $this->_controller->{$this->_action}($param);
+                $results[] = $result->getResult();
             }
 
-            return $results;
+            $action->setHandled(true)
+                ->setResult($results)
+                ->setError($result->getError());    // @todo: refactor to array of errors
+
+            return $action;
         }
         else {
             return $this->_controller->{$this->_action}($requestpacket->getParams());
