@@ -413,7 +413,14 @@ class Product
                     'attribute' => 'parent_id',
                     'null' => null
                 )
-            ));
+            ))
+            ->addAttributeToFilter('jtl_erp_id',
+                array(
+                    array('eq' => 0),
+                    array('null' => true)
+                ),
+                'left'
+            );
 
         $result = array();
         foreach ($products as $productItem) {
