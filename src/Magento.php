@@ -190,11 +190,11 @@ class Magento extends Singleton
     }
 
     /**
-     * Get the customer group ID for the current store
+     * Get the default customer group ID
      */
     public function getDefaultCustomerGroupId()
     {
-        return \Mage::getStoreConfig('customer/create_account/default_group');
+        return \Mage::getStoreConfig('jtl_connector/general/default_customer_group');
     }
    
     /**

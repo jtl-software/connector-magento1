@@ -14,7 +14,6 @@ use jtl\Connector\Magento\Utilities\ArrayTools;
 use jtl\Connector\Model\Category as ConnectorCategory;
 use jtl\Connector\Model\CategoryI18n as ConnectorCategoryI18n;
 use jtl\Connector\Model\Identity;
-use jtl\Connector\ModelContainer\CategoryContainer;
 use jtl\Connector\Result\Transaction;
 
 /**
@@ -65,6 +64,9 @@ class Category
             $parentCategory = \Mage::getModel('catalog/category')
                 ->loadByAttribute('jtl_erp_id', $parentCategoryHostId);
         }
+
+        if ($parentCategory === false)
+            return null;
         
         $model->setPath($parentCategory->getPath());              
 
@@ -132,9 +134,10 @@ class Category
         $result = new ConnectorCategory();
 
         $identity = $category->getId();
-        $categoryId = $identity->getEndpoint();
+        $hostId = $identity->getHost();
 
-        $model = \Mage::getModel('catalog/category')->load($categoryId);
+        $model = \Mage::getModel('catalog/category')
+            ->loadByAttribute('jtl_erp_id', $hostId);
         //$result->addIdentity('category', $identity);
         
         foreach ($this->stores as $locale => $storeId) {
@@ -256,12 +259,13 @@ class Category
                 ),
                 'left'
             )
-            ->load();
+            ->addAttributeToSort('level', 'asc');
 
-        $categoryIds = array();
-        foreach ($categoryCollection as $category) {
-            $categoryIds  = array_merge_recursive($categoryIds, explode(',', $category->getAllChildren()));
+        if ($filter->isLimit()) {
+            $categoryCollection->setPageSize($filter->getLimit())->setCurPage(1);
         }
+
+        $categoryCollection->load();
 
         // Apply query filter
         if ($filter->isLimit()) {
@@ -269,9 +273,8 @@ class Category
         }
 
         $result = array();
-        foreach ($categoryIds as $categoryId) {
-            $model = \Mage::getModel('catalog/category')
-                ->load($categoryId);
+        foreach ($categoryCollection as $model) {
+            $categoryId = $model->entity_id;
 
             $category = new ConnectorCategory();
             $category

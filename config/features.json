@@ -6,7 +6,7 @@
         },
         "Product" : {
             "pull" : true,
-            "push" : false
+            "push" : true
         },
         "Customer" : {
             "pull" : true,

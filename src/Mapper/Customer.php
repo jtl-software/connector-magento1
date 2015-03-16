@@ -26,8 +26,8 @@ class Customer
         Magento::getInstance();
 
         try {
-            $customerModel = \Mage::getModel('customer/customer');
-            $customerCollection = $customerModel->getCollection()
+            $customerCollection = \Mage::getModel('customer/customer')
+                ->getCollection()
                 ->addAttributeToSelect('*')
                 ->addAttributeToFilter('jtl_erp_id',
                     array(
@@ -50,9 +50,17 @@ class Customer
 
         $stores = MapperDatabase::getInstance()->getStoreMapping();
 
-        $customerModel = \Mage::getModel('customer/customer');
-        $customerCollection = $customerModel->getCollection()
-            ->addAttributeToSelect('*');
+        $customerCollection = \Mage::getModel('customer/customer')
+            ->getCollection()
+            ->addAttributeToSelect('*')
+            ->addAttributeToFilter('jtl_erp_id',
+                array(
+                    array('eq' => 0),
+                    array('null' => true)
+                ),
+                'left'
+            );
+
 
         if (!is_null($filter)) {
         	$customerCollection

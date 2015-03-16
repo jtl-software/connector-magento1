@@ -23,7 +23,6 @@ use jtl\Connector\Model\ProductVariationI18n as ConnectorProductVariationI18n;
 use jtl\Connector\Model\ProductVariationValue as ConnectorProductVariationValue;
 use jtl\Connector\Model\ProductVariationValueExtraCharge as ConnectorProductVariationValueExtraCharge;
 use jtl\Connector\Model\ProductVariationValueI18n as ConnectorProductVariationValueI18n;
-use jtl\Connector\ModelContainer\ProductContainer;
 use jtl\Connector\Result\Transaction;
 
 /**
@@ -50,10 +49,10 @@ class Product
         Logger::write('default Store ID: ' . $this->defaultStoreId);
     }
 
-    private function insert(ConnectorProduct $product, ProductContainer $container)
+    private function insert(ConnectorProduct $product)
     {
         Logger::write('insert product');
-        $result = new ProductContainer();
+        $result = new ConnectorProduct();
 
         \Mage::app()->setCurrentStore(\Mage_Core_Model_App::ADMIN_STORE_ID);
 
@@ -87,8 +86,6 @@ class Product
         $model->setWeight($product->getProductWeight());
         if ($defaultProductPrice instanceof ConnectorProductPrice)
             $model->setPrice($defaultProductPrice->getNetPrice() * (1.0 + $product->getVat() / 100.0));
-        Logger::write('price: ' . var_export($defaultProductPrice, true));
-        Logger::write(var_export($defaultProductPrice instanceof ConnectorProductPrice, true));
         $model->setWeight($product->getProductWeight());
         $model->setManageStock($product->getConsiderStock() === true ? '1' : '0');
         $model->setQty($product->getStockLevel());
@@ -129,7 +126,7 @@ class Product
         /* *** Begin Product2Category *** */
         $categoryIds = array_map(function($product2Category) {
             return $product2Category->getCategoryId()->getEndpoint();
-        }, $container->getProduct2Categories());
+        }, $product->getCategories());
         $model->setStoreId(\Mage_Core_Model_App::ADMIN_STORE_ID);
         $model->setCategoryIds($categoryIds);
         $model->save();
@@ -140,41 +137,110 @@ class Product
         return $result;
     }
 
-    private function update(ConnectorProduct $product, ProductContainer $container)
+    private function update(ConnectorProduct $product)
     {
         Logger::write('update product');
-        $result = new ProductContainer();
+        $result = new ConnectorProduct();
 
         $identity = $product->getId();
-        $productId = $identity->getEndpoint();
+        $hostId = $identity->getHost();
 
+        $defaultCustomerGroupId = Magento::getInstance()->getDefaultCustomerGroupId();
+        
         \Mage::app()->setCurrentStore(\Mage_Core_Model_App::ADMIN_STORE_ID);
         $model = \Mage::getModel('catalog/product')
-            ->load($productId);
+            ->loadByAttribute('jtl_erp_id', $hostId);
+        $productId = $model->entity_id;
         $model->setStoreId(\Mage_Core_Model_App::ADMIN_STORE_ID);
 
         /* *** Begin Product *** */
         $model->setMsrp($product->getRecommendedRetailPrice());
         $model->setWeight($product->getProductWeight());
 
+        /* *** Begin StockLevel *** */
+        $stockItem = \Mage::getModel('cataloginventory/stock_item')
+            ->loadByProduct($model);
+        $stockItem->setQty($product->getStockLevel()->getStockLevel());
+        $stockItem->save();
+
         /* *** Begin ProductPrice *** */
         // Insert default price
-        $productPrices = ArrayTools::filterByItemKey($container->getProductPrices(), 1, '_quantity');
-        $defaultCustomerGroupId = Magento::getInstance()->getDefaultCustomerGroupId();
-        $defaultProductPrice = ArrayTools::filterOneByEndpointId($productPrices, $defaultCustomerGroupId, 'customerGroupId');
-        if (!($defaultProductPrice instanceof ConnectorProductPrice))
-            $defaultProductPrice = reset($productPrices);
+        $defaultGroupPrices = ArrayTools::filterOneByItemEndpointId($product->getPrices(), $defaultCustomerGroupId, 'customerGroupId');
+        if (!($defaultGroupPrices instanceof ConnectorProductPrice)) {
+            $defaultGroupPrices = reset($product->getPrices());
+        }
 
-        if ($defaultProductPrice instanceof ConnectorProductPrice)
-            $model->setPrice($defaultProductPrice->getNetPrice() * (1.0 + $product->getVat() / 100.0));
+        $defaultGroupPriceItems = $defaultGroupPrices->getItems();
+        $defaultProductPrice = ArrayTools::filterOneByItemKey($defaultGroupPriceItems, 0, 'quantity');
+        if (!($defaultProductPrice instanceof ConnectorProductPriceItem))
+            $defaultProductPrice = reset($defaultGroupPrices);
+
+        if ($defaultProductPrice instanceof ConnectorProductPriceItem) {
+            Logger::write('default price: ' . $defaultProductPrice->getNetPrice());
+            Logger::write('gross: ' . ($defaultProductPrice->getNetPrice() * (1.0 + $this->getTaxRateByClassId($model->tax_class_id) / 100.0)));
+            Logger::write('product tax class ID: ' . $model->getTaxClassId());
+            $model->setPrice($defaultProductPrice->getNetPrice() * (1.0 + $this->getTaxRateByClassId($model->tax_class_id) / 100.0));
+        }
+        else {
+            die(var_dump($defaultProductPrice));
+        }
+
+        // Tier prices and group prices (i.e. tier price with qty == 0)
+        // Clear all tier prices and group prices first (are you f***king kidding me?)
+        // 
+        // (thanks to http://www.catgento.com/how-to-set-tier-prices-programmatically-in-magento/)
+        $dbc = \Mage::getSingleton('core/resource')->getConnection('core_write');
+        $resource = \Mage::getSingleton('core/resource');
+        $table = $resource->getTableName('catalog/product').'_tier_price';
+        $dbc->query("DELETE FROM $table WHERE entity_id = " . $model->entity_id);
+        Logger::write("DELETE FROM $table WHERE entity_id = " . $model->entity_id);
+        $table = $resource->getTableName('catalog/product').'_group_price';
+        $dbc->query("DELETE FROM $table WHERE entity_id = " . $model->entity_id);
+        Logger::write("DELETE FROM $table WHERE entity_id = " . $model->entity_id);
+
+        $tierPrice = array();
+        $groupPrice = array();
+        foreach ($product->getPrices() as $currentPrice) {
+            foreach ($currentPrice->getItems() as $currentPriceItem) {
+                if ($currentPriceItem->getQuantity() > 0) {
+                    // Tier price (qty > 0)
+                    $tierPrice[] = array(
+                        'website_id' => \Mage::app()->getStore()->getWebsiteId(),
+                        'cust_group' => (int)$currentPrice->getCustomerGroupId()->getEndpoint(),
+                        'price_qty' => $currentPriceItem->getQuantity(),
+                        'price' => $currentPriceItem->getNetPrice() * (1.0 + $this->getTaxRateByClassId($model->tax_class_id) / 100.0)
+                    );
+                }
+                else {
+                    // Group price (qty == 0)
+                    $groupPrice[] = array(
+                        'website_id' => \Mage::app()->getStore()->getWebsiteId(),
+                        'all_groups' => (int)$currentPrice->getCustomerGroupId()->getEndpoint() == 0 ? 1 : 0,
+                        'cust_group' => (int)$currentPrice->getCustomerGroupId()->getEndpoint(),
+                        'price' => $currentPriceItem->getNetPrice() * (1.0 + $this->getTaxRateByClassId($model->tax_class_id) / 100.0)
+                    );
+                }
+            }
+        }
+        Logger::write('set tier prices');
+        $model->setTierPrice($tierPrice);
+        Logger::write('set group prices');
+        $model->setGroupPrice($groupPrice);
+        Logger::write('save');
         $model->save();
 
+        // Set fake array to trick Magento into not updating tier prices during
+        // this function any further
+        $model->setTierPrice(array('website_id' => 0));
+        $model->setGroupPrice(array('website_id' => 0));
+
         /* *** Begin ProductI18n *** */
+        Logger::write('begin admin store i18n');
 
         // Admin Store ID (default language)
-        $productI18n = ArrayTools::filterOneByLocale($container->getProductI18ns(), $this->defaultLocale);
+        $productI18n = ArrayTools::filterOneByLanguage($product->getI18ns(), LocaleMapper::localeToLanguageIso($this->defaultLocale));
         if ($productI18n === null)
-            $productI18n = reset($container->getProductI18ns());
+            $productI18n = reset($product->getI18ns());
 
         if ($productI18n instanceof ConnectorProductI18n) {
             $model->setName($productI18n->getName());
@@ -182,11 +248,11 @@ class Product
             $model->setDescription($productI18n->getDescription());
         }
         $model->save();
-        $result->addIdentity('product', new Identity($model->getId(), $product->getId()->getHost()));
+        $result->setId(new Identity($model->entity_id, $model->jtl_erp_id));
 
-
+        Logger::write('begin productI18n');
         foreach ($this->stores as $locale => $storeId) {
-            $productI18n = ArrayTools::filterOneByLocale($container->getProductI18ns(), $locale);
+            $productI18n = ArrayTools::filterOneByLanguage($product->getI18ns(), LocaleMapper::localeToLanguageIso($locale));
             if (!($productI18n instanceof ConnectorProductI18n))
                 continue;
 
@@ -198,15 +264,24 @@ class Product
             $model->setShortDescription($productI18n->getShortDescription());
             $model->setDescription($productI18n->getDescription());
             $model->save();
+
+            Logger::write('productI18n ' . $locale);
         }
+        Logger::write('end productI18n');
         /* *** End ProductI18n *** */
 
         /* *** Begin Product2Category *** */
-        $product2Categories = $container->getProduct2Categories();
+        $product2Categories = $product->getCategories();
         Logger::write('product2Categories' . var_export($product2Categories, true));
         $categoryIds = array_map(function($product2Category) {
             Logger::write('product2category: ' . var_export($product2Category, true));
-            return $product2Category->getCategoryId()->getEndpoint();
+
+            $category = \Mage::getResourceModel('catalog/category_collection')
+                ->addAttributeToSelect('entity_id')
+                ->addAttributeToFilter('jtl_erp_id', $product2Category->getCategoryId()->getHost())
+                ->getFirstItem();
+
+            return $category->entity_id;
         }, $product2Categories);
         $model->setStoreId(\Mage_Core_Model_App::ADMIN_STORE_ID);
         $model->setCategoryIds($categoryIds);
@@ -218,18 +293,34 @@ class Product
         return $result;
     }
 
-    public function push(ProductContainer $container)
+    public function existsByHost($hostId)
+    {
+        $collection = \Mage::getResourceModel('catalog/product_collection')
+            ->addAttributeToFilter('jtl_erp_id', $hostId);
+
+        Logger::write('existsByHost: ' . $hostId, Logger::ERROR, 'general');
+
+        return $collection->getSize() > 0;
+    }
+
+    public function push($product)
     {
         Magento::getInstance();        
         $stores = MapperDatabase::getInstance()->getStoreMapping();
         $defaultStoreId = reset($stores);
         $defaultLocale = key($stores);
 
-        $product = $container->getMainModel();
-        if ($product->getId()->getEndpoint() === '')
-            $result = $this->insert($product, $container);
+        $hostId = $product->getId()->getHost();
+
+        // Skip empty objects
+        if ($hostId == 0)
+            return null;
+
+        Logger::write('push product', Logger::ERROR, 'general');
+        if ($this->existsByHost($hostId))
+            $result = $this->update($product);
         else
-            $result = $this->update($product, $container);
+            $result = $this->insert($product);
         return $result;
     }
 
@@ -294,14 +385,16 @@ class Product
             $product->addI18n($productI18n);
         }
 
+        $defaultCustomerGroupId = Magento::getInstance()->getDefaultCustomerGroupId();
+
         // ProductPrice
         $productPrice = new ConnectorProductPrice();
-        $productPrice->setCustomerGroupId(new Identity('')); // TODO: Insert configured default customer group
-        $productPrice->setProductId(new Identity($productItem->entity_id));
+        $productPrice->setCustomerGroupId(new Identity($defaultCustomerGroupId)); // TODO: Insert configured default customer group
+        $productPrice->setProductId(new Identity($productItem->entity_id, $productItem->jtl_erp_id));
 
         $productPriceItem = new ConnectorProductPriceItem();
         $productPriceItem->setNetPrice($productItem->price / (1 + $product->getVat() / 100.0));
-        $productPriceItem->setQuantity(max(1, (int)$productItem->min_sale_qty));
+        $productPriceItem->setQuantity(max(0, (int)$productItem->min_sale_qty));
         $productPrice->addItem($productPriceItem);
 
         $product->addPrice($productPrice);
@@ -382,7 +475,6 @@ class Product
 
         foreach ($category_ids as $id) {
             $category = \Mage::getModel('catalog/category')
-                ->addAttributeToSelect('jtl_erp_id')
                 ->load($id);
 
             $product2Category = new ConnectorProduct2Category();
@@ -396,7 +488,7 @@ class Product
         return $product;
     }
 
-    private function pullParentProducts(QueryFilter $filter)
+    public function pull(QueryFilter $filter)
     {
         Magento::getInstance();        
         $stores = MapperDatabase::getInstance()->getStoreMapping();
@@ -405,22 +497,18 @@ class Product
         Magento::getInstance()->setCurrentStore($defaultStoreId);
 
         $products = \Mage::getResourceModel('catalog/product_collection')
-            ->joinTable('catalog/product_relation', 'child_id=entity_id', array(
-                'parent_id' => 'parent_id'
-            ), null, 'left')
-            ->addAttributeToFilter(array(
-                array(
-                    'attribute' => 'parent_id',
-                    'null' => null
-                )
-            ))
+            ->addAttributeToSelect('*')
             ->addAttributeToFilter('jtl_erp_id',
                 array(
                     array('eq' => 0),
                     array('null' => true)
                 ),
                 'left'
-            );
+            )
+            ->joinTable('catalog/product_relation', 'child_id=entity_id', array(
+                'parent_id' => 'parent_id'
+            ), null, 'left')
+            ->addAttributeToSort('parent_id', 'ASC');
 
         $result = array();
         foreach ($products as $productItem) {
@@ -466,19 +554,6 @@ class Product
         return $result;
     }
 
-    public function pull(QueryFilter $filter)
-    {
-        // Determine if we should pull children or not
-        if (!is_null($filter) && $filter->isFilter('fetchChildren') && $filter->isFilter('parentId') > 0) {
-            $filter = new QueryFilter();
-            $filter->addFilter('parentId', 34);
-            return $this->pullChildProducts($filter);
-        }
-        else {
-            return $this->pullParentProducts($filter);
-        }
-    }
-
     public function getAvailableCount()
     {
         Magento::getInstance();
@@ -516,6 +591,8 @@ class Product
         $store = \Mage::app()->getStore();
         $request = \Mage::getSingleton('tax/calculation')->getRateRequest(null, null, null, $store);
         $percent = \Mage::getSingleton('tax/calculation')->getRate($request->setProductClassId($taxClassId));
+
+        Logger::write(sprintf('store %u percent for tax class %u', $percent, $taxClassId));
 
         if (!is_null($percent))
             $taxRates[$taxClassId] = $percent;

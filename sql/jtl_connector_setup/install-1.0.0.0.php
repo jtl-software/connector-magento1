@@ -71,10 +71,6 @@ $setup->addAttributeToGroup(
     999
 );
 
-$installer->endSetup();
-
-$installer = new Mage_Sales_Model_Resource_Setup('core_setup');
-
 $installer->addAttribute('quote', 'jtl_erp_id', array(
     'type'             => 'int',
     'label'            => 'JTL-Wawi-ID',

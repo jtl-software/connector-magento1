@@ -33,8 +33,8 @@ class Order
         Magento::getInstance();
 
         try {
-            $orderModel = \Mage::getModel('sales/order');
-            $orderCollection = $orderModel->getCollection()
+            $orderCollection = \Mage::getModel('sales/order')
+                ->getCollection()
                 ->addAttributeToSelect('*')
                 ->addAttributeToFilter('jtl_erp_id',
                     array(
@@ -56,9 +56,16 @@ class Order
         Magento::getInstance();
         $stores = MapperDatabase::getInstance()->getStoreMapping();
 
-        $orderModel = \Mage::getModel('sales/order');
-        $orderCollection = $orderModel->getCollection()
-            ->addAttributeToSelect('*');
+        $orderCollection = \Mage::getModel('sales/order')
+            ->getCollection()
+            ->addAttributeToSelect('*')
+            ->addAttributeToFilter('jtl_erp_id',
+                array(
+                    array('eq' => 0),
+                    array('null' => true)
+                ),
+                'left'
+            );
 
         if (!is_null($filter)) {
             $orderCollection

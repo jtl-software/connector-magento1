@@ -21,6 +21,14 @@ class PrimaryKeyMapper implements IPrimaryKeyMapper
                 $product = \Mage::getModel('catalog/product')
                     ->load($endpointId);
                 return ($product != null ? $product->getJtlErpId() : null);
+            case IdentityLinker::TYPE_CUSTOMER:
+                $customer = \Mage::getModel('customer/customer')
+                    ->load($endpointId);
+                return ($customer != null ? $customer->getJtlErpId() : null);
+            case IdentityLinker::TYPE_CUSTOMER_ORDER:
+                $order = \Mage::getModel('sales/order')
+                    ->load($endpointId);
+                return ($order != null ? $order->getJtlErpId() : null);
         }
     }
 
@@ -33,7 +41,6 @@ class PrimaryKeyMapper implements IPrimaryKeyMapper
     {
         switch ($type)
         {
-            // Category
             case IdentityLinker::TYPE_CATEGORY:
                 \Mage::app()->setCurrentStore(\Mage_Core_Model_App::ADMIN_STORE_ID);
                 $category = \Mage::getModel('catalog/category')
@@ -42,7 +49,6 @@ class PrimaryKeyMapper implements IPrimaryKeyMapper
                 $category->setJtlErpId($hostId);
                 $category->save();
                 break;
-            // Product
             case IdentityLinker::TYPE_PRODUCT:
                 \Mage::app()->setCurrentStore(\Mage_Core_Model_App::ADMIN_STORE_ID);
                 $product = \Mage::getModel('catalog/product')
@@ -50,6 +56,22 @@ class PrimaryKeyMapper implements IPrimaryKeyMapper
 
                 $product->setJtlErpId($hostId);
                 $product->save();
+                break;
+            case IdentityLinker::TYPE_CUSTOMER:
+                \Mage::app()->setCurrentStore(\Mage_Core_Model_App::ADMIN_STORE_ID);
+                $customer = \Mage::getModel('customer/customer')
+                    ->load($endpointId);
+
+                $customer->setJtlErpId($hostId);
+                $customer->save();
+                break;
+            case IdentityLinker::TYPE_CUSTOMER_ORDER:
+                \Mage::app()->setCurrentStore(\Mage_Core_Model_App::ADMIN_STORE_ID);
+                $order = \Mage::getModel('sales/order')
+                    ->load($endpointId);
+
+                $order->setJtlErpId($hostId);
+                $order->save();
                 break;
         }
     }
@@ -71,7 +93,7 @@ class PrimaryKeyMapper implements IPrimaryKeyMapper
 
         foreach ($products as $product) {
             $product->setJtlErpId(0);
-            $product->getResource()->saveAttribute($product, 'jtl_erp_id');
+            $product->save();
         }
 
         // Clear Category IDs
@@ -82,7 +104,31 @@ class PrimaryKeyMapper implements IPrimaryKeyMapper
 
         foreach ($categories as $category) {
             $category->setJtlErpId(0);
-            $category->getResource()->saveAttribute($category, 'jtl_erp_id');
+            $category->save();
+        }
+
+        // Clear Customer IDs
+        $customers = \Mage::getModel('customer/customer')
+            ->getCollection()
+            ->addAttributeToSelect(array('name','jtl_erp_id'))
+            ->addAttributeToFilter('jtl_erp_id', array('gt' => '0'));
+
+        foreach ($customers as $customer) {
+            $customer->setJtlErpId(0);
+            $customer->save();
+        }
+
+        // Clear Order IDs
+        // $orders = \Mage::getModel('sales/order')
+        //     ->getCollection()
+        //     ->addAttributeToSelect(array('name', 'jtl_erp_id'))
+        //     ->addAttributeToFilter('jtl_erp_id', array('gt' => '0'));
+        $orders = \Mage::getModel('sales/order')
+            ->getCollection();
+
+        foreach ($orders as $order) {
+            $order->setJtlErpId(0);
+            $order->save();
         }
 
         return true;
