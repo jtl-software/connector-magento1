@@ -77,6 +77,19 @@
                             <show_in_website>0</show_in_website>
                             <show_in_store>0</show_in_store>
                         </default_customer_group>
+
+                        <store_mapping translate="label comment">
+                            <label>Store mapping</label>
+                            <comment>
+                                <![CDATA[Map Magento store views to JTL-Wawi languages. You have to make sure that each language is only mapped at most once.]]>
+                            </comment>
+                            <frontend_model>Jtl_Connector_Block_StoreMapping</frontend_model>
+                            <backend_model>adminhtml/system_config_backend_serialized_array</backend_model>
+                            <sort_order>50</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </store_mapping>
                     </fields>
                 </general>
             </groups>

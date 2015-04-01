@@ -19,6 +19,12 @@
     </frontend>
 
     <global>
+        <blocks>
+            <jtl_connector>
+                <class>Jtl_Connector_Blocks</class>
+            </jtl_connector>
+        </blocks>
+
         <helpers>
             <jtl_connector>
                 <class>Jtl_Connector_Helper</class>
