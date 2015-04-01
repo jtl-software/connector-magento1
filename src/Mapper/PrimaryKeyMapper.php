@@ -34,7 +34,27 @@ class PrimaryKeyMapper implements IPrimaryKeyMapper
 
     public function getEndpointId($hostId, $type)
     {
-
+        switch ($type)
+        {
+            // Category
+            case IdentityLinker::TYPE_CATEGORY:
+                $category = \Mage::getModel('catalog/category')
+                    ->loadByAttribute('jtl_erp_id', $hostId);
+                return ($category != null ? $category->getId() : null);
+            // Product
+            case IdentityLinker::TYPE_PRODUCT:
+                $product = \Mage::getModel('catalog/product')
+                    ->loadByAttribute('jtl_erp_id', $hostId);
+                return ($product != null ? $product->getId() : null);
+            case IdentityLinker::TYPE_CUSTOMER:
+                $customer = \Mage::getModel('customer/customer')
+                    ->loadByAttribute('jtl_erp_id', $hostId);
+                return ($customer != null ? $customer->getId() : null);
+            case IdentityLinker::TYPE_CUSTOMER_ORDER:
+                $order = \Mage::getModel('sales/order')
+                    ->loadByAttribute('jtl_erp_id', $hostId);
+                return ($order != null ? $order->getId() : null);
+        }
     }
 
     public function save($endpointId, $hostId, $type)

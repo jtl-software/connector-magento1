@@ -33,7 +33,7 @@ class Image
 
         $products = \Mage::getResourceModel('catalog/product_collection');
         foreach ($products as $productItem) {
-            $productItem->load();
+            // $productItem->load();
 
             $galleryImages = $productItem->getMediaGalleryImages();
             if (is_null($galleryImages))
@@ -44,12 +44,11 @@ class Image
             foreach ($galleryImages as $galleryImage) {
             	$image = new ConnectorImage();
                 $image->setId(new Identity('product-' . $galleryImage->value_id));
-                $image->setMasterImageId(0);
                 $image->setRelationType('product');
-                $image->setForeignKey($productItem->entity_id);
+                $image->setForeignKey(new Identity($productItem->entity_id, $productItem->jtl_erp_id));
                 $image->setFilename($galleryImage->url);
-                $image->setIsMainImage($galleryImage->file === $defaultImagePath);
-                $image->setSort($galleryImage->position_default);
+                // $image->setIsMainImage($galleryImage->file === $defaultImagePath);
+                // $image->setSort($galleryImage->position_default);
 
                 $result[] = $image;
             }
@@ -77,12 +76,11 @@ class Image
 
             $image = new ConnectorImage();
             $image->setId(new Identity('category-' . $category_id));
-            $image->setMasterImageId(0);
             $image->setRelationType('category');
-            $image->setForeignKey($category_id);
+            $image->setForeignKey(new Identity($category_id, $model->jtl_erp_id));
             $image->setFilename($model->getImageUrl());
-            $image->setIsMainImage(true);
-            $image->setSort(1);
+            // $image->setIsMainImage(true);
+            // $image->setSort(1);
 
             $result[] = $image;
         }
@@ -106,7 +104,7 @@ class Image
 
             $products = \Mage::getResourceModel('catalog/product_collection');
             foreach ($products as $productItem) {
-                $productItem->load();
+                // $productItem->load();
 
                 $galleryImages = $productItem->getMediaGalleryImages();
                 if (is_null($galleryImages))
@@ -116,23 +114,16 @@ class Image
             }
 
 
-            $rootCategoryId = \Mage::app()->getStore()->getRootCategoryId();
-            $categoryCollection = \Mage::getModel('catalog/category')
-                ->getCollection()
-                ->addAttributeToSelect('all_children')
-                ->addAttributeToFilter('parent_id', $rootCategoryId)
+            $rootCategoryId = \Mage::getStoreConfig('jtl_connector/general/root_category');
+            $rootCategory = \Mage::getModel('catalog/category')
+                ->load($rootCategoryId);
+                
+            $categoryCollection = \Mage::getResourceModel('catalog/category_collection')
+                ->addFieldToFilter('path', array('like' => $rootCategory->getPath() . '/%'))
                 ->load();
 
-            $categoryIds = array();
             foreach ($categoryCollection as $category) {
-                $categoryIds  = array_merge_recursive($categoryIds, explode(',', $category->getAllChildren()));
-            }
-
-            foreach ($categoryIds as $category_id) {
-                $model = \Mage::getModel('catalog/category')
-                    ->load($category_id);
-
-                if (false == $model->getImageUrl())
+                if (false == $category->getImageUrl())
                     continue;
 
                 $result++;

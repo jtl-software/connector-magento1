@@ -139,6 +139,8 @@ class Category
         $model = \Mage::getModel('catalog/category')
             ->loadByAttribute('jtl_erp_id', $hostId);
         //$result->addIdentity('category', $identity);
+
+        $result->setId(new Identity($model->getId(), $category->getId()->getHost()));
         
         foreach ($this->stores as $locale => $storeId) {
             $categoryI18n = ArrayTools::filterByLanguage($category->getI18ns(), LocaleMapper::localeToLanguageIso($locale));
@@ -261,16 +263,12 @@ class Category
             )
             ->addAttributeToSort('level', 'asc');
 
+        // Apply query filter
         if ($filter->isLimit()) {
             $categoryCollection->setPageSize($filter->getLimit())->setCurPage(1);
         }
 
         $categoryCollection->load();
-
-        // Apply query filter
-        if ($filter->isLimit()) {
-            $categoryIds = array_splice($categoryIds, 0, $filter->getLimit());
-        }
 
         $result = array();
         foreach ($categoryCollection as $model) {

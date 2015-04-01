@@ -2,26 +2,64 @@
     "entities" : {
         "Category" : {
             "pull" : true,
-            "push" : true
+            "push" : true,
+            "delete" : true
         },
         "Product" : {
             "pull" : true,
-            "push" : true
+            "push" : true,
+            "delete" : true
+        },
+        "CrossSellingGroup" : {
+            "pull" : true,
+            "push" : false,
+            "delete" : false
+        },
+        "Currency" : {
+            "pull" : true,
+            "push" : false,
+            "delete" : false
         },
         "Customer" : {
             "pull" : true,
-            "push" : false
+            "push" : false,
+            "delete" : false
+        },
+        "CustomerGroup" : {
+            "pull" : true,
+            "push" : false,
+            "delete" : false
         },
         "CustomerOrder" : {
             "pull" : true,
-            "push" : false
+            "push" : false,
+            "delete" : false
         },
         "Image" : {
             "pull" : true,
-            "push" : false
+            "push" : false,
+            "delete" : false
+        },
+        "Language" : {
+            "pull" : true,
+            "push" : false,
+            "delete" : false
         }
     },
     "flags" : {
-        "var_combination_child_first" : true
+        "var_combination_child_first" : true,
+        "can_reactivate_customer_order" : false,
+        "can_update_customer_order" : false,
+        "customer_order_partially_payable": false,
+        "product_images_supported" : true,
+        "category_images_supported" : true,
+        "manufacturer_images_supported" : false,
+        "specific_images_supported" : false,
+        "specific_value_images_supported" : false,
+        "config_group_images_supported" : false,
+        "product_variation_value_images_supported" : false,
+        "variation_products_supported" : false,
+        "variation_combinations_supported" : true,
+        "set_articles_supported" : false
     }
 }

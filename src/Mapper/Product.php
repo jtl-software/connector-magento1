@@ -49,89 +49,112 @@ class Product
         Logger::write('default Store ID: ' . $this->defaultStoreId);
     }
 
+    private function isParent(ConnectorProduct $product)
+    {
+        return ($product->getIsMasterProduct());
+    }
+
+    private function isChild(ConnectorProduct $product)
+    {
+        return ((count($product->getVariations()) > 0) && ($product->getMasterProductId()->getHost() > 0));
+    }
+
     private function insert(ConnectorProduct $product)
     {
         Logger::write('insert product');
+
         $result = new ConnectorProduct();
+        $identity = $product->getId();
+        $hostId = $identity->getHost();
 
-        \Mage::app()->setCurrentStore(\Mage_Core_Model_App::ADMIN_STORE_ID);
-
-        $model = \Mage::getModel('catalog/product');
-
-        $productI18n = ArrayTools::filterOneByLocale($container->getProductI18ns(), $this->defaultLocale);
-        if ($productI18n === null)
-            $productI18n = reset($container->getProductI18ns());
-
-        $model->setStoreId(\Mage_Core_Model_App::ADMIN_STORE_ID);
-
-        // Insert default price
-        $productPrices = ArrayTools::filterByItemKey($container->getProductPrices(), 1, '_quantity');
         $defaultCustomerGroupId = Magento::getInstance()->getDefaultCustomerGroupId();
-        $defaultProductPrice = ArrayTools::filterOneByEndpointId($productPrices, $defaultCustomerGroupId, 'customerGroupId');
-        if (!($defaultProductPrice instanceof ConnectorProductPrice))
-            $defaultProductPrice = reset($productPrices);
+        
+        \Mage::app()->setCurrentStore(\Mage_Core_Model_App::ADMIN_STORE_ID);
+        $model = \Mage::getModel('catalog/product');
+        $model->setWebsiteIds(array(1,2));
+        $model->setStoreId(1);
 
-        if ($productI18n instanceof ConnectorProductI18n)
-            $model->setName($productI18n->getName());
-        $model->setSku($product->getSku());
-        $model->setAttributeSetId(4);
-        $model->setHasOptions(0);
-        $model->setRequiredOptions(0);
-        $model->setVisibility(\Mage_Catalog_Model_Product_Visibility::VISIBILITY_BOTH);
-        $model->setStatus(1);
+        $model->setJtlErpId($identity->getHost());
+        $model->setIsRecurring(0);
         $model->setTaxClassId(1);
-        $model->setEnableGoogleCheckout(1);
-        $model->setTypeId('simple');
-        $model->setMsrp($product->getRecommendedRetailPrice());
-        $model->setWeight($product->getProductWeight());
-        if ($defaultProductPrice instanceof ConnectorProductPrice)
-            $model->setPrice($defaultProductPrice->getNetPrice() * (1.0 + $product->getVat() / 100.0));
-        $model->setWeight($product->getProductWeight());
-        $model->setManageStock($product->getConsiderStock() === true ? '1' : '0');
-        $model->setQty($product->getStockLevel());
-        $model->setIsQtyDecimal($product->getIsDivisible() ? '1' : '0');
-        $model->setMinSaleQty($product->getMinimumOrderQuantity());
-        $model->setUseConfigMinSaleQty(is_null($product->getMinimumOrderQuantity()) ? '1' : '0');
-        $model->save();
-        $productId = $model->getId();
-        $result->addIdentity('product', new Identity($model->getId(), $product->getId()->getHost()));
+        $model->setStatus(1);
 
-        foreach ($this->stores as $locale => $storeId) {
-            \Mage::app()->setCurrentStore($storeId);
+        if ($this->isParent($product)) {
+            Logger::write('varcombi parent');
+            // Varcombi parent
+            $model->setTypeId('configurable');
 
+            $attributeSetId = $this->getAttributeSetForProduct($product);
+            $model->setAttributeSetId($attributeSetId);
+            $this->updateConfigurableData($model, $product);
+
+            // Reload model
             $model = \Mage::getModel('catalog/product')
-                ->load($productId);
+                ->load($model->getId());
+        }
+        elseif ($this->isChild($product)) {
+            Logger::write('varcombi child');
+            // Varcombi child
+            $model->setTypeId('simple');
 
-            // Add product to website
-            $websiteIds = $model->getWebsiteIds();
-            if (!in_array(\Mage::app()->getStore()->getWebsiteId(), $websiteIds)) {
-                $websiteIds[] = \Mage::app()->getStore()->getWebsiteId();
-                $model->setStoreId($storeId);
-                $model->setWebsiteIds($websiteIds);
-                $model->save();
-            }
+            $attributeSetId = $this->getAttributeSetForProduct($product);
+            $model->setAttributeSetId($attributeSetId);
+            $this->updateVariationValues($model, $product);
+        }
+        else {
+            Logger::write('simple product');
+            // Simple product
+            $model->setTypeId('simple');
 
+            // Set default attribute set ID
+            $defaultAttributeSetId = \Mage::getSingleton('eav/config')
+                ->getEntityType(\Mage_Catalog_Model_Product::ENTITY)
+                ->getDefaultAttributeSetId();
 
-            $productI18n = ArrayTools::filterOneByLocale($container->getProductI18ns(), $locale);
-            if (!($productI18n instanceof ConnectorProductI18n))
-                continue;
-
-            $model->setStoreId($storeId);
-            $model->setName($productI18n->getName());
-            $model->setShortDescription($productI18n->getShortDescription());
-            $model->setDescription($productI18n->getDescription());
-            $model->save();
+            $model->setAttributeSetId($defaultAttributeSetId);
         }
 
+        /* *** Begin Product *** */
+        $model->setSku($product->getSku());
+        $model->setMsrp($product->getRecommendedRetailPrice());
+        $model->setWeight($product->getProductWeight());
+        $model->save();
+
+        /* *** Begin StockLevel *** */
+        // $model->setStockData(array( 
+        //     'use_config_manage_stock' => 0,
+        //     'is_in_stock' => $product->getStockLevel()->getStockLevel() > 0,
+        //     'qty' => $product->getStockLevel()->getStockLevel(),
+        //     'manage_stock' => $product->getConsiderStock() ? 1 : 0,
+        //     'use_config_notify_stock_qty' => 0
+        // ));
+
+        $this->updateProductStockLevel($model, $product);
+        $this->updateProductPrices($model, $product);
+        $result->setId(new Identity($model->entity_id, $model->jtl_erp_id));
+
+        // Create fake array to trick Magento into not updating tier prices during
+        // this function any further
+        $model->setTierPrice(array('website_id' => 0));
+        $model->setGroupPrice(array('website_id' => 0));
+
+        $this->updateProductI18ns($model, $product);
+
         /* *** Begin Product2Category *** */
+        $product2Categories = $product->getCategories();
         $categoryIds = array_map(function($product2Category) {
-            return $product2Category->getCategoryId()->getEndpoint();
-        }, $product->getCategories());
+            $category = \Mage::getResourceModel('catalog/category_collection')
+                ->addAttributeToSelect('entity_id')
+                ->addAttributeToFilter('jtl_erp_id', $product2Category->getCategoryId()->getHost())
+                ->getFirstItem();
+
+            return $category->entity_id;
+        }, $product2Categories);
         $model->setStoreId(\Mage_Core_Model_App::ADMIN_STORE_ID);
         $model->setCategoryIds($categoryIds);
+        Logger::write('update with category IDs . ' . var_export($categoryIds, true));
         $model->save();
         /* *** End Product2Category *** */
-
 
         // die('error (todo)');
         return $result;
@@ -153,129 +176,61 @@ class Product
         $productId = $model->entity_id;
         $model->setStoreId(\Mage_Core_Model_App::ADMIN_STORE_ID);
 
+        if ($this->isParent($product)) {
+            Logger::write('varcombi parent');
+            // Varcombi parent
+            $model->setTypeId('configurable');
+
+            $attributeSetId = $this->getAttributeSetForProduct($product);
+            $model->setAttributeSetId($attributeSetId);
+            $this->updateConfigurableData($model, $product);
+        }
+        elseif ($this->isChild($product)) {
+            Logger::write('varcombi child');
+            // Varcombi child
+            $model->setTypeId('simple');
+
+            $attributeSetId = $this->getAttributeSetForProduct($product);
+            $model->setAttributeSetId($attributeSetId);
+            $this->updateVariationValues($model, $product);
+        }
+        else {
+            Logger::write('simple product');
+            // Simple product
+            $model->setTypeId('simple');
+
+            // Set default attribute set ID
+            $defaultAttributeSetId = \Mage::getSingleton('eav/config')
+                ->getEntityType(\Mage_Catalog_Model_Product::ENTITY)
+                ->getDefaultAttributeSetId();
+
+            $model->setAttributeSetId($defaultAttributeSetId);
+        }
+
         /* *** Begin Product *** */
         $model->setMsrp($product->getRecommendedRetailPrice());
         $model->setWeight($product->getProductWeight());
 
         /* *** Begin StockLevel *** */
-        $stockItem = \Mage::getModel('cataloginventory/stock_item')
-            ->loadByProduct($model);
-        $stockItem->setQty($product->getStockLevel()->getStockLevel());
-        $stockItem->save();
+        // $stockItem = \Mage::getModel('cataloginventory/stock_item')
+        //     ->loadByProduct($model);
+        // $stockItem->setQty($product->getStockLevel()->getStockLevel());
+        // $stockItem->save();
 
-        /* *** Begin ProductPrice *** */
-        // Insert default price
-        $defaultGroupPrices = ArrayTools::filterOneByItemEndpointId($product->getPrices(), $defaultCustomerGroupId, 'customerGroupId');
-        if (!($defaultGroupPrices instanceof ConnectorProductPrice)) {
-            $defaultGroupPrices = reset($product->getPrices());
-        }
+        $this->updateProductStockLevel($model, $product);
+        $this->updateProductPrices($model, $product);
+        $result->setId(new Identity($model->entity_id, $model->jtl_erp_id));
 
-        $defaultGroupPriceItems = $defaultGroupPrices->getItems();
-        $defaultProductPrice = ArrayTools::filterOneByItemKey($defaultGroupPriceItems, 0, 'quantity');
-        if (!($defaultProductPrice instanceof ConnectorProductPriceItem))
-            $defaultProductPrice = reset($defaultGroupPrices);
-
-        if ($defaultProductPrice instanceof ConnectorProductPriceItem) {
-            Logger::write('default price: ' . $defaultProductPrice->getNetPrice());
-            Logger::write('gross: ' . ($defaultProductPrice->getNetPrice() * (1.0 + $this->getTaxRateByClassId($model->tax_class_id) / 100.0)));
-            Logger::write('product tax class ID: ' . $model->getTaxClassId());
-            $model->setPrice($defaultProductPrice->getNetPrice() * (1.0 + $this->getTaxRateByClassId($model->tax_class_id) / 100.0));
-        }
-        else {
-            die(var_dump($defaultProductPrice));
-        }
-
-        // Tier prices and group prices (i.e. tier price with qty == 0)
-        // Clear all tier prices and group prices first (are you f***king kidding me?)
-        // 
-        // (thanks to http://www.catgento.com/how-to-set-tier-prices-programmatically-in-magento/)
-        $dbc = \Mage::getSingleton('core/resource')->getConnection('core_write');
-        $resource = \Mage::getSingleton('core/resource');
-        $table = $resource->getTableName('catalog/product').'_tier_price';
-        $dbc->query("DELETE FROM $table WHERE entity_id = " . $model->entity_id);
-        Logger::write("DELETE FROM $table WHERE entity_id = " . $model->entity_id);
-        $table = $resource->getTableName('catalog/product').'_group_price';
-        $dbc->query("DELETE FROM $table WHERE entity_id = " . $model->entity_id);
-        Logger::write("DELETE FROM $table WHERE entity_id = " . $model->entity_id);
-
-        $tierPrice = array();
-        $groupPrice = array();
-        foreach ($product->getPrices() as $currentPrice) {
-            foreach ($currentPrice->getItems() as $currentPriceItem) {
-                if ($currentPriceItem->getQuantity() > 0) {
-                    // Tier price (qty > 0)
-                    $tierPrice[] = array(
-                        'website_id' => \Mage::app()->getStore()->getWebsiteId(),
-                        'cust_group' => (int)$currentPrice->getCustomerGroupId()->getEndpoint(),
-                        'price_qty' => $currentPriceItem->getQuantity(),
-                        'price' => $currentPriceItem->getNetPrice() * (1.0 + $this->getTaxRateByClassId($model->tax_class_id) / 100.0)
-                    );
-                }
-                else {
-                    // Group price (qty == 0)
-                    $groupPrice[] = array(
-                        'website_id' => \Mage::app()->getStore()->getWebsiteId(),
-                        'all_groups' => (int)$currentPrice->getCustomerGroupId()->getEndpoint() == 0 ? 1 : 0,
-                        'cust_group' => (int)$currentPrice->getCustomerGroupId()->getEndpoint(),
-                        'price' => $currentPriceItem->getNetPrice() * (1.0 + $this->getTaxRateByClassId($model->tax_class_id) / 100.0)
-                    );
-                }
-            }
-        }
-        Logger::write('set tier prices');
-        $model->setTierPrice($tierPrice);
-        Logger::write('set group prices');
-        $model->setGroupPrice($groupPrice);
-        Logger::write('save');
-        $model->save();
-
-        // Set fake array to trick Magento into not updating tier prices during
+        // Create fake array to trick Magento into not updating tier prices during
         // this function any further
         $model->setTierPrice(array('website_id' => 0));
         $model->setGroupPrice(array('website_id' => 0));
 
-        /* *** Begin ProductI18n *** */
-        Logger::write('begin admin store i18n');
-
-        // Admin Store ID (default language)
-        $productI18n = ArrayTools::filterOneByLanguage($product->getI18ns(), LocaleMapper::localeToLanguageIso($this->defaultLocale));
-        if ($productI18n === null)
-            $productI18n = reset($product->getI18ns());
-
-        if ($productI18n instanceof ConnectorProductI18n) {
-            $model->setName($productI18n->getName());
-            $model->setShortDescription($productI18n->getShortDescription());
-            $model->setDescription($productI18n->getDescription());
-        }
-        $model->save();
-        $result->setId(new Identity($model->entity_id, $model->jtl_erp_id));
-
-        Logger::write('begin productI18n');
-        foreach ($this->stores as $locale => $storeId) {
-            $productI18n = ArrayTools::filterOneByLanguage($product->getI18ns(), LocaleMapper::localeToLanguageIso($locale));
-            if (!($productI18n instanceof ConnectorProductI18n))
-                continue;
-
-            $model = \Mage::getModel('catalog/product')
-                ->load($productId);
-
-            $model->setStoreId($storeId);
-            $model->setName($productI18n->getName());
-            $model->setShortDescription($productI18n->getShortDescription());
-            $model->setDescription($productI18n->getDescription());
-            $model->save();
-
-            Logger::write('productI18n ' . $locale);
-        }
-        Logger::write('end productI18n');
-        /* *** End ProductI18n *** */
+        $this->updateProductI18ns($model, $product);
 
         /* *** Begin Product2Category *** */
         $product2Categories = $product->getCategories();
-        Logger::write('product2Categories' . var_export($product2Categories, true));
         $categoryIds = array_map(function($product2Category) {
-            Logger::write('product2category: ' . var_export($product2Category, true));
-
             $category = \Mage::getResourceModel('catalog/category_collection')
                 ->addAttributeToSelect('entity_id')
                 ->addAttributeToFilter('jtl_erp_id', $product2Category->getCategoryId()->getHost())
@@ -291,6 +246,359 @@ class Product
 
         // die('error (todo)');
         return $result;
+    }
+
+    private function getCustomAttributesFromAttrSet($attributeSetId)
+    {
+        static $defaultAttributeIDs = null;
+        if (is_null($defaultAttributeIDs)) {
+            $defaultAttributeSetId = \Mage::getSingleton('eav/config')
+                ->getEntityType(\Mage_Catalog_Model_Product::ENTITY)
+                ->getDefaultAttributeSetId();
+
+            $attributes = \Mage::getModel('catalog/product_attribute_api')
+                ->items($defaultAttributeSetId);
+
+            $defaultAttributeIDs = array_map(function($item) {
+                return $item['attribute_id'];
+            }, $attributes);
+        }
+
+        $attributes = \Mage::getModel('catalog/product_attribute_api')
+            ->items($attributeSetId);
+
+        $attributes = array_filter($attributes, function($attr) use ($defaultAttributeIDs) {
+            return !in_array($attr['attribute_id'], $defaultAttributeIDs);
+        });
+
+        sort($attributes);
+        return $attributes;
+    }
+
+    private function getVariationTitlesForProduct(ConnectorProduct $product)
+    {
+        $defaultLanguageIso = LocaleMapper::localeToLanguageIso($this->defaultLocale);
+
+        $titles = array();
+        foreach ($product->getVariations() as $variation) {
+            $variationI18n = ArrayTools::filterOneByLanguage($variation->getI18ns(), $defaultLanguageIso);
+            if ($variationI18n === null)
+                $variationI18n = reset($variation->getI18ns());
+
+            if ($variationI18n != null)
+                $titles[$variation->getId()->getHost()] = $variationI18n->getName();
+        }
+
+        asort($titles);
+        return $titles;
+    }
+
+    private function updateAttributeValues(array $variations)
+    {
+        $defaultLanguageIso = LocaleMapper::localeToLanguageIso($this->defaultLocale);
+
+        $product = \Mage::getModel('catalog/product');
+        
+        Logger::write(sprintf('process %u variations...', count($variations)));
+        foreach ($variations as $variation) {
+            $attribute = $this->findAttributeByVariation($variation);
+
+            if (!is_null($attribute)) {
+                $attribute->setEntityType($product->getResource());
+
+                $values = $attribute
+                    ->getSource()
+                    ->getAllOptions(false);
+
+                foreach ($variation->getValues() as $variationValue) {
+                    $defaultVariationValueI18n = ArrayTools::filterOneByLanguage($variationValue->getI18ns(), $defaultLanguageIso);
+                    if ($defaultVariationValueI18n === null)
+                        $defaultVariationValueI18n = reset($variationValue->getI18ns());
+                    $matches = array_filter($values, function ($value) use ($defaultVariationValueI18n) {
+                        return ($value['label'] === $defaultVariationValueI18n->getName());
+                    });
+
+                    // Value found
+                    if ($matches)
+                        continue;
+
+                    Logger::write(sprintf('value "%s" not found', $variationValue->getId()->getHost()));
+
+                    $attribute_model = \Mage::getModel('eav/entity_attribute');
+                    $attribute_options_model = \Mage::getModel('eav/entity_attribute_source_table');
+
+                    $attribute_table = $attribute_options_model->setAttribute($attribute);
+                    $options = $attribute_options_model->getAllOptions(false);
+                    Logger::write(var_export($options, true));
+
+                    $stores = MapperDatabase::getInstance()->getStoreMapping();
+                    $newAttributeValue = array('option' => array());
+                    $newAttributeValue['option'] = array(
+                        \Mage_Core_Model_App::ADMIN_STORE_ID => $defaultVariationValueI18n->getName()
+                    );
+                    foreach ($stores as $locale => $storeId) {
+                        $variationValueI18n = ArrayTools::filterOneByLanguage($variationValue->getI18ns(), LocaleMapper::localeToLanguageIso($locale));
+                        if ($variationValueI18n === null) {
+                            $i18ns = $variationValue->getI18ns();
+                            $variationValueI18n = reset($i18ns);
+                        }
+
+                        $newAttributeValue['option'][$storeId] = $variationValueI18n->getName();
+                    }
+                    $result = array('value' => $newAttributeValue);
+                    $attribute->setData('option', $result);
+                    $attribute->save();
+                }
+            }
+            else {
+                // Is there an error in the matrix?
+                Logger::write('Spurious attribute not found: ' . $variationI18n->getName());
+                throw new Exception('Spurious attribute not found: ' . $variationI18n->getName());
+            }
+        }
+    }
+
+    private function findAttributeByVariation(ConnectorProductVariation $variation)
+    {
+        $variationI18n = ArrayTools::filterOneByLanguage($variation->getI18ns(), $defaultLanguageIso);
+        if ($variationI18n === null)
+            $variationI18n = reset($variation->getI18ns());
+
+        $attributes = \Mage::getModel('eav/entity_attribute')
+            ->getCollection()
+            ->addFieldToFilter('frontend_label', $variationI18n->getName());
+
+        if ($attributes->count() > 0)
+            return $attributes->getFirstItem();
+
+        return NULL;
+    }
+
+    private function getAttributeSetForProduct(ConnectorProduct $product)
+    {
+        $defaultLanguageIso = LocaleMapper::localeToLanguageIso($this->defaultLocale);
+
+        $defaultAttributeSetId = \Mage::getSingleton('eav/config')
+            ->getEntityType(\Mage_Catalog_Model_Product::ENTITY)
+            ->getDefaultAttributeSetId();
+        $setCollection = \Mage::getModel('catalog/product_attribute_set_api')->items();
+
+        $variationTitles = $this->getVariationTitlesForProduct($product);
+        $variationTitleList = implode(',', $variationTitles);
+        Logger::write('Looking for variation set: ' . $variationTitleList);
+
+        foreach ($setCollection as $attributeSet)
+        {
+            // Skip default attribute set because it does not contain any
+            // custom attributes
+            if ($attributeSet['set_id'] == $defaultAttributeSetId)
+                continue;
+
+            $attributes = $this->getCustomAttributesFromAttrSet($attributeSet['set_id']);
+            $attrNames = array_map(function ($attr) use ($product) {
+                return \Mage::getResourceModel('catalog/product')
+                    ->getAttribute($attr['code'])
+                    ->getFrontendLabel();
+            }, $attributes);
+
+            $attrNameList = implode(',', $attrNames);
+            // we have found a compatible attr set
+            if ($attrNameList === $variationTitleList) {
+                Logger::write('found compatible attr set with ID ' . $attributeSet['set_id']);
+                Logger::write('check attribute values for existance...');
+
+                $this->updateAttributeValues($product->getVariations());
+
+                return $attributeSet['set_id'];
+            }
+        }
+
+        Logger::write('no compatible attribute set found - creating one...');
+
+        // Loop through all variations and check for appropriate attributes
+        $attributeSetAttributes = array();
+        foreach ($product->getVariations() as $variation) {
+            $attribute = $this->findAttributeByVariation($variation);
+
+            if (!is_null($attribute)) {
+                Logger::write('Attribute found - code: ' . $attribute['attribute_code']);
+                $attributeSetAttributes[] = $attribute['attribute_code'];
+            }
+            else {
+                $attributeName = $variationTitles[$variation->getId()->getHost()];
+                $attributeCode = strtolower(str_replace(' ', '_', $attributeName));
+
+                Logger::write('Creating attribute: ' . $attributeCode);
+
+                $attributeData = array(
+                    'attribute_code' => $attributeCode,
+                    'is_global' => 1,
+                    'is_visible' => 1,
+                    'is_searchable' => 0,
+                    'is_filterable' => 0,
+                    'is_comparable' => 1,
+                    'is_visible_on_front' => 1,
+                    'is_html_allowed_on_front' => 0,
+                    'is_used_for_price_rules' => 0,
+                    'is_filterable_in_search' => 0,
+                    'used_in_product_listing' => 0,
+                    'used_for_sort_by' => 1,
+                    'is_configurable' => 1,
+                    'frontend_input' => 'select',
+                    'is_wysiwyg_enabled' => '0',
+                    'is_unique' => '0',
+                    'is_required' => '0',
+                    'is_visible_in_advanced_search' => '0',
+                    'frontend_label' => $attributeName,
+                    'apply_to' => array('configurable')
+                );
+
+                $attrModel = \Mage::getModel('catalog/resource_eav_attribute');
+                $attributeData['backend_type'] = $attrModel->getBackendTypeByInput($attributeData['frontend_input']);
+                $attrModel->addData($attributeData);
+                $attrModel->setEntityTypeId(
+                    \Mage::getModel('eav/entity')
+                        ->setType('catalog_product')
+                        ->getTypeId()
+                );
+                $attrModel->setIsUserDefined(1);
+                $attrModel->save();
+            }
+        }
+
+        // Update attribute values
+        $this->updateAttributeValues($product->getVariations());
+
+        // Create attribute set containing the attributes
+        
+    }
+
+    private function findOptionValueIdByName($attribute, $valueName)
+    {
+        Magento::getInstance()->setCurrentStore(\Mage_Core_Model_App::ADMIN_STORE_ID);
+
+        $product = \Mage::getModel('catalog/product');
+        $attribute->setEntityType($product->getResource());
+        $values = $attribute
+            ->getSource()
+            ->getAllOptions(false);
+
+        $matches = array_filter($values, function ($value) use ($valueName) {
+            return ($value['label'] === $valueName);
+        });
+
+        if (!$matches) {
+            throw new \Exception('Attribute value ' . $valueName . ' not found');
+        }
+
+        $match = reset($matches);
+        return $match['value'];
+    }
+
+    private function updateVariationValues(\Mage_Catalog_Model_Product $model, ConnectorProduct $product)
+    {
+        $defaultLanguageIso = LocaleMapper::localeToLanguageIso($this->defaultLocale);
+
+        foreach ($product->getVariations() as $variation) {
+            $variationValues = $variation->getValues();
+            $variationValue = reset($variationValues);
+
+            $defaultVariationValueI18n = ArrayTools::filterOneByLanguage($variationValue->getI18ns(), $defaultLanguageIso);
+            if ($defaultVariationValueI18n === null)
+                $defaultVariationValueI18n = reset($variationValue->getI18ns());
+
+            $attribute = $this->findAttributeByVariation($variation);
+            $optionValueId = $this->findOptionValueIdByName($attribute, $defaultVariationValueI18n->getName());
+
+            Logger::write(sprintf('attr "%s" => value "%s"', $attribute->getAttributeCode(), $optionValueId));
+            $model->setData($attribute->getAttributeCode(), $optionValueId);
+        }
+    }
+
+    private function updateConfigurableData(\Mage_Catalog_Model_Product $model, ConnectorProduct $product)
+    {
+        $defaultLanguageIso = LocaleMapper::localeToLanguageIso($this->defaultLocale);
+
+        $attributeIDs = array();
+        $configurableProductsData = array();
+        $childProductIDs = array();
+        foreach ($product->getVarCombinations() as $varCombination) {
+            $childProduct = \Mage::getModel('catalog/product')
+                ->loadByAttribute('jtl_erp_id', $varCombination->getProductId()->getHost());
+            $childProductId = $childProduct->getId();
+            $childProductIDs[$childProductId] = 1;
+
+            $variationId = $varCombination->getProductVariationId();
+            $variationValueId = $varCombination->getProductVariationValueId();
+
+            if (!array_key_exists($childProductId, $configurableProductsData)) {
+                $configurableProductsData[$childProductId] = array();
+            }
+
+            $variations = $product->getVariations();
+
+            foreach ($variations as $variation) {
+                $attribute = $this->findAttributeByVariation($variation);
+
+                if ($variation->getId()->getHost() === $variationId->getHost()) {
+                    $variationValues = $variation->getValues();
+                    foreach ($variationValues as $variationValue) {
+                        if ($variationValue->getId()->getHost() === $variationValueId->getHost()) {
+                            $defaultVariationValueI18n = ArrayTools::filterOneByLanguage($variationValue->getI18ns(), $defaultLanguageIso);
+                            if ($defaultVariationValueI18n === null)
+                                $defaultVariationValueI18n = reset($variationValue->getI18ns());
+
+                            $optionValueId = $this->findOptionValueIdByName($attribute, $defaultVariationValueI18n->getName());
+                            $attributeId = (int)$attribute->getId();
+
+                            if (!in_array($attributeId, $attributeIDs))
+                                $attributeIDs[] = $attributeId;
+
+                            $configurableProductsData[$childProductId][] = array(
+                                'label' => $defaultVariationValueI18n->getName(),
+                                'attribute_id' => $attributeId,
+                                'value_index' => $optionValueId,
+                                'is_percent' => '0',
+                                'pricing_value' => 0
+                            );
+                        }
+                    }
+                }
+            }
+        }
+        $childProductIDs = array_keys($childProductIDs);
+
+        $model->getTypeInstance()->setUsedProductAttributeIds($attributeIDs);
+        $model->setCanSaveConfigurableAttributes(true);
+        $configurableAttributesData = $model->getTypeInstance()->getConfigurableAttributesAsArray();
+        $model->setConfigurableAttributesData($configurableAttributesData);
+
+        // foreach ($configurableAttributesData as $key => $attributeArray) {
+        //     $configurableAttributesData[$key]['use_default'] = 1;
+        //     $configurableAttributesData[$key]['position'] = 0;
+
+        //     if (isset($attributeArray['frontend_label']))
+        //     {
+        //         $configurableAttributesData[$key]['label'] = $attributeArray['frontend_label'];
+        //     }
+        //     else {
+        //         $configurableAttributesData[$key]['label'] = $attributeArray['attribute_code'];
+        //     }
+        // }
+
+        $model->setConfigurableProductsData($configurableProductsData);
+        $model->setCanSaveCustomOptions(true);
+
+        // $model->setIsMassupdate(true);
+        $model->save();
+
+        // \Mage::getResourceSingleton('catalog/product_type_configurable')
+        //     ->saveProducts($model, $childProductIDs);
+
+        $configModel = \Mage::getModel('catalog/product')
+            ->load($model->getId());
+        $usedProducts = $configModel->getTypeInstance()->getUsedProducts();
+        Logger::write('used products: ' . var_export($usedProducts, true));
     }
 
     public function existsByHost($hostId)
@@ -552,6 +860,237 @@ class Product
         }
 
         return $result;
+    }
+
+    public function processStockLevelChange(ProductStockLevel $stockLevel)
+    {
+        $identity = $stockLevel->getProductId();
+        $hostId = $identity->getHost();
+
+        \Mage::app()->setCurrentStore(\Mage_Core_Model_App::ADMIN_STORE_ID);
+        $model = \Mage::getModel('catalog/product')
+            ->loadByAttribute('jtl_erp_id', $hostId);
+
+        if (is_null($model->entity_id))
+            return false;
+
+        $stockItem = \Mage::getModel('cataloginventory/stock_item')
+            ->loadByProduct($model);
+        $stockItem->setQty($stockLevel->getStockLevel());
+        $stockItem->save();
+
+        return true;
+    }
+
+    public function processPrices(array $prices)
+    {
+        if (count($prices) == 0)
+            return false;
+
+        $defaultCustomerGroupId = Magento::getInstance()->getDefaultCustomerGroupId();
+
+        $firstPrice = reset($prices);
+        $identity = $firstPrice->getProductId();
+        $hostId = $identity->getHost();
+
+        \Mage::app()->setCurrentStore(\Mage_Core_Model_App::ADMIN_STORE_ID);
+        $model = \Mage::getModel('catalog/product')
+            ->loadByAttribute('jtl_erp_id', $hostId);
+
+        if (is_null($model->entity_id))
+            return false;
+
+        /* *** Begin ProductPrice *** */
+        // Insert default price
+        $defaultGroupPrices = ArrayTools::filterOneByItemEndpointId($prices, $defaultCustomerGroupId, 'customerGroupId');
+        if (!($defaultGroupPrices instanceof ConnectorProductPrice)) {
+            $defaultGroupPrices = reset($prices);
+        }
+
+        $defaultGroupPriceItems = $defaultGroupPrices->getItems();
+        $defaultProductPrice = ArrayTools::filterOneByItemKey($defaultGroupPriceItems, 0, 'quantity');
+        if (!($defaultProductPrice instanceof ConnectorProductPriceItem))
+            $defaultProductPrice = reset($defaultGroupPrices);
+
+        if ($defaultProductPrice instanceof ConnectorProductPriceItem) {
+            Logger::write('default price: ' . $defaultProductPrice->getNetPrice());
+            Logger::write('gross: ' . ($defaultProductPrice->getNetPrice() * (1.0 + $this->getTaxRateByClassId($model->tax_class_id) / 100.0)));
+            Logger::write('product tax class ID: ' . $model->getTaxClassId());
+            $model->setPrice($defaultProductPrice->getNetPrice() * (1.0 + $this->getTaxRateByClassId($model->tax_class_id) / 100.0));
+        }
+        else {
+            die(var_dump($defaultProductPrice));
+        }
+
+        // Tier prices and group prices (i.e. tier price with qty == 0)
+        // Clear all tier prices and group prices first (are you f***king kidding me?)
+        // 
+        // (thanks to http://www.catgento.com/how-to-set-tier-prices-programmatically-in-magento/)
+        $dbc = \Mage::getSingleton('core/resource')->getConnection('core_write');
+        $resource = \Mage::getSingleton('core/resource');
+        $table = $resource->getTableName('catalog/product').'_tier_price';
+        $dbc->query("DELETE FROM $table WHERE entity_id = " . $model->entity_id);
+        Logger::write("DELETE FROM $table WHERE entity_id = " . $model->entity_id);
+        $table = $resource->getTableName('catalog/product').'_group_price';
+        $dbc->query("DELETE FROM $table WHERE entity_id = " . $model->entity_id);
+        Logger::write("DELETE FROM $table WHERE entity_id = " . $model->entity_id);
+
+        $tierPrice = array();
+        $groupPrice = array();
+        foreach ($prices as $currentPrice) {
+            foreach ($currentPrice->getItems() as $currentPriceItem) {
+                if ($currentPriceItem->getQuantity() > 0) {
+                    // Tier price (qty > 0)
+                    $tierPrice[] = array(
+                        'website_id' => \Mage::app()->getStore()->getWebsiteId(),
+                        'cust_group' => (int)$currentPrice->getCustomerGroupId()->getEndpoint(),
+                        'price_qty' => $currentPriceItem->getQuantity(),
+                        'price' => $currentPriceItem->getNetPrice() * (1.0 + $this->getTaxRateByClassId($model->tax_class_id) / 100.0)
+                    );
+                }
+                else {
+                    // Group price (qty == 0)
+                    $groupPrice[] = array(
+                        'website_id' => \Mage::app()->getStore()->getWebsiteId(),
+                        'all_groups' => (int)$currentPrice->getCustomerGroupId()->getEndpoint() == 0 ? 1 : 0,
+                        'cust_group' => (int)$currentPrice->getCustomerGroupId()->getEndpoint(),
+                        'price' => $currentPriceItem->getNetPrice() * (1.0 + $this->getTaxRateByClassId($model->tax_class_id) / 100.0)
+                    );
+                }
+            }
+        }
+        Logger::write('set tier prices');
+        $model->setTierPrice($tierPrice);
+        Logger::write('set group prices');
+        $model->setGroupPrice($groupPrice);
+        Logger::write('save');
+        $model->save();
+    }
+
+    private function updateProductPrices(\Mage_Catalog_Model_Product $model, ConnectorProduct $product)
+    {
+        $prices = $product->getPrices();
+
+        // Insert default price
+        $defaultGroupPrices = ArrayTools::filterOneByItemEndpointId($prices, $defaultCustomerGroupId, 'customerGroupId');
+        if (!($defaultGroupPrices instanceof ConnectorProductPrice)) {
+            $defaultGroupPrices = reset($prices);
+        }
+
+        $defaultGroupPriceItems = $defaultGroupPrices->getItems();
+        $defaultProductPrice = ArrayTools::filterOneByItemKey($defaultGroupPriceItems, 0, 'quantity');
+        if (!($defaultProductPrice instanceof ConnectorProductPriceItem))
+            $defaultProductPrice = reset($defaultGroupPrices);
+
+        if ($defaultProductPrice instanceof ConnectorProductPriceItem) {
+            Logger::write('default price: ' . $defaultProductPrice->getNetPrice());
+            Logger::write('gross: ' . ($defaultProductPrice->getNetPrice() * (1.0 + $this->getTaxRateByClassId($model->tax_class_id) / 100.0)));
+            Logger::write('product tax class ID: ' . $model->getTaxClassId());
+            $model->setPrice($defaultProductPrice->getNetPrice() * (1.0 + $this->getTaxRateByClassId($model->tax_class_id) / 100.0));
+        }
+        else {
+            die(var_dump($defaultProductPrice));
+        }
+
+        // Tier prices and group prices (i.e. tier price with qty == 0)
+        // Clear all tier prices and group prices first (are you f***king kidding me?)
+        // 
+        // (thanks to http://www.catgento.com/how-to-set-tier-prices-programmatically-in-magento/)
+        $dbc = \Mage::getSingleton('core/resource')->getConnection('core_write');
+        $resource = \Mage::getSingleton('core/resource');
+        $table = $resource->getTableName('catalog/product').'_tier_price';
+        $dbc->query("DELETE FROM $table WHERE entity_id = " . $model->entity_id);
+        Logger::write("DELETE FROM $table WHERE entity_id = " . $model->entity_id);
+        $table = $resource->getTableName('catalog/product').'_group_price';
+        $dbc->query("DELETE FROM $table WHERE entity_id = " . $model->entity_id);
+        Logger::write("DELETE FROM $table WHERE entity_id = " . $model->entity_id);
+
+        $tierPrice = array();
+        $groupPrice = array();
+        foreach ($product->getPrices() as $currentPrice) {
+            foreach ($currentPrice->getItems() as $currentPriceItem) {
+                if ($currentPriceItem->getQuantity() > 0) {
+                    // Tier price (qty > 0)
+                    $tierPrice[] = array(
+                        'website_id' => \Mage::app()->getStore()->getWebsiteId(),
+                        'cust_group' => (int)$currentPrice->getCustomerGroupId()->getEndpoint(),
+                        'price_qty' => $currentPriceItem->getQuantity(),
+                        'price' => $currentPriceItem->getNetPrice() * (1.0 + $this->getTaxRateByClassId($model->tax_class_id) / 100.0)
+                    );
+                }
+                else {
+                    // Group price (qty == 0)
+                    $groupPrice[] = array(
+                        'website_id' => \Mage::app()->getStore()->getWebsiteId(),
+                        'all_groups' => (int)$currentPrice->getCustomerGroupId()->getEndpoint() == 0 ? 1 : 0,
+                        'cust_group' => (int)$currentPrice->getCustomerGroupId()->getEndpoint(),
+                        'price' => $currentPriceItem->getNetPrice() * (1.0 + $this->getTaxRateByClassId($model->tax_class_id) / 100.0)
+                    );
+                }
+            }
+        }
+        Logger::write('set tier prices');
+        $model->setTierPrice($tierPrice);
+        Logger::write('set group prices');
+        $model->setGroupPrice($groupPrice);
+        Logger::write('save');
+        $model->save();
+    }
+
+    private function updateProductI18ns(\Mage_Catalog_Model_Product $model, ConnectorProduct $product)
+    {
+        Logger::write('begin admin store i18n');
+
+        // Reload model
+        $tempProduct = \Mage::getModel('catalog/product')
+            ->load($model->getId());
+
+        // Admin Store ID (default language)
+        $productI18n = ArrayTools::filterOneByLanguage($product->getI18ns(), LocaleMapper::localeToLanguageIso($this->defaultLocale));
+        if ($productI18n === null)
+            $productI18n = reset($product->getI18ns());
+
+        if ($productI18n instanceof ConnectorProductI18n) {
+            $tempProduct->setName($productI18n->getName());
+            $tempProduct->setShortDescription($productI18n->getShortDescription());
+            $tempProduct->setDescription($productI18n->getDescription());
+        }
+        $tempProduct->save();
+
+        Logger::write('begin productI18n');
+        foreach ($this->stores as $locale => $storeId) {
+            $productI18n = ArrayTools::filterOneByLanguage($product->getI18ns(), LocaleMapper::localeToLanguageIso($locale));
+            if (!($productI18n instanceof ConnectorProductI18n))
+                continue;
+
+            $tempProduct = \Mage::getModel('catalog/product')
+                ->load($model->getId());
+
+            $tempProduct->setStoreId($storeId);
+            $tempProduct->setName($productI18n->getName());
+            $tempProduct->setShortDescription($productI18n->getShortDescription());
+            $tempProduct->setDescription($productI18n->getDescription());
+            $tempProduct->save();
+
+            Logger::write('productI18n ' . $locale);
+        }
+        Logger::write('end productI18n');
+    }
+
+    private function updateProductStockLevel(\Mage_Catalog_Model_Product $model, ConnectorProduct $product)
+    {
+        $model->save();
+
+        $tempProduct = \Mage::getModel('catalog/product')
+            ->load($model->entity_id);
+        $tempProduct->setStockData(array( 
+            'use_config_manage_stock' => 0,
+            'is_in_stock' => $product->getStockLevel()->getStockLevel() > 0,
+            'qty' => $product->getStockLevel()->getStockLevel(),
+            'manage_stock' => $product->getConsiderStock() ? 1 : 0,
+            'use_config_notify_stock_qty' => 0
+        ));
+        $tempProduct->save();
     }
 
     public function getAvailableCount()

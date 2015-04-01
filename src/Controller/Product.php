@@ -6,7 +6,6 @@
  */
 namespace jtl\Connector\Magento\Controller;
 
-use jtl\Connector\Core\Exception\TransactionException;
 use jtl\Connector\Core\Model\DataModel;
 use jtl\Connector\Core\Model\QueryFilter;
 use jtl\Connector\Core\Rpc\Error;
@@ -15,8 +14,6 @@ use jtl\Connector\Magento\Mapper\Product as ProductMapper;
 use jtl\Connector\Model\Statistic;
 use jtl\Connector\ModelContainer\ProductContainer;
 use jtl\Connector\Result\Action;
-use jtl\Connector\Result\Transaction as TransactionResult;
-use jtl\Connector\Transaction\Handler as TransactionHandler;
 
 /**
  * Description of Product
@@ -26,36 +23,31 @@ use jtl\Connector\Transaction\Handler as TransactionHandler;
  */
 class Product extends AbstractController
 {
-    public function commit($params, $trid)
+    public function delete(DataModel $model)
     {
         $action = new Action();
         $action->setHandled(true);
         
         try {
-            $container = TransactionHandler::getContainer($this->getMethod()->getController(), $trid);
+            $hostId = $model->getId()->getHost();
+            $product = \Mage::getModel('catalog/product')
+                ->loadByAttribute('jtl_erp_id', $hostId);
 
-            $mapper = new ProductMapper();
-            $result = $mapper->push($container);
+            if ($product) {
+                \Mage::register('isSecureArea', true);
+                $product->delete();
+                \Mage::unregister('isSecureArea');
+            }
 
-            $action->setResult($result->getPublic());
+            $action->setResult(true);
         }
         catch (\Exception $e) {
-            ob_start();
-            var_dump($e->getMessage());
-            $dump = ob_get_clean();
-            error_log($dump);
             $err = new Error();
             $err->setCode(31337); //$e->getCode());
-            $err->setMessage('Internal error'); //$e->getMessage());
+            $err->setMessage($e->getTraceAsString() . PHP_EOL . $e->getMessage()); //'Internal error'); //$e->getMessage());
             $action->setError($err);
         }
-        
         return $action;
-    }
-
-    public function delete(DataModel $model)
-    {
-        
     }
 
     public function pull(QueryFilter $filter)

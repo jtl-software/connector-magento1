@@ -14,6 +14,7 @@ use jtl\Connector\Model\CustomerOrderBillingAddress as ConnectorCustomerOrderBil
 use jtl\Connector\Model\CustomerOrderItem as ConnectorCustomerOrderItem;
 use jtl\Connector\Model\CustomerOrderItemVariation as ConnectorCustomerOrderItemVariation;
 use jtl\Connector\Model\CustomerOrderShippingAddress as ConnectorCustomerOrderShippingAddress;
+use jtl\Connector\Model\StatusChange as ConnectorStatusChange;
 use jtl\Connector\Model\Identity;
 
 /**
@@ -84,11 +85,11 @@ class Order
             $customerOrder = new ConnectorCustomerOrder();
             $customerOrder->setId(new Identity($order->entity_id));
             $customerOrder->setCustomerId(new Identity(intval($order->customer_id)));
-            $customerOrder->setShippingAddressId(new Identity($order->shipping_address_id));
-            $customerOrder->setBillingAddressId(new Identity($order->billing_address_id));
+            // $customerOrder->setShippingAddressId(new Identity($order->shipping_address_id));
+            // $customerOrder->setBillingAddressId(new Identity($order->billing_address_id));
             $customerOrder->setLanguageIso(LocaleMapper::localeToLanguageIso(array_search($order->store_id, $stores)));
             $customerOrder->setCurrencyIso($order->order_currency_code);
-            $customerOrder->setCredit(0.00);
+            // $customerOrder->setCredit(0.00);
             $customerOrder->setTotalSum((double)$order->grand_total);
             $customerOrder->setShippingMethodName($order->shipping_description);
             $customerOrder->setPaymentModuleCode(''); // TODO
@@ -261,5 +262,29 @@ class Order
         }
 
         return $result;
+    }
+
+    public function processStatusUpdate(ConnectorStatusChange $statusChange)
+    {
+        $order = \Mage::getModel('sales/order')
+            ->loadByIncrementId($statusChange->getCustomerOrderId());
+
+        if ($order == null)
+            return false;
+
+        switch ($statusChange->getOrderStatus()) {
+            case ConnectorCustomerOrder::STATUS_PROCESSING:
+                $order->setState(\Mage_Sales_Model_Order::STATE_PROCESSING, true);
+                break;
+            case ConnectorCustomerOrder::STATUS_COMPLETED:
+                $order->setState(\Mage_Sales_Model_Order::STATE_COMPLETE, true);
+                break;
+            case ConnectorCustomerOrder::STATUS_CANCELLED:
+                $order->setState(\Mage_Sales_Model_Order::STATE_CANCELED, true);
+                break;
+        }
+
+        $order->save();
+        return true;
     }
 }

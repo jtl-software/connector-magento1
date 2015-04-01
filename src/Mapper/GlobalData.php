@@ -8,6 +8,8 @@ namespace jtl\Connector\Magento\Mapper;
 
 use jtl\Connector\Magento\Magento;
 use jtl\Connector\Magento\Mapper\Database as MapperDatabase;
+use jtl\Connector\Model\CrossSellingGroup as ConnectorCrossSellingGroup;
+use jtl\Connector\Model\CrossSellingGroupI18n as ConnectorCrossSellingGroupI18n;
 use jtl\Connector\Model\Currency as ConnectorCurrency;
 use jtl\Connector\Model\CustomerGroup as ConnectorCustomerGroup;
 use jtl\Connector\Model\CustomerGroupI18n as ConnectorCustomerGroupI18n;
@@ -33,6 +35,10 @@ class GlobalData
         foreach ($languages as $language)
             $globalData->addLanguage($language);
 
+        $crossSellingGroups = $this->pullCrossSellingGroups();
+        foreach ($crossSellingGroups as $crossSellingGroup)
+            $globalData->addCrossSellingGroup($crossSellingGroup);
+
 		$currencies = $this->pullCurrencies();
         foreach ($currencies as $currency)
             $globalData->addCurrency($currency);
@@ -43,6 +49,35 @@ class GlobalData
 
 		return array($globalData);
 	}
+
+    public function pullCrossSellingGroups()
+    {
+        $result = array();
+
+        $xsellGroup = new ConnectorCrossSellingGroup();
+        $xsellGroup->setId(new Identity('xsell'));
+        $xsellGroupI18n = new ConnectorCrossSellingGroupI18n();
+        $xsellGroupI18n
+            ->setCrossSellingGroupId(new Identity('xsell'))
+            ->setLanguageIso('ger')
+            ->setName('CrossSelling')
+            ->setDescription('Definiert CrossSelling-Produkte');
+        $xsellGroup->addI18n($xsellGroupI18n);
+        $result[] = $xsellGroup;
+
+        $upsellGroup = new ConnectorCrossSellingGroup();
+        $upsellGroup->setId(new Identity('upsell'));
+        $upsellGroupI18n = new ConnectorCrossSellingGroupI18n();
+        $upsellGroupI18n
+            ->setCrossSellingGroupId(new Identity('upsell'))
+            ->setLanguageIso('ger')
+            ->setName('Upselling')
+            ->setDescription('Definiert Upselling-Produkte');
+        $upsellGroup->addI18n($upsellGroupI18n);
+        $result[] = $upsellGroup;
+
+        return $result;
+    }
 
 	public function pullCustomerGroups()
 	{
@@ -107,7 +142,7 @@ class GlobalData
                 ->setDelimiterCent(',')
                 ->setDelimiterThousand('.')
                 ->setHasCurrencySignBeforeValue(false)
-                ->setIsDefault(($currency->_iso === $defaultCurrencyCode))
+                ->setIsDefault(($currency->getIso() === $defaultCurrencyCode))
                 ->setFactor($defaultCurrency->getRate($shopCurrency->getShortName()));
 
 			$result[] = $currency;

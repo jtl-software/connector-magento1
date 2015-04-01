@@ -14,7 +14,6 @@ use jtl\Connector\Magento\Mapper\Category as CategoryMapper;
 use jtl\Connector\ModelContainer\CategoryContainer;
 use jtl\Connector\Model\Statistic;
 use jtl\Connector\Result\Action;
-use jtl\Connector\Transaction\Handler as TransactionHandler;
 
 
 /**
@@ -25,18 +24,23 @@ use jtl\Connector\Transaction\Handler as TransactionHandler;
  */
 class Category extends AbstractController
 {
-    public function commit($params, $trid)
+    public function delete(DataModel $model)
     {
         $action = new Action();
         $action->setHandled(true);
         
         try {
-            $container = TransactionHandler::getContainer($this->getMethod()->getController(), $trid);
+            $hostId = $model->getId()->getHost();
+            $category = \Mage::getModel('catalog/category')
+                ->loadByAttribute('jtl_erp_id', $hostId);
 
-            $mapper = new CategoryMapper();
-            $result = $mapper->push($container);
+            if ($category) {
+                \Mage::register('isSecureArea', true);
+                $category->delete();
+                \Mage::unregister('isSecureArea');
+            }
 
-            $action->setResult($result->getPublic());
+            $action->setResult(true);
         }
         catch (\Exception $e) {
             $err = new Error();
@@ -44,13 +48,7 @@ class Category extends AbstractController
             $err->setMessage($e->getTraceAsString() . PHP_EOL . $e->getMessage()); //'Internal error'); //$e->getMessage());
             $action->setError($err);
         }
-        
         return $action;
-    }
-
-    public function delete(DataModel $model)
-    {
-        
     }
 
     public function statistic(QueryFilter $filter)

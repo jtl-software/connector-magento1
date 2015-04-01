@@ -24,12 +24,18 @@ class Customer extends AbstractController
 {
     public function push(DataModel $model)
     {
-        
+        $action = new Action();
+        $action->setHandled(true);
+
+        return $action;
     }
 
     public function delete(DataModel $model)
     {
-        
+        $action = new Action();
+        $action->setHandled(true);
+
+        return $action;
     }
 
     public function statistic(QueryFilter $filter)

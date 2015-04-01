@@ -54,6 +54,7 @@ class Connector extends BaseConnector
 
         $this->setPrimaryKeyMapper(new PrimaryKeyMapper());
         $this->setTokenLoader(new TokenLoader());
+        $this->setChecksumLoader(new ChecksumLoader());
     }
 
     /**
@@ -99,9 +100,16 @@ class Connector extends BaseConnector
             $action = new Action();
             $results = array();
             $errors = array();
-            foreach ($requestpacket->getParams() as $param) {
-                $result = $this->_controller->{$this->_action}($param);
+            if ($this->_action === Method::ACTION_PUSH && $this->getMethod()->getController() === 'product_price') {
+                $params = $requestpacket->getParams();
+                $result = $this->_controller->update($params);
                 $results[] = $result->getResult();
+            }
+            else {
+                foreach ($requestpacket->getParams() as $param) {
+                    $result = $this->_controller->{$this->_action}($param);
+                    $results[] = $result->getResult();
+                }
             }
 
             $action->setHandled(true)

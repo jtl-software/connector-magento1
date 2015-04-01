@@ -11,6 +11,7 @@ use jtl\Connector\Core\Model\QueryFilter;
 use jtl\Connector\Core\Rpc\Error;
 use jtl\Connector\Result\Action;
 use jtl\Connector\Magento\Mapper\GlobalData as GlobalDataMapper;
+use jtl\Connector\Model\ConnectorIdentification;
 
 /**
  * Description of Connector
@@ -74,4 +75,24 @@ class Connector extends AbstractController
         
         return $action;
     }
+    /**
+     * Identify
+     *
+     * @return \jtl\Connector\Result\Action
+     */
+    public function identify()
+    {
+        $action = new Action();
+        $action->setHandled(true);
+
+        $identification = new ConnectorIdentification();
+        $identification->setEndpointVersion('0.0.1')
+            ->setPlatformName('Magento')
+            ->setPlatformVersion(\Mage::getVersion());
+
+        $action->setResult($identification);
+
+        return $action;
+    }
+
 }

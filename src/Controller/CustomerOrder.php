@@ -119,7 +119,10 @@ class CustomerOrder extends AbstractController
     
     public function delete(DataModel $model)
     {
-        
+        $action = new Action();
+        $action->setHandled(true);
+
+        return $action;
     }
 
     public function pull(QueryFilter $filter)
@@ -145,6 +148,9 @@ class CustomerOrder extends AbstractController
 
     public function push(DataModel $model)
     {
+        $action = new Action();
+        $action->setHandled(true);
 
+        return $action;
     }
 }

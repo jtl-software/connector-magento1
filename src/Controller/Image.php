@@ -26,14 +26,12 @@ use jtl\Connector\Transaction\Handler as TransactionHandler;
  */
 class Image extends AbstractController
 {
-    public function commit($params, $trid)
-    {
-
-    }
-
     public function delete(DataModel $model)
     {
-        
+        $action = new Action();
+        $action->setHandled(true);
+
+        return $action;
     }
 
     public function pull(QueryFilter $filter)

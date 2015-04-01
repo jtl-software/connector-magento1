@@ -27,23 +27,31 @@ $installer->addAttribute('catalog_product', 'jtl_erp_id', array(
     'input'          => 'text',
     'global'         => Mage_Catalog_Model_Resource_Eav_Attribute::SCOPE_GLOBAL,
     'visible'        => true,
-    'required'       => true,
+    'required'       => false,
     'user_defined'   => false,
     'used_in_product_listing' => true,
     'unique'         => false,
     'apply_to'       => '',
     'default'        => 0
 ));
-// $installer->addAttribute('catalog_product', 'jtl_erp_hash', array(
-//     'type'           => 'varchar',
-//     'label'          => 'JTL-Wawi-Produkt-Hash',
-//     'input'          => 'text',
-//     'global'         => Mage_Catalog_Model_Resource_Eav_Attribute::SCOPE_GLOBAL,
-//     'visible'        => false,
-//     'required'       => false,
-//     'user_defined'   => false,
-//     'default'        => 0
-// ));
+
+$installer->addAttribute('catalog_product', 'jtl_erp_variation_hash', array(
+    'type'           => 'varchar',
+    'label'          => 'JTL-Wawi-Produktvariations-Hash',
+    'input'          => 'text',
+    'global'         => Mage_Catalog_Model_Resource_Eav_Attribute::SCOPE_GLOBAL,
+    'visible'        => true,
+    'required'       => false,
+    'user_defined'   => false,
+    'used_in_product_listing' => true,
+    'unique'         => false,
+    'apply_to'       => '',
+    'default'        => 0
+));
+
+$installer->endSetup();
+
+$setup = new Mage_Customer_Model_Entity_Setup('core_setup');
 
 $customerEntityTypeId     = $installer->getEntityTypeId('customer');
 $customerAttributeSetId   = $installer->getDefaultAttributeSetId($customerEntityTypeId);
@@ -62,16 +70,18 @@ $installer->addAttribute('customer', 'jtl_erp_id', array(
     'default'        => 0
 ));
 
-$setup = new Mage_Eav_Model_Entity_Setup('core_setup');
-$setup->addAttributeToGroup(
-    $customerEntityTypeId,
-    $customerAttributeSetId,
-    $customerAttributeGroupId,
-    'jtl_erp_id',
-    999
-);
+$setup->endSetup();
 
-$installer->addAttribute('quote', 'jtl_erp_id', array(
+$setup = new Mage_Sales_Model_Resource_Setup('core_setup');
+// $setup->addAttributeToGroup(
+//     $customerEntityTypeId,
+//     $customerAttributeSetId,
+//     $customerAttributeGroupId,
+//     'jtl_erp_id',
+//     999
+// );
+
+$setup->addAttribute('quote', 'jtl_erp_id', array(
     'type'             => 'int',
     'label'            => 'JTL-Wawi-ID',
     'backend_input'    => 'text',
@@ -83,7 +93,7 @@ $installer->addAttribute('quote', 'jtl_erp_id', array(
     'default'          => 0
 ));
 
-$installer->addAttribute('order', 'jtl_erp_id', array(
+$setup->addAttribute('order', 'jtl_erp_id', array(
     'type'             => 'int',
     'label'            => 'JTL-Wawi-ID',
     'backend_input'    => 'text',
@@ -95,4 +105,4 @@ $installer->addAttribute('order', 'jtl_erp_id', array(
     'default'          => 0
 ));
 
-$installer->endSetup();
+$setup->endSetup();
