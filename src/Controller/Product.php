@@ -12,7 +12,8 @@ use jtl\Connector\Core\Rpc\Error;
 use jtl\Connector\Core\Utilities\ClassName;
 use jtl\Connector\Magento\Mapper\Product as ProductMapper;
 use jtl\Connector\Model\Statistic;
-use jtl\Connector\ModelContainer\ProductContainer;
+use jtl\Connector\Model\Product as ConnectorProduct;
+use jtl\Connector\Model\Identity;
 use jtl\Connector\Result\Action;
 
 /**
@@ -39,7 +40,10 @@ class Product extends AbstractController
                 \Mage::unregister('isSecureArea');
             }
 
-            $action->setResult(true);
+            $result = new ConnectorProduct();
+            $result->setId(new Identity('', $hostId));
+
+            $action->setResult($result);
         }
         catch (\Exception $e) {
             $err = new Error();

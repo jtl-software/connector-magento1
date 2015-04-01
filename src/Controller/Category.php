@@ -11,7 +11,8 @@ use jtl\Connector\Core\Model\QueryFilter;
 use jtl\Connector\Core\Rpc\Error;
 use jtl\Connector\Core\Utilities\ClassName;
 use jtl\Connector\Magento\Mapper\Category as CategoryMapper;
-use jtl\Connector\ModelContainer\CategoryContainer;
+use jtl\Connector\Model\Category as ConnectorCategory;
+use jtl\Connector\Model\Identity;
 use jtl\Connector\Model\Statistic;
 use jtl\Connector\Result\Action;
 
@@ -40,7 +41,10 @@ class Category extends AbstractController
                 \Mage::unregister('isSecureArea');
             }
 
-            $action->setResult(true);
+            $result = new ConnectorCategory();
+            $result->setId(new Identity('', $hostId));
+
+            $action->setResult($result);
         }
         catch (\Exception $e) {
             $err = new Error();
