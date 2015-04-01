@@ -286,7 +286,7 @@ class Product
                 $variationI18n = reset($variation->getI18ns());
 
             if ($variationI18n != null)
-                $titles[$variation->getId()->getHost()] = $variationI18n->getName();
+                $titles[$variation->getId()->getHost()] = trim($variationI18n->getName());
         }
 
         asort($titles);
@@ -381,6 +381,12 @@ class Product
         $defaultAttributeSetId = \Mage::getSingleton('eav/config')
             ->getEntityType(\Mage_Catalog_Model_Product::ENTITY)
             ->getDefaultAttributeSetId();
+        Logger::write('default attr set ID: ' . $defaultAttributeSetId);
+
+        $productEntityTypeId = \Mage::getModel('eav/entity')
+            ->setType('catalog_product')
+            ->getTypeId();
+
         $setCollection = \Mage::getModel('catalog/product_attribute_set_api')->items();
 
         $variationTitles = $this->getVariationTitlesForProduct($product);
@@ -396,14 +402,21 @@ class Product
 
             $attributes = $this->getCustomAttributesFromAttrSet($attributeSet['set_id']);
             $attrNames = array_map(function ($attr) use ($product) {
-                return \Mage::getResourceModel('catalog/product')
+                $label = \Mage::getResourceModel('catalog/product')
                     ->getAttribute($attr['code'])
                     ->getFrontendLabel();
+                return trim($label);
             }, $attributes);
+            sort($attrNames);
 
             $attrNameList = implode(',', $attrNames);
+            Logger::write('attr set ID: ' . $attributeSet['set_id'] . ' - list: ' . $attrNameList);
+
+            if (count($attributes) == 0)
+                continue;
+
             // we have found a compatible attr set
-            if ($attrNameList === $variationTitleList) {
+            if (strtolower($attrNameList) === strtolower($variationTitleList) {
                 Logger::write('found compatible attr set with ID ' . $attributeSet['set_id']);
                 Logger::write('check attribute values for existance...');
 
@@ -441,28 +454,27 @@ class Product
                     'is_html_allowed_on_front' => 0,
                     'is_used_for_price_rules' => 0,
                     'is_filterable_in_search' => 0,
-                    'used_in_product_listing' => 0,
+                    'used_in_product_listing' => 1,
                     'used_for_sort_by' => 1,
                     'is_configurable' => 1,
                     'frontend_input' => 'select',
-                    'is_wysiwyg_enabled' => '0',
-                    'is_unique' => '0',
-                    'is_required' => '0',
-                    'is_visible_in_advanced_search' => '0',
+                    'is_wysiwyg_enabled' => 0,
+                    'is_unique' => 0,
+                    'is_required' => 0,
+                    'is_visible_in_advanced_search' => 0,
+                    'is_visible_on_checkout' => 1,
                     'frontend_label' => $attributeName,
-                    'apply_to' => array('configurable')
+                    'apply_to' => array()
                 );
 
                 $attrModel = \Mage::getModel('catalog/resource_eav_attribute');
                 $attributeData['backend_type'] = $attrModel->getBackendTypeByInput($attributeData['frontend_input']);
                 $attrModel->addData($attributeData);
-                $attrModel->setEntityTypeId(
-                    \Mage::getModel('eav/entity')
-                        ->setType('catalog_product')
-                        ->getTypeId()
-                );
+                $attrModel->setEntityTypeId($productEntityTypeId);
                 $attrModel->setIsUserDefined(1);
                 $attrModel->save();
+
+                $attributeSetAttributes[] = $attrModel->getAttributeCode();
             }
         }
 
@@ -470,7 +482,49 @@ class Product
         $this->updateAttributeValues($product->getVariations());
 
         // Create attribute set containing the attributes
-        
+        $attrSet = \Mage::getModel('eav/entity_attribute_set');
+        $attrSet->setAttributeSetName(sprintf(
+            'Variationskombination "%s"',
+            implode(',', $variationTitles)
+        ));
+        $attrSet->setEntityTypeId($productEntityTypeId);
+        $attrSet->save();
+
+        $attrSet->initFromSkeleton($defaultAttributeSetId);
+        $attrSet->save();
+
+        $defaultGroup = \Mage::getModel('eav/entity_attribute_group')
+            ->getCollection()
+            ->addFieldToFilter('attribute_set_id', $attrSet->getId())
+            ->setOrder('sort_order', ASC)
+            ->getFirstItem();
+
+        $i = 1000;
+        foreach ($attributeSetAttributes as $attributeCode) {
+            $attrModel = \Mage::getResourceModel('eav/entity_attribute_collection')
+                ->setCodeFilter($attributeCode)
+                ->getFirstItem();
+
+            $newItem = \Mage::getModel('eav/entity_attribute')
+                ->setEntityTypeId($productEntityTypeId)
+                ->setAttributeSetId($attrSet->getId())
+                ->setAttributeGroupId($defaultGroup->getId())
+                ->setAttributeId($attrModel->getId())
+                ->setSortOrder($i)
+                ->save();
+
+            $i += 10;
+
+            Logger::write(sprintf(
+                'Add attribute "%s" to attribute set "%s" in group "%s"',
+                $attrModel->getAttributeCode(),
+                $attrSet->getAttributeSetName(),
+                $defaultGroup->getAttributeGroupName()
+            ));
+        }
+        $attrSet->save();
+
+        return $attrSet->getId();
     }
 
     private function findOptionValueIdByName($attribute, $valueName)
@@ -598,7 +652,6 @@ class Product
         $configModel = \Mage::getModel('catalog/product')
             ->load($model->getId());
         $usedProducts = $configModel->getTypeInstance()->getUsedProducts();
-        Logger::write('used products: ' . var_export($usedProducts, true));
     }
 
     public function existsByHost($hostId)
