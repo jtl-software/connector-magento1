@@ -416,7 +416,7 @@ class Product
                 continue;
 
             // we have found a compatible attr set
-            if (strtolower($attrNameList) === strtolower($variationTitleList) {
+            if (strtolower($attrNameList) === strtolower($variationTitleList)) {
                 Logger::write('found compatible attr set with ID ' . $attributeSet['set_id']);
                 Logger::write('check attribute values for existance...');
 
