@@ -9,7 +9,6 @@ namespace jtl\Connector\Magento;
 use jtl\Connector\Core\Config\Config;
 use jtl\Connector\Core\Utilities\Singleton;
 use jtl\Connector\Magento\Connector as MagentoConnector;
-use jtl\Connector\Magento\Mapper\Database as MapperDatabase;
 
 /**
  * PHP-Magento main singleton
@@ -44,6 +43,12 @@ class Magento extends Singleton
     protected $_usedWebsites = null;
 
     /**
+     * Store mapping
+     * @var array
+     */
+    protected $_storeMapping = array();
+
+    /**
      * Constructor
      */
     protected function __construct()
@@ -51,8 +56,13 @@ class Magento extends Singleton
         $connector = MagentoConnector::getInstance();
         $config = $connector->getConfig();
         $this->setConfig($config);
-        
+
         \Mage::app()->setCurrentStore(\Mage_Core_Model_App::ADMIN_STORE_ID);
+        $configStoreMapping = unserialize(\Mage::getStoreConfig('jtl_connector/general/store_mapping'));
+        foreach ($configStoreMapping as $mapping) {
+            $this->_storeMapping[$mapping['locale']] = $mapping['store'];
+        }
+        
         $this->_store = \Mage::app()->getStore();
     }
     
@@ -166,28 +176,6 @@ class Magento extends Singleton
         
         return $this->_websites;
     }
-    
-    /**
-     * Get an array of the Magento websites we need for the mapped store views
-     */
-    public function getUsedWebsites()
-    {
-        if (is_array($this->_usedWebsites))
-            return $this->_usedWebsites;
-        
-        $db = MapperDatabase::getInstance();
-        $result = $db->query('SELECT magento_store FROM locale');
-        
-        $this->_usedWebsites = array();
-        foreach ($result as $row) {
-            $store = \Mage::getModel('core/store')
-                ->load($row['magento_store']);
-            $website = $store->getWebsite();
-            
-            $this->_usedWebsites[$website->getWebsiteId()] = $website;
-        }
-        return $this->_usedWebsites;
-    }
 
     /**
      * Get the default customer group ID
@@ -215,5 +203,15 @@ class Magento extends Singleton
     public function setConfig(Config $config)
     {
         $this->_config = $config;
+    }
+   
+    /**
+     * Getter for $_storeMapping
+     * 
+     * @return array
+     */
+    public function getStoreMapping()
+    {
+        return $this->_storeMapping;
     }
 }

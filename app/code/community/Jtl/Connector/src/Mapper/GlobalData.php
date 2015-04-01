@@ -7,7 +7,6 @@
 namespace jtl\Connector\Magento\Mapper;
 
 use jtl\Connector\Magento\Magento;
-use jtl\Connector\Magento\Mapper\Database as MapperDatabase;
 use jtl\Connector\Model\CrossSellingGroup as ConnectorCrossSellingGroup;
 use jtl\Connector\Model\CrossSellingGroupI18n as ConnectorCrossSellingGroupI18n;
 use jtl\Connector\Model\Currency as ConnectorCurrency;
@@ -27,7 +26,7 @@ class GlobalData
 {
 	public function pull()
 	{
-        $stores = MapperDatabase::getInstance()->getStoreMapping();
+        $stores = Magento::getInstance()->getStoreMapping();
 
 		$globalData = new ConnectorGlobalData();
 
@@ -82,7 +81,7 @@ class GlobalData
 	public function pullCustomerGroups()
 	{
 		Magento::getInstance();
-        $stores = MapperDatabase::getInstance()->getStoreMapping();
+        $stores = Magento::getInstance()->getStoreMapping();
 
 		$defaultCustomerGroupId = \Mage::getStoreConfig('customer/create_account/default_group', \Mage::app()->getStore());
 		$groups = \Mage::getResourceModel('customer/group_collection');
@@ -154,16 +153,20 @@ class GlobalData
 	public function pullLanguages()
 	{
 		Magento::getInstance();
-        $stores = MapperDatabase::getInstance()->getStoreMapping();
-
-        $defaultLocale = MapperDatabase::getInstance()->getDefaultLocale();
+        $stores = Magento::getInstance()->getStoreMapping();
 
         $result = array();
         foreach ($stores as $localeName => $store_id) {
+            $store = \Mage::getModel('core/store')
+                ->load($store_id);
+            $group = $store->getGroup();
+            $defaultStoreId = $group->getDefaultStoreId();
+            $website = $store->getWebsite();
+
         	$language = new ConnectorLanguage();
         	$language->setId(new Identity($store_id, null));
             $language->setLanguageIso(LocaleMapper::localeToLanguageIso($localeName));
-            $language->setIsDefault($localeName == $defaultLocale);
+            $language->setIsDefault($website->getIsDefault() && ($store_id === $defaultStoreId));
 			$locale = new \Zend_Locale($localeName);
 
 			$language->setNameGerman($locale->getTranslation($locale->getLanguage(), 'language', 'de'));

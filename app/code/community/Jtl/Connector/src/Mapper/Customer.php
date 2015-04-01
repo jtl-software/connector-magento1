@@ -6,8 +6,6 @@
  */
 namespace jtl\Connector\Magento\Mapper;
 
-use jtl\Connector\Magento\Mapper\Database as MapperDatabase;
-
 use jtl\Connector\Core\Model\QueryFilter;
 use jtl\Connector\Magento\Magento;
 use jtl\Connector\Model\Customer as ConnectorCustomer;
@@ -48,7 +46,7 @@ class Customer
 	{
 		Magento::getInstance();
 
-        $stores = MapperDatabase::getInstance()->getStoreMapping();
+        $stores = Magento::getInstance()->getStoreMapping();
 
         $customerCollection = \Mage::getModel('customer/customer')
             ->getCollection()

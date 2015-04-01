@@ -9,7 +9,6 @@ namespace jtl\Connector\Magento\Mapper;
 use jtl\Connector\Core\Logger\Logger;
 use jtl\Connector\Core\Model\QueryFilter;
 use jtl\Connector\Magento\Magento;
-use jtl\Connector\Magento\Mapper\Database as MapperDatabase;
 use jtl\Connector\Magento\Utilities\ArrayTools;
 use jtl\Connector\Model\Identity;
 use jtl\Connector\Model\Product as ConnectorProduct;
@@ -41,7 +40,7 @@ class Product
     {
         Magento::getInstance();
 
-        $this->stores = MapperDatabase::getInstance()->getStoreMapping();
+        $this->stores = Magento::getInstance()->getStoreMapping();
         $this->defaultLocale = key($this->stores);
         $this->defaultStoreId = current($this->stores);
 
@@ -331,7 +330,7 @@ class Product
                     $options = $attribute_options_model->getAllOptions(false);
                     Logger::write(var_export($options, true));
 
-                    $stores = MapperDatabase::getInstance()->getStoreMapping();
+                    $stores = Magento::getInstance()->getStoreMapping();
                     $newAttributeValue = array('option' => array());
                     $newAttributeValue['option'] = array(
                         \Mage_Core_Model_App::ADMIN_STORE_ID => $defaultVariationValueI18n->getName()
@@ -667,7 +666,7 @@ class Product
     public function push($product)
     {
         Magento::getInstance();        
-        $stores = MapperDatabase::getInstance()->getStoreMapping();
+        $stores = Magento::getInstance()->getStoreMapping();
         $defaultStoreId = reset($stores);
         $defaultLocale = key($stores);
 
@@ -688,7 +687,7 @@ class Product
     private function magentoToConnector(\Mage_Catalog_Model_Product $productItem)
     {
         Magento::getInstance();        
-        $stores = MapperDatabase::getInstance()->getStoreMapping();
+        $stores = Magento::getInstance()->getStoreMapping();
         $defaultStoreId = reset($stores);
         $defaultLocale = key($stores);
         
@@ -852,7 +851,7 @@ class Product
     public function pull(QueryFilter $filter)
     {
         Magento::getInstance();        
-        $stores = MapperDatabase::getInstance()->getStoreMapping();
+        $stores = Magento::getInstance()->getStoreMapping();
         $defaultStoreId = reset($stores);
         $defaultLocale = key($stores);
         Magento::getInstance()->setCurrentStore($defaultStoreId);
@@ -889,7 +888,7 @@ class Product
     private function pullChildProducts(QueryFilter $filter)
     {
         Magento::getInstance();        
-        $stores = MapperDatabase::getInstance()->getStoreMapping();
+        $stores = Magento::getInstance()->getStoreMapping();
         $defaultStoreId = reset($stores);
         $defaultLocale = key($stores);
         Magento::getInstance()->setCurrentStore($defaultStoreId);

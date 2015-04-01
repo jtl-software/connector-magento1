@@ -7,7 +7,6 @@
 namespace jtl\Connector\Magento\Mapper;
 
 use jtl\Connector\Magento\Magento;
-use jtl\Connector\Magento\Mapper\Database as MapperDatabase;
 use jtl\Connector\Model\Identity;
 use jtl\Connector\Model\Image as ConnectorImage;
 
@@ -23,7 +22,7 @@ class Image
     {
         Magento::getInstance();
         
-        $stores = MapperDatabase::getInstance()->getStoreMapping();
+        $stores = Magento::getInstance()->getStoreMapping();
         reset($stores);
         $defaultLocale = key($stores);
         $defaultStoreId = array_shift($stores);
@@ -93,7 +92,7 @@ class Image
         Magento::getInstance();
 
         try {
-            $stores = MapperDatabase::getInstance()->getStoreMapping();
+            $stores = Magento::getInstance()->getStoreMapping();
             reset($stores);
             $defaultLocale = key($stores);
             $defaultStoreId = array_shift($stores);

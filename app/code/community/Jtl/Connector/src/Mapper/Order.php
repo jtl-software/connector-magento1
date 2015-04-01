@@ -8,7 +8,6 @@ namespace jtl\Connector\Magento\Mapper;
 
 use jtl\Connector\Core\Model\QueryFilter;
 use jtl\Connector\Magento\Magento;
-use jtl\Connector\Magento\Mapper\Database as MapperDatabase;
 use jtl\Connector\Model\CustomerOrder as ConnectorCustomerOrder;
 use jtl\Connector\Model\CustomerOrderBillingAddress as ConnectorCustomerOrderBillingAddress;
 use jtl\Connector\Model\CustomerOrderItem as ConnectorCustomerOrderItem;
@@ -55,7 +54,7 @@ class Order
     public function pull(QueryFilter $filter = null)
     {
         Magento::getInstance();
-        $stores = MapperDatabase::getInstance()->getStoreMapping();
+        $stores = Magento::getInstance()->getStoreMapping();
 
         $orderCollection = \Mage::getModel('sales/order')
             ->getCollection()

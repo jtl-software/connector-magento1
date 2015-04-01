@@ -9,7 +9,6 @@ namespace jtl\Connector\Magento\Mapper;
 use jtl\Connector\Core\Logger\Logger;
 use jtl\Connector\Core\Model\QueryFilter;
 use jtl\Connector\Magento\Magento;
-use jtl\Connector\Magento\Mapper\Database as MapperDatabase;
 use jtl\Connector\Magento\Utilities\ArrayTools;
 use jtl\Connector\Model\Category as ConnectorCategory;
 use jtl\Connector\Model\CategoryI18n as ConnectorCategoryI18n;
@@ -35,7 +34,7 @@ class Category
 
         $this->rootCategoryId = \Mage::getStoreConfig('jtl_connector/general/root_category');
 
-        $this->stores = MapperDatabase::getInstance()->getStoreMapping();
+        $this->stores = Magento::getInstance()->getStoreMapping();
         $this->defaultLocale = key($this->stores);
         $this->defaultStoreId = current($this->stores);
     }
@@ -195,7 +194,7 @@ class Category
     {
         Magento::getInstance();        
         
-        $stores = MapperDatabase::getInstance()->getStoreMapping();
+        $stores = Magento::getInstance()->getStoreMapping();
         reset($stores);
         $defaultLocale = key($stores);
         $defaultStoreId = array_shift($stores);
@@ -243,7 +242,7 @@ class Category
     {
         Magento::getInstance();        
         
-        $stores = MapperDatabase::getInstance()->getStoreMapping();
+        $stores = Magento::getInstance()->getStoreMapping();
         $defaultStoreId = reset($stores);
         $defaultLocale = key($stores);
 
