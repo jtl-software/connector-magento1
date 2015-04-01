@@ -17,13 +17,13 @@ use jtl\Connector\Magento\Connector;
 // Then, set the real handler wrapping the original.
 $mageHandler = set_error_handler(function () {});
 set_error_handler(function ($errno, $errstr, $errfile, $errline) use ($mageHandler) {
-  if (E_WARNING === $errno
-    && 0 === strpos($errstr, 'include(')
-    && substr($errfile, -19) == 'Varien/Autoload.php'
-  ){
-    return null;
-  }
-  return call_user_func($mageHandler, $errno, $errstr, $errfile, $errline);
+    if (E_WARNING === $errno
+        && 0 === strpos($errstr, 'include(')
+        && substr($errfile, -19) == 'Varien/Autoload.php'
+    ) {
+        return null;
+    }
+    return call_user_func($mageHandler, $errno, $errstr, $errfile, $errline);
 });
 
 function exception_handler(\Exception $exception)
@@ -53,6 +53,12 @@ set_exception_handler('exception_handler');
 
 try
 {
+    $logDir = CONNECTOR_DIR . DIRECTORY_SEPARATOR . 'logs';
+    if (!is_dir($logDir)) {
+        mkdir($logDir);
+        chmod($logDir, 0777);
+    }
+
     // Connector instance
     $connector = Connector::getInstance();
     $application = Application::getInstance();
