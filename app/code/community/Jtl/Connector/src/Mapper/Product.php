@@ -348,9 +348,7 @@ class Product
 
     private function findAttributeByVariation(ConnectorProductVariation $variation)
     {
-        $variationI18n = ArrayTools::filterOneByLanguage($variation->getI18ns(), $defaultLanguageIso);
-        if ($variationI18n === null)
-            $variationI18n = reset($variation->getI18ns());
+        $variationI18n = ArrayTools::filterOneByLanguageOrFirst($variation->getI18ns(), $defaultLanguageIso);
 
         $attributes = \Mage::getModel('eav/entity_attribute')
             ->getCollection()
@@ -982,6 +980,7 @@ class Product
             }
         }
         Logger::write('set tier prices');
+        Logger::write(var_export($tierPrice, true));
         $model->setTierPrice($tierPrice);
         Logger::write('set group prices');
         $model->setGroupPrice($groupPrice);
@@ -991,18 +990,16 @@ class Product
 
     private function updateProductPrices(\Mage_Catalog_Model_Product $model, ConnectorProduct $product)
     {
+        $defaultCustomerGroupId = Magento::getInstance()->getDefaultCustomerGroupId();
+
         $prices = $product->getPrices();
 
         // Insert default price
-        $defaultGroupPrices = ArrayTools::filterOneByItemEndpointId($prices, $defaultCustomerGroupId, 'customerGroupId');
-        if (!($defaultGroupPrices instanceof ConnectorProductPrice)) {
-            $defaultGroupPrices = reset($prices);
-        }
+        $defaultGroupPrices = ArrayTools::filterOneByItemEndpointIdOrFirst($prices, $defaultCustomerGroupId, 'customerGroupId');
+        Logger::write('defaultGroupPrice: ' . var_export($defaultGroupPrices, true));
 
         $defaultGroupPriceItems = $defaultGroupPrices->getItems();
-        $defaultProductPrice = ArrayTools::filterOneByItemKey($defaultGroupPriceItems, 0, 'quantity');
-        if (!($defaultProductPrice instanceof ConnectorProductPriceItem))
-            $defaultProductPrice = reset($defaultGroupPrices);
+        $defaultProductPrice = ArrayTools::filterOneByItemKeyOrFirst($defaultGroupPriceItems, 0, 'quantity');
 
         if ($defaultProductPrice instanceof ConnectorProductPriceItem) {
             Logger::write('default price: ' . $defaultProductPrice->getNetPrice());
@@ -1011,13 +1008,15 @@ class Product
             $model->setPrice($defaultProductPrice->getNetPrice() * (1.0 + $this->getTaxRateByClassId($model->tax_class_id) / 100.0));
         }
         else {
-            die(var_dump($defaultProductPrice));
+            Logger::write('oops');
+            throw new \Exception('unexpected product price item: ' . var_export($defaultProductPrice));
         }
 
         // Tier prices and group prices (i.e. tier price with qty == 0)
         // Clear all tier prices and group prices first (are you f***king kidding me?)
         // 
         // (thanks to http://www.catgento.com/how-to-set-tier-prices-programmatically-in-magento/)
+        Logger::write('before clean');
         $dbc = \Mage::getSingleton('core/resource')->getConnection('core_write');
         $resource = \Mage::getSingleton('core/resource');
         $table = $resource->getTableName('catalog/product').'_tier_price';
@@ -1027,14 +1026,17 @@ class Product
         $dbc->query("DELETE FROM $table WHERE entity_id = " . $model->entity_id);
         Logger::write("DELETE FROM $table WHERE entity_id = " . $model->entity_id);
 
+        Logger::write('prices cleaned');
+
         $tierPrice = array();
         $groupPrice = array();
+        $websiteId = \Mage::app()->getStore()->getWebsiteId();
         foreach ($product->getPrices() as $currentPrice) {
             foreach ($currentPrice->getItems() as $currentPriceItem) {
                 if ($currentPriceItem->getQuantity() > 0) {
                     // Tier price (qty > 0)
                     $tierPrice[] = array(
-                        'website_id' => \Mage::app()->getStore()->getWebsiteId(),
+                        'website_id' => $websiteId,
                         'cust_group' => (int)$currentPrice->getCustomerGroupId()->getEndpoint(),
                         'price_qty' => $currentPriceItem->getQuantity(),
                         'price' => $currentPriceItem->getNetPrice() * (1.0 + $this->getTaxRateByClassId($model->tax_class_id) / 100.0)
@@ -1043,7 +1045,7 @@ class Product
                 else {
                     // Group price (qty == 0)
                     $groupPrice[] = array(
-                        'website_id' => \Mage::app()->getStore()->getWebsiteId(),
+                        'website_id' => $websiteId,
                         'all_groups' => (int)$currentPrice->getCustomerGroupId()->getEndpoint() == 0 ? 1 : 0,
                         'cust_group' => (int)$currentPrice->getCustomerGroupId()->getEndpoint(),
                         'price' => $currentPriceItem->getNetPrice() * (1.0 + $this->getTaxRateByClassId($model->tax_class_id) / 100.0)
@@ -1051,9 +1053,9 @@ class Product
                 }
             }
         }
-        Logger::write('set tier prices');
+        Logger::write('set tier prices:' . var_export($tierPrice, true));
         $model->setTierPrice($tierPrice);
-        Logger::write('set group prices');
+        Logger::write('set group prices:' . var_export($groupPrice, true));
         $model->setGroupPrice($groupPrice);
         Logger::write('save');
         $model->save();

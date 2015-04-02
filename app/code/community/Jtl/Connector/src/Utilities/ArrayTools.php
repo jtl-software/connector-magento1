@@ -54,6 +54,16 @@ class ArrayTools
         return null;
     }
 
+    public static function filterOneByLanguageOrFirst($haystack, $language, $inverted=false)
+    {
+        $item = self::filterOneByLanguage($haystack, $language, $inverted);
+        if ($item === null) {
+            $item = reset($haystack);
+        }
+
+        return $item;
+    }
+
     public static function filterByItemKey($haystack, $needle, $key, $inverted=false)
     {
         $result = array();
@@ -95,6 +105,16 @@ class ArrayTools
         }
         
         return null;
+    }
+
+    public static function filterOneByItemKeyOrFirst($haystack, $needle, $key, $inverted=false)
+    {
+        $item = self::filterOneByItemKey($haystack, $needle, $key, $inverted);
+        if ($item === null) {
+            $item = reset($haystack);
+        }
+
+        return $item;
     }
 
     public static function filterByItemEndpointId($haystack, $needle, $key, $inverted=false)
@@ -146,6 +166,16 @@ class ArrayTools
         }
         
         return null;
+    }
+
+    public static function filterOneByItemEndpointIdOrFirst($haystack, $needle, $key, $inverted=false)
+    {
+        $item = self::filterOneByItemEndpointId($haystack, $needle, $key, $inverted);
+        if ($item === null) {
+            $item = reset($haystack);
+        }
+
+        return $item;
     }
 
     public static function filterByItemHostId($haystack, $needle, $key, $inverted=false)
