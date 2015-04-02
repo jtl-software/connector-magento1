@@ -120,15 +120,8 @@ class Product
         $model->save();
 
         /* *** Begin StockLevel *** */
-        // $model->setStockData(array( 
-        //     'use_config_manage_stock' => 0,
-        //     'is_in_stock' => $product->getStockLevel()->getStockLevel() > 0,
-        //     'qty' => $product->getStockLevel()->getStockLevel(),
-        //     'manage_stock' => $product->getConsiderStock() ? 1 : 0,
-        //     'use_config_notify_stock_qty' => 0
-        // ));
-
         $this->updateProductStockLevel($model, $product);
+
         $this->updateProductPrices($model, $product);
         $result->setId(new Identity($model->entity_id, $model->jtl_erp_id));
 
@@ -182,7 +175,7 @@ class Product
 
             $attributeSetId = $this->getAttributeSetForProduct($product);
             $model->setAttributeSetId($attributeSetId);
-            $this->updateConfigurableData($model, $product);
+            $this->updateConfigurableData($model, $product, true);
         }
         elseif ($this->isChild($product)) {
             Logger::write('varcombi child');
@@ -211,12 +204,8 @@ class Product
         $model->setWeight($product->getProductWeight());
 
         /* *** Begin StockLevel *** */
-        // $stockItem = \Mage::getModel('cataloginventory/stock_item')
-        //     ->loadByProduct($model);
-        // $stockItem->setQty($product->getStockLevel()->getStockLevel());
-        // $stockItem->save();
-
         $this->updateProductStockLevel($model, $product);
+
         $this->updateProductPrices($model, $product);
         $result->setId(new Identity($model->entity_id, $model->jtl_erp_id));
 
@@ -568,7 +557,7 @@ class Product
         }
     }
 
-    private function updateConfigurableData(\Mage_Catalog_Model_Product $model, ConnectorProduct $product)
+    private function updateConfigurableData(\Mage_Catalog_Model_Product $model, ConnectorProduct $product, $isUpdating = false)
     {
         $defaultLanguageIso = LocaleMapper::localeToLanguageIso($this->defaultLocale);
 
@@ -619,38 +608,19 @@ class Product
                 }
             }
         }
-        $childProductIDs = array_keys($childProductIDs);
-
         $model->getTypeInstance()->setUsedProductAttributeIds($attributeIDs);
         $model->setCanSaveConfigurableAttributes(true);
-        $configurableAttributesData = $model->getTypeInstance()->getConfigurableAttributesAsArray();
-        $model->setConfigurableAttributesData($configurableAttributesData);
 
-        // foreach ($configurableAttributesData as $key => $attributeArray) {
-        //     $configurableAttributesData[$key]['use_default'] = 1;
-        //     $configurableAttributesData[$key]['position'] = 0;
-
-        //     if (isset($attributeArray['frontend_label']))
-        //     {
-        //         $configurableAttributesData[$key]['label'] = $attributeArray['frontend_label'];
-        //     }
-        //     else {
-        //         $configurableAttributesData[$key]['label'] = $attributeArray['attribute_code'];
-        //     }
-        // }
+        if (!$isUpdating) {
+            $configurableAttributesData = $model->getTypeInstance()->getConfigurableAttributesAsArray();
+            $model->setConfigurableAttributesData($configurableAttributesData);
+        }
 
         $model->setConfigurableProductsData($configurableProductsData);
         $model->setCanSaveCustomOptions(true);
 
         // $model->setIsMassupdate(true);
         $model->save();
-
-        // \Mage::getResourceSingleton('catalog/product_type_configurable')
-        //     ->saveProducts($model, $childProductIDs);
-
-        $configModel = \Mage::getModel('catalog/product')
-            ->load($model->getId());
-        $usedProducts = $configModel->getTypeInstance()->getUsedProducts();
     }
 
     public function existsByHost($hostId)
