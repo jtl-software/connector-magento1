@@ -570,6 +570,9 @@ class Product
         foreach ($product->getVarCombinations() as $varCombination) {
             $childProduct = \Mage::getModel('catalog/product')
                 ->loadByAttribute('jtl_erp_id', $varCombination->getProductId()->getHost());
+            if (is_null($childProduct) || ($childProduct === false))
+                throw new \Exception('Child product has to be inserted before the parent may be pushed.');
+
             $childProductId = $childProduct->getId();
             $childProductIDs[$childProductId] = 1;
 
