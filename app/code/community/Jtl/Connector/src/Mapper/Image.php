@@ -46,8 +46,7 @@ class Image
                 $image->setRelationType('product');
                 $image->setForeignKey(new Identity($productItem->entity_id, $productItem->jtl_erp_id));
                 $image->setFilename($galleryImage->url);
-                // $image->setIsMainImage($galleryImage->file === $defaultImagePath);
-                // $image->setSort($galleryImage->position_default);
+                $image->setSort($galleryImage->position_default);
 
                 $result[] = $image;
             }
@@ -78,8 +77,7 @@ class Image
             $image->setRelationType('category');
             $image->setForeignKey(new Identity($category_id, $model->jtl_erp_id));
             $image->setFilename($model->getImageUrl());
-            // $image->setIsMainImage(true);
-            // $image->setSort(1);
+            $image->setSort(0);
 
             $result[] = $image;
         }
