@@ -995,7 +995,7 @@ class Product
         $prices = $product->getPrices();
 
         // Insert default price
-        $defaultGroupPrices = ArrayTools::filterOneByItemEndpointIdOrFirst($prices, $defaultCustomerGroupId, 'customerGroupId');
+        $defaultGroupPrices = ArrayTools::filterOneByItemEndpointIdOrFirst($prices, 0, 'customerGroupId');
         Logger::write('defaultGroupPrice: ' . var_export($defaultGroupPrices, true));
 
         $defaultGroupPriceItems = $defaultGroupPrices->getItems();
@@ -1032,6 +1032,9 @@ class Product
         $groupPrice = array();
         $websiteId = \Mage::app()->getStore()->getWebsiteId();
         foreach ($product->getPrices() as $currentPrice) {
+            if ($currentPrice->getCustomerGroupId()->getHost() === 0)
+                continue;
+
             foreach ($currentPrice->getItems() as $currentPriceItem) {
                 if ($currentPriceItem->getQuantity() > 0) {
                     // Tier price (qty > 0)

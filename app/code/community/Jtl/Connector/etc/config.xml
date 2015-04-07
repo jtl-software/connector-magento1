@@ -7,6 +7,13 @@
     </modules>
 
     <frontend>
+        <layout>
+            <updates>
+                <jtl_connector>
+                    <file>jtl_connector.xml</file>
+                </jtl_connector>
+            </updates>
+        </layout>
         <routers>
             <jtl_connector>
                 <use>standard</use>
@@ -20,10 +27,97 @@
 
     <global>
         <blocks>
+            <adminhtml>
+                <rewrite>
+                    <catalog_product_edit_tab_super_config_grid>Jtl_Connector_Adminhtml_Block_Catalog_Product_Edit_Tab_Super_Config_Grid</catalog_product_edit_tab_super_config_grid>
+                </rewrite>
+            </adminhtml>
+            <catalog>
+                <rewrite>
+                    <product_view_type_configurable>Jtl_Connector_Catalog_Block_Product_View_Type_Configurable</product_view_type_configurable>
+                </rewrite>
+                <rewrite>
+                    <product_price>Jtl_Connector_Catalog_Block_Product_Price</product_price>
+                </rewrite>
+                <rewrite>
+                    <product_view_media>Jtl_Connector_Catalog_Block_Product_View_Media</product_view_media>
+                </rewrite>
+                <rewrite>
+                    <product_view_attributes>Jtl_Connector_Catalog_Block_Product_View_Attributes</product_view_attributes>
+                </rewrite>
+            </catalog>
+            <checkout>
+                <rewrite>
+                    <cart_item_renderer>Jtl_Connector_Checkout_Block_Cart_Item_Renderer</cart_item_renderer>
+                </rewrite>
+            </checkout>
             <jtl_connector>
-                <class>Jtl_Connector_Blocks</class>
+                <class>Jtl_Connector_Block</class>
             </jtl_connector>
+            <rss>
+                <rewrite>
+                    <wishlist>Jtl_Connector_Rss_Block_Wishlist</wishlist>
+                </rewrite>
+                <rewrite>
+                    <catalog_tag>Jtl_Connector_Rss_Block_Catalog_Tag</catalog_tag>
+                </rewrite>
+                <rewrite>
+                    <catalog_special>Jtl_Connector_Rss_Block_Catalog_Special</catalog_special>
+                </rewrite>
+                <rewrite>
+                    <catalog_new>Jtl_Connector_Rss_Block_Catalog_New</catalog_new>
+                </rewrite>
+                <rewrite>
+                    <catalog_category>Jtl_Connector_Rss_Block_Catalog_Category</catalog_category>
+                </rewrite>
+            </rss>
         </blocks>
+
+        <models>
+            <catalogrule_mysql4>
+                <rewrite>
+                    <rule>Jtl_Connector_CatalogRule_Model_Mysql4_Rule</rule>
+                </rewrite>
+            </catalogrule_mysql4>
+            <catalog>
+                <rewrite>
+                    <product_type_configurable_price>Jtl_Connector_Catalog_Model_Product_Type_Configurable_Price</product_type_configurable_price>
+                </rewrite>
+                <rewrite>
+                    <product_type_simple>Jtl_Connector_Catalog_Model_Product_Type_Simple</product_type_simple>
+                </rewrite>
+                <rewrite>
+                    <product_type_virtual>Jtl_Connector_Catalog_Model_Product_Type_Virtual</product_type_virtual>
+                </rewrite>
+                <rewrite>
+                    <product_type_configurable>Jtl_Connector_Catalog_Model_Product_Type_Configurable</product_type_configurable>
+                </rewrite>
+                <rewrite>
+                    <product>Jtl_Connector_Catalog_Model_Product</product>
+                </rewrite>
+            </catalog>
+            <catalogindex>
+                <rewrite>
+                    <data_configurable>Jtl_Connector_CatalogIndex_Model_Data_Configurable</data_configurable>
+                </rewrite>
+            </catalogindex>
+            <cataloginventory_mysql4>
+                <rewrite>
+                    <indexer_stock_configurable>Jtl_Connector_CatalogInventory_Model_Mysql4_Indexer_Stock_Configurable</indexer_stock_configurable>
+                </rewrite>
+            </cataloginventory_mysql4>
+            <catalog_resource_eav_mysql4>
+                <rewrite>
+                    <product_collection>Jtl_Connector_Catalog_Model_Resource_Eav_Mysql4_Product_Collection</product_collection>
+                </rewrite>
+                <rewrite>
+                    <product_indexer_price_configurable>Jtl_Connector_Catalog_Model_Resource_Eav_Mysql4_Product_Indexer_Price_Configurable</product_indexer_price_configurable>
+                </rewrite>
+                <rewrite>
+                    <product_indexer_price>Jtl_Connector_Catalog_Model_Resource_Eav_Mysql4_Product_Indexer_Price</product_indexer_price>
+                </rewrite>
+            </catalog_resource_eav_mysql4>
+        </models>
 
         <helpers>
             <jtl_connector>
