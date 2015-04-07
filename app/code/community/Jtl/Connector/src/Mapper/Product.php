@@ -168,6 +168,7 @@ class Product
         $productId = $model->entity_id;
         $model->setStoreId(\Mage_Core_Model_App::ADMIN_STORE_ID);
 
+        $model->setVisibility(\Mage_Catalog_Model_Product_Visibility::VISIBILITY_BOTH);
         if ($this->isParent($product)) {
             Logger::write('varcombi parent');
             // Varcombi parent
@@ -185,6 +186,10 @@ class Product
             $attributeSetId = $this->getAttributeSetForProduct($product);
             $model->setAttributeSetId($attributeSetId);
             $this->updateVariationValues($model, $product);
+
+            // We do not want to see varcombi childs in the catalog, so change
+            // the visibility accordingly
+            $model->setVisibility(\Mage_Catalog_Model_Product_Visibility::VISIBILITY_NOT_VISIBLE);
         }
         else {
             Logger::write('simple product');
