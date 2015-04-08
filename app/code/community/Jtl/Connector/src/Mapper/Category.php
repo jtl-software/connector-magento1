@@ -46,8 +46,9 @@ class Category
 
         $identity = $category->getId();
         $categoryId = $identity->getEndpoint();
+        $hostId = $identity->getHost();
 
-        if ($identity->getHost() == 0)
+        if ($hostId == 0)
             return;
 
         $model = \Mage::getModel('catalog/category');
@@ -85,10 +86,10 @@ class Category
             $model->setMetaKeywords((string)$categoryI18n->getMetaKeywords());
             $model->setMetaTitle((string)$categoryI18n->getTitleTag());
         }
-        $model->setJtlErpId($category->getId()->getHost());
+        $model->setJtlErpId($hostId);
         $model->save();
 
-        $result->setId(new Identity($model->getId(), $category->getId()->getHost()));
+        $result->setId(new Identity($model->getId(), $hostId));
         
         foreach ($this->stores as $locale => $storeId) {
             $categoryI18n = ArrayTools::filterByLanguage($category->getI18ns(), LocaleMapper::localeToLanguageIso($locale));
@@ -97,31 +98,26 @@ class Category
                 continue;
             }
 
-            $singleton = \Mage::getSingleton('catalog/category');
-            $singleton->setId($categoryId);
-            $singleton->setStoreId($storeId);
-
-            $singleton->setName($categoryI18n->getName());
-            $singleton->setUrlKey($categoryI18n->getUrlPath());
-            \Mage::getModel('catalog/category')->getResource()->saveAttribute($singleton, 'name');
-            \Mage::getModel('catalog/category')->getResource()->saveAttribute($singleton, 'url_key');
+            \Mage::app()->setCurrentStore($storeId);
+            $model = \Mage::getModel('catalog/category')
+                ->loadByAttribute('jtl_erp_id', $hostId);
+            $model->setName($categoryI18n->getName());
+            $model->setUrlKey($categoryI18n->getUrlPath());
 
             if ($categoryI18n->getDescription() !== '') {
-                $singleton->setDescription((string)$categoryI18n->getDescription());
-                \Mage::getModel('catalog/category')->getResource()->saveAttribute($singleton, 'description');
+                $model->setDescription((string)$categoryI18n->getDescription());
             }
             if ($categoryI18n->getMetaDescription() !== '') {
-                $singleton->setMetaDescription((string)$categoryI18n->getMetaDescription());
-                \Mage::getModel('catalog/category')->getResource()->saveAttribute($singleton, 'meta_description');
+                $model->setMetaDescription((string)$categoryI18n->getMetaDescription());
             }
             if ($categoryI18n->getMetaKeywords() !== '') {
-                $singleton->setMetaKeywords((string)$categoryI18n->getMetaKeywords());
-                \Mage::getModel('catalog/category')->getResource()->saveAttribute($singleton, 'meta_keywords');
+                $model->setMetaKeywords((string)$categoryI18n->getMetaKeywords());
             }
             if ($categoryI18n->getTitleTag() !== '') {
-                $singleton->setMetaTitle((string)$categoryI18n->getTitleTag());
-                \Mage::getModel('catalog/category')->getResource()->saveAttribute($singleton, 'meta_title');
+                $model->setMetaTitle((string)$categoryI18n->getTitleTag());
             }
+
+            $model->save();
         }
 
         return $result;
@@ -137,44 +133,33 @@ class Category
 
         $model = \Mage::getModel('catalog/category')
             ->loadByAttribute('jtl_erp_id', $hostId);
-        //$result->addIdentity('category', $identity);
-
         $result->setId(new Identity($model->getId(), $category->getId()->getHost()));
         
         foreach ($this->stores as $locale => $storeId) {
-            $categoryI18n = ArrayTools::filterByLanguage($category->getI18ns(), LocaleMapper::localeToLanguageIso($locale));
-            if (!($categoryI18n instanceof ConnectorCategoryI18n)) {
-                Logger::write('skip categoryI18n ' . $locale . ':' . get_class($categoryI18n));                
-                continue;
-            }
+            $categoryI18n = ArrayTools::filterOneByLanguageOrFirst($category->getI18ns(), LocaleMapper::localeToLanguageIso($locale));
 
-            Logger::write('process categoryI18n ' . $categoryId . ' ' . $locale);
+            Logger::write('process categoryI18n for category #' . $model->getId() . ' ' . $locale);
 
-            $singleton = \Mage::getSingleton('catalog/category');
-            $singleton->setId($categoryId);
-            $singleton->setStoreId($storeId);
-
-            $singleton->setName($categoryI18n->getName());
-            $singleton->setUrlKey($categoryI18n->getUrlPath());
-            \Mage::getModel('catalog/category')->getResource()->saveAttribute($singleton, 'name');
-            \Mage::getModel('catalog/category')->getResource()->saveAttribute($singleton, 'url_key');
+            \Mage::app()->setCurrentStore($storeId);
+            $model = \Mage::getModel('catalog/category')
+                ->loadByAttribute('jtl_erp_id', $hostId);
+            $model->setName($categoryI18n->getName());
+            $model->setUrlKey($categoryI18n->getUrlPath());
 
             if ($categoryI18n->getDescription() !== '') {
-                $singleton->setDescription((string)$categoryI18n->getDescription());
-                \Mage::getModel('catalog/category')->getResource()->saveAttribute($singleton, 'description');
+                $model->setDescription((string)$categoryI18n->getDescription());
             }
             if ($categoryI18n->getMetaDescription() !== '') {
-                $singleton->setMetaDescription((string)$categoryI18n->getMetaDescription());
-                \Mage::getModel('catalog/category')->getResource()->saveAttribute($singleton, 'meta_description');
+                $model->setMetaDescription((string)$categoryI18n->getMetaDescription());
             }
             if ($categoryI18n->getMetaKeywords() !== '') {
-                $singleton->setMetaKeywords((string)$categoryI18n->getMetaKeywords());
-                \Mage::getModel('catalog/category')->getResource()->saveAttribute($singleton, 'meta_keywords');
+                $model->setMetaKeywords((string)$categoryI18n->getMetaKeywords());
             }
             if ($categoryI18n->getTitleTag() !== '') {
-                $singleton->setMetaTitle((string)$categoryI18n->getTitleTag());
-                \Mage::getModel('catalog/category')->getResource()->saveAttribute($singleton, 'meta_title');
+                $model->setMetaTitle((string)$categoryI18n->getTitleTag());
             }
+
+            $model->save();
         }
 
         return $result;
