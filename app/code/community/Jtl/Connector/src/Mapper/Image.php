@@ -115,14 +115,14 @@ class Image
                 }
 
                 copy($image->getFilename(), $mediaFilename);
-                
+
                 Logger::write('category image: ' . $mediaFilename);
 
                 $model = \Mage::getModel('catalog/category')
                     ->loadByAttribute('jtl_erp_id', $hostId);
-                // $model->addImageToMediaGallery($image->getFilename, array('thumbnail'), true, false);
-                // $model->setThumbnail($image->getFilename());
+
                 $model->setImage(basename($mediaFilename));
+                $model->setThumbnail(basename($mediaFilename));
                 $model->setJtlErpImageId($image->getId()->getHost());
 
                 $model->save();
