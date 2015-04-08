@@ -958,10 +958,8 @@ class Product
         $resource = \Mage::getSingleton('core/resource');
         $table = $resource->getTableName('catalog/product').'_tier_price';
         $dbc->query("DELETE FROM $table WHERE entity_id = " . $model->entity_id);
-        Logger::write("DELETE FROM $table WHERE entity_id = " . $model->entity_id);
         $table = $resource->getTableName('catalog/product').'_group_price';
         $dbc->query("DELETE FROM $table WHERE entity_id = " . $model->entity_id);
-        Logger::write("DELETE FROM $table WHERE entity_id = " . $model->entity_id);
 
         $tierPrice = array();
         $groupPrice = array();
@@ -1004,7 +1002,6 @@ class Product
 
         // Insert default price
         $defaultGroupPrices = ArrayTools::filterOneByItemEndpointIdOrFirst($prices, 0, 'customerGroupId');
-        Logger::write('defaultGroupPrice: ' . var_export($defaultGroupPrices, true));
 
         $defaultGroupPriceItems = $defaultGroupPrices->getItems();
         $defaultProductPrice = ArrayTools::filterOneByItemKeyOrFirst($defaultGroupPriceItems, 0, 'quantity');
@@ -1029,11 +1026,8 @@ class Product
         $resource = \Mage::getSingleton('core/resource');
         $table = $resource->getTableName('catalog/product').'_tier_price';
         $dbc->query("DELETE FROM $table WHERE entity_id = " . $model->entity_id);
-        Logger::write("DELETE FROM $table WHERE entity_id = " . $model->entity_id);
         $table = $resource->getTableName('catalog/product').'_group_price';
         $dbc->query("DELETE FROM $table WHERE entity_id = " . $model->entity_id);
-        Logger::write("DELETE FROM $table WHERE entity_id = " . $model->entity_id);
-
         Logger::write('prices cleaned');
 
         $tierPrice = array();

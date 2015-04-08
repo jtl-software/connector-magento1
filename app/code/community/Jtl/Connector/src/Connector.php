@@ -93,8 +93,12 @@ class Connector extends BaseConnector
         $this->_controller->setMethod($this->getMethod());
         
         if ($this->_action === Method::ACTION_PUSH || $this->_action === Method::ACTION_DELETE) {
+            if ($this->getMethod()->getController() === 'image') {
+                return $this->_controller->{$this->_action}($requestpacket->getParams());
+            }
+
             if (!is_array($requestpacket->getParams())) {
-                throw new TransactionException("Expecting request array, invalid data given");
+                throw new \Exception("Expecting request array, invalid data given");
             }
 
             $action = new Action();

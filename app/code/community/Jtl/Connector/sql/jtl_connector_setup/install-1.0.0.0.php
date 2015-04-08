@@ -18,6 +18,17 @@ $installer->addAttribute('catalog_category', 'jtl_erp_id', array(
     'default'        => 0
 ));
 
+$installer->addAttribute('catalog_category', 'jtl_erp_image_id', array(
+    'type'           => 'int',
+    'label'          => 'JTL-Wawi-Bild-ID',
+    'input'          => 'text',
+    'global'         => Mage_Catalog_Model_Resource_Eav_Attribute::SCOPE_GLOBAL,
+    'visible'        => true,
+    'required'       => false,
+    'user_defined'   => false,
+    'default'        => 0
+));
+
 $productEntityTypeId     = $installer->getEntityTypeId('catalog_product');
 $productAttributeSetId   = $installer->getDefaultAttributeSetId($productEntityTypeId);
 $productAttributeGroupId = $installer->getDefaultAttributeGroupId($productEntityTypeId, $productAttributeSetId);

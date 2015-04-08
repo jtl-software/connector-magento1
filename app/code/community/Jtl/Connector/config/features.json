@@ -37,7 +37,7 @@
         },
         "Image" : {
             "pull" : true,
-            "push" : false,
+            "push" : true,
             "delete" : false
         },
         "Language" : {
@@ -51,7 +51,7 @@
         "can_reactivate_customer_order" : false,
         "can_update_customer_order" : false,
         "customer_order_partially_payable": false,
-        "product_images_supported" : true,
+        "product_images_supported" : false,
         "category_images_supported" : true,
         "manufacturer_images_supported" : false,
         "specific_images_supported" : false,

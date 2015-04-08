@@ -2,6 +2,7 @@
 
 namespace jtl\Connector\Magento\Mapper;
 
+use jtl\Connector\Drawing\ImageRelationType;
 use jtl\Connector\Linker\IdentityLinker;
 use jtl\Connector\Mapper\IPrimaryKeyMapper;
 
@@ -93,6 +94,20 @@ class PrimaryKeyMapper implements IPrimaryKeyMapper
                 $order->setJtlErpId($hostId);
                 $order->save();
                 break;
+            case IdentityLinker::TYPE_IMAGE:
+                \Mage::app()->setCurrentStore(\Mage_Core_Model_App::ADMIN_STORE_ID);
+                
+                list($type, $id) = explode('-', $endpointId);
+                switch ($type) {
+                    case ImageRelationType::TYPE_CATEGORY:
+                        $category = \Mage::getModel('catalog/category')
+                            ->load($id);
+                        $category->setJtlErpImageId($hostId);
+                        $category->save();
+                        break;
+                }
+
+                break;
         }
     }
 
@@ -124,6 +139,7 @@ class PrimaryKeyMapper implements IPrimaryKeyMapper
 
         foreach ($categories as $category) {
             $category->setJtlErpId(0);
+            $category->setJtlErpImageId(0);
             $category->save();
         }
 

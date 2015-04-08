@@ -6,17 +6,15 @@
  */
 namespace jtl\Connector\Magento\Controller;
 
-use jtl\Connector\Core\Exception\TransactionException;
 use jtl\Connector\Core\Model\DataModel;
 use jtl\Connector\Core\Model\QueryFilter;
-use jtl\Connector\Core\Result\Transaction as TransactionResult;
 use jtl\Connector\Core\Rpc\Error;
 use jtl\Connector\Core\Utilities\ClassName;
 use jtl\Connector\Magento\Mapper\Image as ImageMapper;
-use jtl\Connector\ModelContainer\ImageContainer;
+use jtl\Connector\Model\Image as ConnectorImage;
+use jtl\Connector\Model\Identity;
 use jtl\Connector\Model\Statistic;
 use jtl\Connector\Result\Action;
-use jtl\Connector\Transaction\Handler as TransactionHandler;
 
 /**
  * Description of Image
@@ -58,7 +56,23 @@ class Image extends AbstractController
 
     public function push(DataModel $model)
     {
+        $action = new Action();
+        $action->setHandled(true);
+        
+        try {
+            $mapper = new ImageMapper();
+            $result = $mapper->push($model);
 
+            $action->setResult($result);
+        }
+        catch (\Exception $e) {
+            $err = new Error();
+            $err->setCode(31337); //$e->getCode());
+            $err->setMessage($e->getTraceAsString() . PHP_EOL . $e->getMessage()); //'Internal error'); //$e->getMessage());
+            $action->setError($err);
+        }
+        
+        return $action;
     }
 
     public function statistic(QueryFilter $filter)
