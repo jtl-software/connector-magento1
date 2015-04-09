@@ -99,6 +99,10 @@ class Product
             $attributeSetId = $this->getAttributeSetForProduct($product);
             $model->setAttributeSetId($attributeSetId);
             $this->updateVariationValues($model, $product);
+
+            // We do not want to see varcombi childs in the catalog, so change
+            // the visibility accordingly
+            $model->setVisibility(\Mage_Catalog_Model_Product_Visibility::VISIBILITY_NOT_VISIBLE);
         }
         else {
             Logger::write('simple product');
@@ -625,7 +629,6 @@ class Product
         $model->setConfigurableProductsData($configurableProductsData);
         $model->setCanSaveCustomOptions(true);
 
-        // $model->setIsMassupdate(true);
         $model->save();
     }
 
@@ -1109,13 +1112,25 @@ class Product
 
         $tempProduct = \Mage::getModel('catalog/product')
             ->load($model->entity_id);
-        $tempProduct->setStockData(array( 
-            'use_config_manage_stock' => 0,
-            'is_in_stock' => $product->getStockLevel()->getStockLevel() > 0,
-            'qty' => $product->getStockLevel()->getStockLevel(),
-            'manage_stock' => $product->getConsiderStock() ? 1 : 0,
-            'use_config_notify_stock_qty' => 0
-        ));
+        if ($this->isParent($product)) {
+            $tempProduct->setStockData(array( 
+                'use_config_manage_stock' => 0,
+                'is_in_stock' => 1,
+                'manage_stock' => 0,
+                'use_config_notify_stock_qty' => 0,
+                'can_back_in_stock' => 1,
+                'qty' => 99999999.9999
+            ));
+        }
+        else {
+            $tempProduct->setStockData(array( 
+                'use_config_manage_stock' => 0,
+                'is_in_stock' => (!$product->getConsiderStock() || ($product->getStockLevel()->getStockLevel() > 0)) ? 1 : 0,
+                'qty' => $product->getStockLevel()->getStockLevel(),
+                'manage_stock' => $product->getConsiderStock() ? 1 : 0,
+                'use_config_notify_stock_qty' => 0
+            ));
+        }
         $tempProduct->save();
     }
 
