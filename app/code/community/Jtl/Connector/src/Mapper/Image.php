@@ -133,6 +133,13 @@ class Image
                 break;
 
             case ImageRelationType::TYPE_PRODUCT:
+                $model = \Mage::getModel('catalog/product')
+                    ->loadByAttribute('jtl_erp_id', $hostId);
+                if ($model === false || ($model->getId() == 0)) {
+                    // Send "seems legit" to the client
+                    break;
+                }
+
                 \Mage::app()->setCurrentStore(\Mage_Core_Model_App::ADMIN_STORE_ID);
                 Logger::write(sprintf('set product image %s', $image->getFilename()));
 
@@ -166,12 +173,7 @@ class Image
                     'exclude' => 0
                 );
 
-                $model = \Mage::getModel('catalog/product')
-                    ->loadByAttribute('jtl_erp_id', $hostId);
-
-                if ($model->getId() > 0) {
-                    $mediaApi->create($model->getId(), $newImage, null, 'id');
-                }
+                $mediaApi->create($model->getId(), $newImage, null, 'id');
                 break;
 
             default:
