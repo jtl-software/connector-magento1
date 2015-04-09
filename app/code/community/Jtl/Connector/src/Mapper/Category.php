@@ -72,8 +72,8 @@ class Category
 
         // Insert default language
         Logger::write('insert categoryi18ns');
-        Logger::write($category->getI18ns());
-        $categoryI18n = reset($category->getI18ns());
+        $i18ns = $category->getI18ns();
+        $categoryI18n = reset($i18ns);
 
         $model->setStoreId(\Mage_Core_Model_App::ADMIN_STORE_ID);
         $model->setIsActive(true);
