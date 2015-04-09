@@ -217,6 +217,36 @@ class Image
         return $newFilepath;
     }
 
+    public function delete(ConnectorImage $image)
+    {
+        $result = new ConnectorImage();
+
+        $hostId = $image->getForeignKey()->getHost();
+
+        switch ($image->getRelationType()) {
+            case ImageRelationType::TYPE_CATEGORY:
+                $model = \Mage::getModel('catalog/category')
+                    ->loadByAttribute('jtl_erp_id', $hostId);
+                if ($model === false || ($model->getId() == 0))
+                    break;
+
+                $model->setImage(null);
+                $model->setThumbnail(null);
+                $model->setJtlErpImageId(0);
+                $model->save();
+
+                $result->setId(new Identity(
+                    sprintf('category-%u', $model->getId()),
+                    $image->getId()->getHost()
+                ));
+
+                break;
+        }
+
+        $result->setRelationType($image->getRelationType());
+        return $result;
+    }
+
     public function getAvailableCount()
     {
         Magento::getInstance();
