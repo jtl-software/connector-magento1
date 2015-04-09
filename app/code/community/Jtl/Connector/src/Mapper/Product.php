@@ -752,9 +752,6 @@ class Product
                     ->setProductId(new Identity($productItem->entity_id))
                     ->setSort((int)$attributeOption['position']);
 
-                // TODO: Load real attribute type
-                $productVariation->setType('select');
-
                 $attrModel = \Mage::getModel('catalog/resource_eav_attribute')
                     ->load($attributeOption['attribute_id']);
 
