@@ -357,6 +357,7 @@ class Product
 
     private function findAttributeByVariation(ConnectorProductVariation $variation)
     {
+        $defaultLanguageIso = LocaleMapper::localeToLanguageIso($this->defaultLocale);
         $variationI18n = ArrayTools::filterOneByLanguageOrFirst($variation->getI18ns(), $defaultLanguageIso);
 
         $attributes = \Mage::getModel('eav/entity_attribute')
