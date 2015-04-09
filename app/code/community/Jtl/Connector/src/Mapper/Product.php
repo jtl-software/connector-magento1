@@ -369,6 +369,18 @@ class Product
         return NULL;
     }
 
+    private static function getAttributeCodeForVariationName($attributeName)
+    {
+        $attributeCode = strtolower(str_replace(' ', '_', $attributeName));
+        $attributeCode = str_replace(
+            array('ä', 'ö', 'ü', 'ß'),
+            array('ae', 'oe', 'ue', 'ss'),
+            $attributeCode
+        );
+
+        return $attributeCode;
+    }
+
     private function getAttributeSetForProduct(ConnectorProduct $product)
     {
         $defaultLanguageIso = LocaleMapper::localeToLanguageIso($this->defaultLocale);
@@ -434,7 +446,7 @@ class Product
             }
             else {
                 $attributeName = $variationTitles[$variation->getId()->getHost()];
-                $attributeCode = strtolower(str_replace(' ', '_', $attributeName));
+                $attributeCode = self::getAttributeCodeForVariationName($attributeName);
 
                 Logger::write('Creating attribute: ' . $attributeCode);
 
