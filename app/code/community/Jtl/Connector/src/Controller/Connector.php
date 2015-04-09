@@ -75,6 +75,7 @@ class Connector extends AbstractController
         
         return $action;
     }
+
     /**
      * Identify
      *
@@ -95,4 +96,20 @@ class Connector extends AbstractController
         return $action;
     }
 
+    /**
+     * Finish
+     *
+     * @return \jtl\Connector\Result\Action
+     */
+    public function finish()
+    {
+        $action = new Action();
+        $action->setHandled(true);
+
+        Magento::getInstance()->reindexEverything();
+
+        $action->setResult(true);
+
+        return $action;
+    }
 }
