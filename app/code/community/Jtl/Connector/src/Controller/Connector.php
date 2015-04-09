@@ -6,10 +6,12 @@
  */
 namespace jtl\Connector\Magento\Controller;
 
+use jtl\Connector\Core\Logger\Logger;
 use jtl\Connector\Core\Model\DataModel;
 use jtl\Connector\Core\Model\QueryFilter;
 use jtl\Connector\Core\Rpc\Error;
 use jtl\Connector\Result\Action;
+use jtl\Connector\Magento\Magento;
 use jtl\Connector\Magento\Mapper\GlobalData as GlobalDataMapper;
 use jtl\Connector\Model\ConnectorIdentification;
 
@@ -106,7 +108,9 @@ class Connector extends AbstractController
         $action = new Action();
         $action->setHandled(true);
 
+        Logger::write('reindexing everything...');
         Magento::getInstance()->reindexEverything();
+        Logger::write('indexing has finished');
 
         $action->setResult(true);
 
