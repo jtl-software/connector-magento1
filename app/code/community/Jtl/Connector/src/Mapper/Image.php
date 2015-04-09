@@ -94,10 +94,9 @@ class Image
         $hostId = $image->getForeignKey()->getHost();
 
         switch ($image->getRelationType()) {
-            case 'category':
+            case ImageRelationType::TYPE_CATEGORY:
                 \Mage::app()->setCurrentStore(\Mage_Core_Model_App::ADMIN_STORE_ID);
-
-                Logger::write(sprintf('set image %s', $image->getFilename()));
+                Logger::write(sprintf('set category image %s', $image->getFilename()));
 
                 $mediaFilename = implode(DIRECTORY_SEPARATOR, array(
                     \Mage::getBaseDir('media'),
@@ -132,6 +131,49 @@ class Image
                     $image->getId()->getHost()
                 ));
                 break;
+
+            case ImageRelationType::TYPE_PRODUCT:
+                \Mage::app()->setCurrentStore(\Mage_Core_Model_App::ADMIN_STORE_ID);
+                Logger::write(sprintf('set product image %s', $image->getFilename()));
+
+                $mediaFilename = $this->importProductImage($image->getFilename());
+                Logger::write('product image: ' . $mediaFilename);
+
+                $fileinfo = pathinfo($mediaFilename);
+                switch ($fileinfo['extension']) {
+                    case 'png':
+                        $mimeType = 'image/png';
+                        break;
+                    case 'jpg':
+                        $mimeType = 'image/jpeg';
+                        break;
+                    case 'gif':
+                        $mimeType = 'image/gif';
+                        break;
+                }
+
+                $mediaApi = \Mage::getModel('catalog/product_attribute_media_api');
+                $types = ($image->getSort() === 1) ? array('image', 'small_image', 'thumbnail') : array();
+                $newImage = array(
+                    'file' => array(
+                        'content' => base64_encode($mediaFilename),
+                        'mime' => $mimeType,
+                        'name' => basename($mediaFilename)
+                    ),
+                    'label' => basename($image->getFilename()),
+                    'position' => $image->getSort(),
+                    'types' => $types,
+                    'exclude' => 0
+                );
+
+                $model = \Mage::getModel('catalog/product')
+                    ->loadByAttribute('jtl_erp_id', $hostId);
+
+                if ($model->getId() > 0) {
+                    $mediaApi->create($model->getId(), $newImage, null, 'id');
+                }
+                break;
+
             default:
                 throw new \Exception(sprintf('Image type "%s" not implemented', $image->getRelationType()));
                 break;
@@ -144,6 +186,33 @@ class Image
 
         $result->setRelationType($image->getRelationType());
         return $result;
+    }
+
+    private function importProductImage($tempFilename)
+    {
+        if (!file_exists($tempFilename) || !is_readable($tempFilename))
+            return null;
+
+        $importPath = implode(DIRECTORY_SEPARATOR, array(
+            \Mage::getBaseDir('media'),
+            'import'
+        ));
+        if (!is_dir($importPath)) {
+            mkdir($importPath);
+        }
+
+        $filename = basename($tempFilename);
+        $extension = substr(strrchr($filename, '.'), 1);
+        $newFilename = sprintf('%s.%s', md5($tempFilename . strval(time())), $extension);
+        $newFilepath = implode(DIRECTORY_SEPARATOR, array(
+            \Mage::getBaseDir('media'),
+            'import',
+            $newFilename
+        ));
+
+        copy($tempFilename, $newFilepath);
+
+        return $newFilepath;
     }
 
     public function getAvailableCount()
