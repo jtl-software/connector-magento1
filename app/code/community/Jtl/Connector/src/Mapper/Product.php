@@ -1081,8 +1081,16 @@ class Product
 
         if ($productI18n instanceof ConnectorProductI18n) {
             $tempProduct->setName($productI18n->getName());
-            $tempProduct->setShortDescription($productI18n->getShortDescription());
-            $tempProduct->setDescription($productI18n->getDescription());
+
+            if (strlen($productI18n->getShortDescription()) > 0)
+                $tempProduct->setShortDescription($productI18n->getShortDescription());
+            else
+                $tempProduct->setShortDescription("&nbsp;");
+
+            if (strlen($productI18n->getDescription()) > 0)
+                $tempProduct->setDescription($productI18n->getDescription() ?: ' ');
+            else
+                $tempProduct->setDescription("&nbsp;");
         }
         $tempProduct->save();
 
@@ -1097,8 +1105,17 @@ class Product
 
             $tempProduct->setStoreId($storeId);
             $tempProduct->setName($productI18n->getName());
-            $tempProduct->setShortDescription($productI18n->getShortDescription());
-            $tempProduct->setDescription($productI18n->getDescription());
+
+            if (strlen($productI18n->getShortDescription()) > 0)
+                $tempProduct->setShortDescription($productI18n->getShortDescription());
+            else
+                $tempProduct->setShortDescription("&nbsp;");
+
+            if (strlen($productI18n->getDescription()) > 0)
+                $tempProduct->setDescription($productI18n->getDescription() ?: ' ');
+            else
+                $tempProduct->setDescription("&nbsp;");
+
             $tempProduct->save();
 
             Logger::write('productI18n ' . $locale);
