@@ -385,7 +385,7 @@ class Product
             $attributeCode
         );
 
-        return $attributeCode;
+        return substr($attributeCode, 0, 30);
     }
 
     private function getAttributeSetForProduct(ConnectorProduct $product)
