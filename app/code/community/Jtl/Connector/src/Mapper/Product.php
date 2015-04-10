@@ -79,7 +79,8 @@ class Product
         $model->setStatus(1);
 
         if ($this->isParent($product)) {
-            Logger::write('varcombi parent');
+            Logger::write(sprintf('PRODUCT "%s" TYPE: varcombi parent', $product->getSku()));
+
             // Varcombi parent
             $model->setTypeId('configurable');
 
@@ -92,7 +93,8 @@ class Product
                 ->load($model->getId());
         }
         elseif ($this->isChild($product)) {
-            Logger::write('varcombi child');
+            Logger::write(sprintf('PRODUCT "%s" TYPE: varcombi child', $product->getSku()));
+
             // Varcombi child
             $model->setTypeId('simple');
 
@@ -105,7 +107,8 @@ class Product
             $model->setVisibility(\Mage_Catalog_Model_Product_Visibility::VISIBILITY_NOT_VISIBLE);
         }
         else {
-            Logger::write('simple product');
+            Logger::write(sprintf('PRODUCT "%s" TYPE: simple product', $product->getSku()));
+
             // Simple product
             $model->setTypeId('simple');
 
@@ -174,7 +177,8 @@ class Product
 
         $model->setVisibility(\Mage_Catalog_Model_Product_Visibility::VISIBILITY_BOTH);
         if ($this->isParent($product)) {
-            Logger::write('varcombi parent');
+            Logger::write(sprintf('PRODUCT "%s" TYPE: varcombi parent', $product->getSku()));
+
             // Varcombi parent
             $model->setTypeId('configurable');
 
@@ -183,7 +187,8 @@ class Product
             $this->updateConfigurableData($model, $product, true);
         }
         elseif ($this->isChild($product)) {
-            Logger::write('varcombi child');
+            Logger::write(sprintf('PRODUCT "%s" TYPE: varcombi child', $product->getSku()));
+
             // Varcombi child
             $model->setTypeId('simple');
 
@@ -196,7 +201,8 @@ class Product
             $model->setVisibility(\Mage_Catalog_Model_Product_Visibility::VISIBILITY_NOT_VISIBLE);
         }
         else {
-            Logger::write('simple product');
+            Logger::write(sprintf('PRODUCT "%s" TYPE: simple product', $product->getSku()));
+
             // Simple product
             $model->setTypeId('simple');
 
