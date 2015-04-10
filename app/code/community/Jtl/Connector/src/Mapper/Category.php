@@ -92,7 +92,8 @@ class Category
         $result->setId(new Identity($model->getId(), $hostId));
         
         foreach ($this->stores as $locale => $storeId) {
-            $categoryI18n = ArrayTools::filterByLanguage($category->getI18ns(), LocaleMapper::localeToLanguageIso($locale));
+            $i18ns = $category->getI18ns();
+            $categoryI18n = ArrayTools::filterOneByLanguage($i18ns, LocaleMapper::localeToLanguageIso($locale));
             if (!($categoryI18n instanceof ConnectorCategoryI18n)) {
                 Logger::write('skip categoryI18n ' . $locale);                
                 continue;
