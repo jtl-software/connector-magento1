@@ -61,6 +61,7 @@
         "variation_products_supported" : false,
         "variation_combinations_supported" : true,
         "set_articles_supported" : false,
-        "needs_finish_call" : true
+        "needs_finish_call" : true,
+        "free_field_supported" : false
     }
 }
