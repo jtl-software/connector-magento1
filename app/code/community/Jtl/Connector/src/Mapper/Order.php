@@ -268,8 +268,13 @@ class Order
         $order = \Mage::getModel('sales/order')
             ->loadByIncrementId($statusChange->getCustomerOrderId()->getEndpoint());
 
+        $result = new ConnectorStatusChange();
+        $result->setCustomerOrderId($statusChange->getCustomerOrderId());
+        $result->setPaymentStatus($statusChange->getPaymentStatus());
+        $result->setOrderStatus($statusChange->getOrderStatus());
+
         if ($order == null)
-            return false;
+            return $result;
 
         switch ($statusChange->getPaymentStatus()) {
             case ConnectorCustomerOrder::PAYMENT_STATUS_COMPLETED:
@@ -304,13 +309,13 @@ class Order
                 break;
             case ConnectorCustomerOrder::STATUS_COMPLETED:
                 if (!$order->canShip())
-                    return false;
+                    return $result;
 
                 $savedQtys = array();
                 $shipment = \Mage::getModel('sales/service_order', $order)
                     ->prepareShipment($savedQtys);
                 if (!$shipment->getTotalQty())
-                    return false;
+                    return $result;
 
                 $shipment->register();
                 
@@ -331,6 +336,6 @@ class Order
                 break;
         }
 
-        return true;
+        return $result;
     }
 }
