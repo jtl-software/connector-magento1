@@ -68,17 +68,12 @@ $customerEntityTypeId     = $installer->getEntityTypeId('customer');
 $customerAttributeSetId   = $installer->getDefaultAttributeSetId($customerEntityTypeId);
 $customerAttributeGroupId = $installer->getDefaultAttributeGroupId($customerEntityTypeId, $customerAttributeSetId);
 $installer->addAttribute('customer', 'jtl_erp_id', array(
-    'type'           => 'int',
-    'backend'        => '',
-    'frontend'       => '',
-    'source'         => '',
-    'label'          => 'JTL-Wawi-ID',
-    'input'          => 'text',
-    'global'         => Mage_Catalog_Model_Resource_Eav_Attribute::SCOPE_GLOBAL,
-    'visible'        => true,
-    'required'       => false,
-    'user_defined'   => false,
-    'default'        => 0
+    'input'         => 'text',
+    'type'          => 'int',
+    'label'         => 'JTL-Wawi-ID',
+    'visible'       => 1,
+    'required'      => 0,
+    'user_defined'  => 1
 ));
 
 $setup->endSetup();

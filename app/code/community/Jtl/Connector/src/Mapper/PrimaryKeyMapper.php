@@ -2,6 +2,7 @@
 
 namespace jtl\Connector\Magento\Mapper;
 
+use jtl\Connector\Core\Logger\Logger;
 use jtl\Connector\Drawing\ImageRelationType;
 use jtl\Connector\Linker\IdentityLinker;
 use jtl\Connector\Mapper\IPrimaryKeyMapper;
@@ -49,7 +50,12 @@ class PrimaryKeyMapper implements IPrimaryKeyMapper
                 return ($product != null ? $product->getId() : null);
             case IdentityLinker::TYPE_CUSTOMER:
                 $customer = \Mage::getModel('customer/customer')
-                    ->loadByAttribute('jtl_erp_id', $hostId);
+                    ->load($hostId, 'jtl_erp_id');
+                Logger::write(sprintf(
+                    'customer host: %u, endpoint: %s',
+                    $hostId,
+                    $customer->getId()
+                ));
                 return ($customer != null ? $customer->getId() : null);
             case IdentityLinker::TYPE_CUSTOMER_ORDER:
                 $order = \Mage::getModel('sales/order')
@@ -83,8 +89,9 @@ class PrimaryKeyMapper implements IPrimaryKeyMapper
                 $customer = \Mage::getModel('customer/customer')
                     ->load($endpointId);
 
-                $customer->setJtlErpId($hostId);
+                $customer->jtl_erp_id = $hostId;
                 $customer->save();
+                Logger::write(var_export($customer, true));
                 break;
             case IdentityLinker::TYPE_CUSTOMER_ORDER:
                 \Mage::app()->setCurrentStore(\Mage_Core_Model_App::ADMIN_STORE_ID);
