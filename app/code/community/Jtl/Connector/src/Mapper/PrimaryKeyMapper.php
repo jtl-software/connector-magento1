@@ -51,11 +51,6 @@ class PrimaryKeyMapper implements IPrimaryKeyMapper
             case IdentityLinker::TYPE_CUSTOMER:
                 $customer = \Mage::getModel('customer/customer')
                     ->load($hostId, 'jtl_erp_id');
-                Logger::write(sprintf(
-                    'customer host: %u, endpoint: %s',
-                    $hostId,
-                    $customer->getId()
-                ));
                 return ($customer != null ? $customer->getId() : null);
             case IdentityLinker::TYPE_CUSTOMER_ORDER:
                 $order = \Mage::getModel('sales/order')
