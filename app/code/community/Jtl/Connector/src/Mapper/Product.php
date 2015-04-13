@@ -36,6 +36,8 @@ class Product
     private $defaultLocale;
     private $defaultStoreId;
 
+    private $websites;
+
     public function __construct()
     {
         Magento::getInstance();
@@ -43,6 +45,12 @@ class Product
         $this->stores = Magento::getInstance()->getStoreMapping();
         $this->defaultLocale = key($this->stores);
         $this->defaultStoreId = current($this->stores);
+
+        $this->websites = array();
+        foreach (\Mage::app()->getWebsites() as $website)
+        {
+            $this->websites[] = $website->getId();
+        }
 
         Logger::write('default locale: ' . $this->defaultLocale);
         Logger::write('default Store ID: ' . $this->defaultStoreId);
@@ -70,8 +78,10 @@ class Product
         
         \Mage::app()->setCurrentStore(\Mage_Core_Model_App::ADMIN_STORE_ID);
         $model = \Mage::getModel('catalog/product');
-        $model->setWebsiteIds(array(1,2));
-        $model->setStoreId(1);
+
+        $firstStore = reset($this->stores);
+        $model->setWebsiteIds($this->websites);
+        $model->setStoreId($firstStore);
 
         $model->setJtlErpId($identity->getHost());
         $model->setIsRecurring(0);
