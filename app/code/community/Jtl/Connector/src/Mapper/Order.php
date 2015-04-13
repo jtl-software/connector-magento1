@@ -6,6 +6,7 @@
  */
 namespace jtl\Connector\Magento\Mapper;
 
+use jtl\Connector\Core\Logger\Logger;
 use jtl\Connector\Core\Model\QueryFilter;
 use jtl\Connector\Magento\Magento;
 use jtl\Connector\Model\CustomerOrder as ConnectorCustomerOrder;
@@ -120,7 +121,7 @@ class Order
                 $item->setName($magento_item->name);
                 $item->setSku($magento_item->sku);
                 $item->setVat((double)$magento_item->tax_percent);
-                $item->setPrice($magento_item->getOriginalPrice() / (1 + $item->getVat() / 100.0));
+                $item->setPrice((double)$magento_item->getPriceInclTax() / (1 + (double)$magento_item->tax_percent / 100.0));
                 $item->setQuantity($magento_item->getQtyToInvoice());
                 $item->setType('product');
                 $item->setUnique(NULL);
