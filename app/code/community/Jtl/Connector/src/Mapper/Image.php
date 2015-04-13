@@ -120,16 +120,19 @@ class Image
                 $model = \Mage::getModel('catalog/category')
                     ->loadByAttribute('jtl_erp_id', $hostId);
 
-                $model->setImage(basename($mediaFilename));
-                $model->setThumbnail(basename($mediaFilename));
-                $model->setJtlErpImageId($image->getId()->getHost());
+                if ($model !== false && ($model->getId() > 0)) {
+                    $model->setImage(basename($mediaFilename));
+                    $model->setThumbnail(basename($mediaFilename));
+                    $model->setJtlErpImageId($image->getId()->getHost());
 
-                $model->save();
+                    $model->save();
 
-                $result->setId(new Identity(
-                    sprintf('category-%u', $model->getId()),
-                    $image->getId()->getHost()
-                ));
+                    $result->setId(new Identity(
+                        sprintf('category-%u', $model->getId()),
+                        $image->getId()->getHost()
+                    ));
+                }
+                
                 break;
 
             case ImageRelationType::TYPE_PRODUCT:
