@@ -20,7 +20,7 @@ class StatusChange extends AbstractController
         
         try {
             $mapper = new OrderMapper();
-            $result = $mapper->processStatusChange($model);
+            $result = $mapper->processStatusUpdate($model);
 
             $action->setResult($result);
         }

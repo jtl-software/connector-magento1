@@ -30,7 +30,7 @@ class PrimaryKeyMapper implements IPrimaryKeyMapper
             case IdentityLinker::TYPE_CUSTOMER_ORDER:
                 $order = \Mage::getModel('sales/order')
                     ->load($endpointId);
-                return ($order != null ? $order->getJtlErpId() : null);
+                return ($order != null ? $order->jtl_erp_id : null);
         }
     }
 
@@ -54,8 +54,9 @@ class PrimaryKeyMapper implements IPrimaryKeyMapper
                 return ($customer != null ? $customer->getId() : null);
             case IdentityLinker::TYPE_CUSTOMER_ORDER:
                 $order = \Mage::getModel('sales/order')
-                    ->loadByAttribute('jtl_erp_id', $hostId);
-                return ($order != null ? $order->getId() : null);
+                    ->load($hostId, 'jtl_erp_id');
+                Logger::write(var_export($order, true));
+                return ($order != null ? $order->increment_id : null);
         }
     }
 
@@ -86,14 +87,13 @@ class PrimaryKeyMapper implements IPrimaryKeyMapper
 
                 $customer->jtl_erp_id = $hostId;
                 $customer->save();
-                Logger::write(var_export($customer, true));
                 break;
             case IdentityLinker::TYPE_CUSTOMER_ORDER:
                 \Mage::app()->setCurrentStore(\Mage_Core_Model_App::ADMIN_STORE_ID);
                 $order = \Mage::getModel('sales/order')
-                    ->load($endpointId);
+                    ->loadByIncrementId($endpointId);
 
-                $order->setJtlErpId($hostId);
+                $order->jtl_erp_id = $hostId;
                 $order->save();
                 break;
             case IdentityLinker::TYPE_IMAGE:

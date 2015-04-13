@@ -82,7 +82,7 @@ class Order
             $created_at = new \DateTime($order->created_at);
 
             $customerOrder = new ConnectorCustomerOrder();
-            $customerOrder->setId(new Identity($order->entity_id));
+            $customerOrder->setId(new Identity($order->increment_id));
             $customerOrder->setCustomerId(new Identity(intval($order->customer_id)));
             // $customerOrder->setShippingAddressId(new Identity($order->shipping_address_id));
             // $customerOrder->setBillingAddressId(new Identity($order->billing_address_id));
@@ -266,24 +266,71 @@ class Order
     public function processStatusUpdate(ConnectorStatusChange $statusChange)
     {
         $order = \Mage::getModel('sales/order')
-            ->loadByIncrementId($statusChange->getCustomerOrderId());
+            ->loadByIncrementId($statusChange->getCustomerOrderId()->getEndpoint());
 
         if ($order == null)
             return false;
 
-        switch ($statusChange->getOrderStatus()) {
-            case ConnectorCustomerOrder::STATUS_PROCESSING:
-                $order->setState(\Mage_Sales_Model_Order::STATE_PROCESSING, true);
-                break;
-            case ConnectorCustomerOrder::STATUS_COMPLETED:
-                $order->setState(\Mage_Sales_Model_Order::STATE_COMPLETE, true);
-                break;
-            case ConnectorCustomerOrder::STATUS_CANCELLED:
-                $order->setState(\Mage_Sales_Model_Order::STATE_CANCELED, true);
+        switch ($statusChange->getPaymentStatus()) {
+            case ConnectorCustomerOrder::PAYMENT_STATUS_COMPLETED:
+                if (!$order->canInvoice())
+                    break;
+
+                $savedQtys = array();
+                $invoice = \Mage::getModel('sales/service_order', $order)
+                    ->prepareInvoice($savedQtys);
+                if (!$invoice->getTotalQty())
+                    break;
+
+                $invoice->setRequestedCaptureCase(\Mage_Sales_Model_Order_Invoice::CAPTURE_OFFLINE);
+                $invoice->register();
+                
+                $invoice->getOrder()->setCustomerNoteNotify(true);
+                $invoice->getOrder()->setIsInProcess(true);
+
+                $transactionSave = \Mage::getModel('core/resource_transaction')
+                    ->addObject($invoice)
+                    ->addObject($invoice->getOrder());
+
+                $transactionSave->save();
                 break;
         }
 
-        $order->save();
+        switch ($statusChange->getOrderStatus()) {
+            case ConnectorCustomerOrder::STATUS_PROCESSING:
+                $order->setState(\Mage_Sales_Model_Order::STATE_PROCESSING, true);
+                $order->save();
+
+                break;
+            case ConnectorCustomerOrder::STATUS_COMPLETED:
+                if (!$order->canShip())
+                    return false;
+
+                $savedQtys = array();
+                $shipment = \Mage::getModel('sales/service_order', $order)
+                    ->prepareShipment($savedQtys);
+                if (!$shipment->getTotalQty())
+                    return false;
+
+                $shipment->register();
+                
+                $shipment->getOrder()->setCustomerNoteNotify(true);
+                $shipment->getOrder()->setIsInProcess(true);
+
+                $transactionSave = \Mage::getModel('core/resource_transaction')
+                    ->addObject($shipment)
+                    ->addObject($shipment->getOrder());
+
+                $transactionSave->save();
+
+                break;
+            case ConnectorCustomerOrder::STATUS_CANCELLED:
+                $order->setState(\Mage_Sales_Model_Order::STATE_CANCELED, true);
+                $order->save();
+
+                break;
+        }
+
         return true;
     }
 }

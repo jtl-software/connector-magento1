@@ -44,6 +44,11 @@
             "pull" : true,
             "push" : false,
             "delete" : false
+        },
+        "StatusChange" : {
+            "pull" : false,
+            "push" : true,
+            "delete" : false
         }
     },
     "flags" : {
