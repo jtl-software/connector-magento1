@@ -15,6 +15,7 @@ use jtl\Connector\Model\CustomerGroupI18n as ConnectorCustomerGroupI18n;
 use jtl\Connector\Model\GlobalData as ConnectorGlobalData;
 use jtl\Connector\Model\Identity;
 use jtl\Connector\Model\Language as ConnectorLanguage;
+use jtl\Connector\Model\TaxRate as ConnectorTaxRate;
 
 /**
  * Description of GlobalData
@@ -45,6 +46,10 @@ class GlobalData
 		$customerGroups = $this->pullCustomerGroups();
         foreach ($customerGroups as $customerGroup)
             $globalData->addCustomerGroup($customerGroup);
+
+        $taxRates = $this->pullTaxRates();
+        foreach ($taxRates as $taxRate)
+            $globalData->addTaxRate($taxRate);
 
 		return array($globalData);
 	}
@@ -177,4 +182,27 @@ class GlobalData
 
         return $result;
 	}
+
+    public function pullTaxRates()
+    {
+        Magento::getInstance();
+
+        $defaultCountryCode = \Mage::getStoreConfig('general/country/default');
+        $defaultCountry = \Mage::getModel('directory/country')->loadByCode($defaultCountryCode);
+
+        $taxRates = \Mage::getResourceModel('tax/calculation_rate_collection')
+            ->addFieldToFilter('tax_country_id', $defaultCountry->getId());
+
+        $result = array();
+        foreach ($taxRates as $item) {
+            $taxRate = new ConnectorTaxRate();
+            $taxRate->setId(new Identity($item->getId()));
+            $taxRate->setPriority(0);
+            $taxRate->setRate((double)$item->getRate());
+
+            $result[] = $taxRate;
+        }
+
+        return $result;
+    }
 }
