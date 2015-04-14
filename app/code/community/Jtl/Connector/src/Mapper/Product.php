@@ -959,15 +959,10 @@ class Product
 
         /* *** Begin ProductPrice *** */
         // Insert default price
-        $defaultGroupPrices = ArrayTools::filterOneByItemEndpointId($prices, $defaultCustomerGroupId, 'customerGroupId');
-        if (!($defaultGroupPrices instanceof ConnectorProductPrice)) {
-            $defaultGroupPrices = reset($prices);
-        }
+        $defaultGroupPrices = ArrayTools::filterOneByItemEndpointIdOrFirst($prices, 0, 'customerGroupId');
 
         $defaultGroupPriceItems = $defaultGroupPrices->getItems();
-        $defaultProductPrice = ArrayTools::filterOneByItemKey($defaultGroupPriceItems, 0, 'quantity');
-        if (!($defaultProductPrice instanceof ConnectorProductPriceItem))
-            $defaultProductPrice = reset($defaultGroupPrices);
+        $defaultProductPrice = ArrayTools::filterOneByItemKeyOrFirst($defaultGroupPriceItems, 0, 'quantity');
 
         if ($defaultProductPrice instanceof ConnectorProductPriceItem) {
             Logger::write('default price: ' . $defaultProductPrice->getNetPrice());
