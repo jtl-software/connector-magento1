@@ -976,7 +976,7 @@ class Product
             $model->setPrice($defaultProductPrice->getNetPrice() * (1.0 + $this->getTaxRateByClassId($model->tax_class_id) / 100.0));
         }
         else {
-            die(var_dump($defaultProductPrice));
+            return null;
         }
 
         // Tier prices and group prices (i.e. tier price with qty == 0)
@@ -993,6 +993,9 @@ class Product
         $tierPrice = array();
         $groupPrice = array();
         foreach ($prices as $currentPrice) {
+            if ($currentPrice->getCustomerGroupId()->getHost() === 0)
+                continue;
+
             foreach ($currentPrice->getItems() as $currentPriceItem) {
                 if ($currentPriceItem->getQuantity() > 0) {
                     // Tier price (qty > 0)
