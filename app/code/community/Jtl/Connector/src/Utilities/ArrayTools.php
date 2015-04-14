@@ -229,6 +229,16 @@ class ArrayTools
         return null;
     }
 
+    public static function filterOneByItemHostIdOrFirst($haystack, $needle, $key, $inverted=false)
+    {
+        $item = self::filterOneByItemHostId($haystack, $needle, $key, $inverted);
+        if ($item === null) {
+            $item = reset($haystack);
+        }
+
+        return $item;
+    }
+
     public static function filterByLocale($array, $locale, $key = '_localeName', $inverted=false)
     {
         return static::filterByItemKey($array, $locale, $key, $inverted);

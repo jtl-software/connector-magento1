@@ -959,7 +959,7 @@ class Product
 
         /* *** Begin ProductPrice *** */
         // Insert default price
-        $defaultGroupPrices = ArrayTools::filterOneByItemEndpointIdOrFirst($prices, 0, 'customerGroupId');
+        $defaultGroupPrices = ArrayTools::filterOneByItemHostIdOrFirst($prices, 0, 'customerGroupId');
 
         $defaultGroupPriceItems = $defaultGroupPrices->getItems();
         $defaultProductPrice = ArrayTools::filterOneByItemKeyOrFirst($defaultGroupPriceItems, 0, 'quantity');
@@ -1028,7 +1028,7 @@ class Product
         $prices = $product->getPrices();
 
         // Insert default price
-        $defaultGroupPrices = ArrayTools::filterOneByItemEndpointIdOrFirst($prices, 0, 'customerGroupId');
+        $defaultGroupPrices = ArrayTools::filterOneByItemHostIdOrFirst($prices, 0, 'customerGroupId');
 
         $defaultGroupPriceItems = $defaultGroupPrices->getItems();
         $defaultProductPrice = ArrayTools::filterOneByItemKeyOrFirst($defaultGroupPriceItems, 0, 'quantity');
