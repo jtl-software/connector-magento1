@@ -90,6 +90,19 @@
                             <show_in_website>0</show_in_website>
                             <show_in_store>0</show_in_store>
                         </store_mapping>
+
+                        <taxrate_mapping translate="label comment">
+                            <label>Tax rate mapping</label>
+                            <comment>
+                                <![CDATA[Map Magento tax rates to product tax classes. You have to make sure that each product tax class is only mapped at most once.]]>
+                            </comment>
+                            <frontend_model>Jtl_Connector_Block_TaxRateMapping</frontend_model>
+                            <backend_model>adminhtml/system_config_backend_serialized_array</backend_model>
+                            <sort_order>60</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </taxrate_mapping>
                     </fields>
                 </general>
             </groups>
