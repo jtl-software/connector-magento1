@@ -85,7 +85,9 @@ class Product
 
         $model->setJtlErpId($identity->getHost());
         $model->setIsRecurring(0);
-        $model->setTaxClassId(1);
+
+        $taxClassId = $this->getTaxClassIdByRate($product->getVat());
+        $model->setTaxClassId($taxClassId);
         $model->setStatus(1);
 
         if ($this->isParent($product)) {
@@ -225,6 +227,9 @@ class Product
         }
 
         /* *** Begin Product *** */
+        $taxClassId = $this->getTaxClassIdByRate($product->getVat());
+        $model->setTaxClassId($taxClassId);
+
         $model->setMsrp($product->getRecommendedRetailPrice());
         $model->setWeight($product->getProductWeight());
 
@@ -934,6 +939,7 @@ class Product
         $stockItem = \Mage::getModel('cataloginventory/stock_item')
             ->loadByProduct($model);
         $stockItem->setQty($stockLevel->getStockLevel());
+        $stockItem->setIsInStock($stockLevel->getStockLevel() > 0 ? 1 : 0);
         $stockItem->save();
 
         return true;
@@ -1207,20 +1213,20 @@ class Product
 
     protected function getTaxRateByClassId($taxClassId)
     {
-        static $taxRates = array();
+        $taxRateMapping = Magento::getInstance()->getTaxRateMapping();
+        return $taxRateMapping[$taxClassId];
+    }
 
-        if (array_key_exists($taxClassId, $taxRates))
-            return $taxRates[$taxClassId];
+    protected function getTaxClassIdByRate($taxRate)
+    {
+        $taxRateMapping = Magento::getInstance()->getTaxRateMapping();
 
-        $store = \Mage::app()->getStore();
-        $request = \Mage::getSingleton('tax/calculation')->getRateRequest(null, null, null, $store);
-        $percent = \Mage::getSingleton('tax/calculation')->getRate($request->setProductClassId($taxClassId));
+        $taxClassId = array_search($taxRate, $taxRateMapping);
+        if ($taxClassId === false) {
+            $keys = array_keys($taxRateMapping);
+            return $keys[0];
+        }
 
-        Logger::write(sprintf('store %u percent for tax class %u', $percent, $taxClassId));
-
-        if (!is_null($percent))
-            $taxRates[$taxClassId] = $percent;
-
-        return $percent;
+        return $taxClassId;
     }
 }

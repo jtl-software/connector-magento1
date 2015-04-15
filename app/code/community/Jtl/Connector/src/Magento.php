@@ -49,6 +49,12 @@ class Magento extends Singleton
     protected $_storeMapping = array();
 
     /**
+     * Tax rate mapping
+     * @var array
+     */
+    protected $_taxRateMapping = array();
+
+    /**
      * Constructor
      */
     protected function __construct()
@@ -64,6 +70,14 @@ class Magento extends Singleton
         }
         
         $this->_store = \Mage::app()->getStore();
+
+        $configTaxRateMapping = unserialize(\Mage::getStoreConfig('jtl_connector/general/taxrate_mapping'));
+        foreach ($configTaxRateMapping as $mapping) {
+            $taxRate = \Mage::getModel('tax/calculation_rate')
+                ->load($mapping['taxRate']);
+
+            $this->_taxRateMapping[$mapping['taxClass']] = $taxRate->getRate();
+        }
     }
     
     /**
@@ -213,5 +227,15 @@ class Magento extends Singleton
     public function getStoreMapping()
     {
         return $this->_storeMapping;
+    }
+   
+    /**
+     * Getter for $_taxRateMapping
+     * 
+     * @return array
+     */
+    public function getTaxRateMapping()
+    {
+        return $this->_taxRateMapping;
     }
 }
