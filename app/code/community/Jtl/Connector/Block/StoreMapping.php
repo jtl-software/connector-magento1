@@ -9,11 +9,11 @@ class Jtl_Connector_Block_StoreMapping extends Mage_Adminhtml_Block_System_Confi
     {
         // create columns
         $this->addColumn('store', array(
-            'label' => Mage::helper('adminhtml')->__('Store view'),
+            'label' => Mage::helper('adminhtml')->__('Store View'),
             'size' => 50
         ));
         $this->addColumn('locale', array(
-            'label' => Mage::helper('adminhtml')->__('Store locale'),
+            'label' => Mage::helper('adminhtml')->__('Locale'),
             'size' => 50
         ));
 
