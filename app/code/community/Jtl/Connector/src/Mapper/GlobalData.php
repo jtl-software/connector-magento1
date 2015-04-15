@@ -195,6 +195,9 @@ class GlobalData
 
         $result = array();
         foreach ($taxRates as $item) {
+            if ((double)$item->getRate() < 1e-3)
+                continue;
+
             $taxRate = new ConnectorTaxRate();
             $taxRate->setId(new Identity($item->getId()));
             $taxRate->setPriority(0);
