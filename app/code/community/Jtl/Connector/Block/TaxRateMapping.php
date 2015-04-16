@@ -18,7 +18,7 @@ class Jtl_Connector_Block_TaxRateMapping extends Mage_Adminhtml_Block_System_Con
         ));
 
         $this->_addAfter = false;
-        $this->_addButtonLabel = Mage::helper('adminhtml')->__('Add store mapping');
+        $this->_addButtonLabel = Mage::helper('adminhtml')->__('Add tax rate mapping');
 
         parent::__construct();
 
