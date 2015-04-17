@@ -147,7 +147,7 @@ class GlobalData
                 ->setDelimiterThousand('.')
                 ->setHasCurrencySignBeforeValue(false)
                 ->setIsDefault(($currency->getIso() === $defaultCurrencyCode))
-                ->setFactor($defaultCurrency->getRate($shopCurrency->getShortName()));
+                ->setFactor((double)$defaultCurrency->getRate($shopCurrency->getShortName()));
 
 			$result[] = $currency;
 		}
