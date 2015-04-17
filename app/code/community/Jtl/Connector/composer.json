@@ -26,7 +26,7 @@
         "twig/twig": "~1.18",
         "twig/extensions": "~1.2"
     },
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "autoload": {
         "psr-4": {
             "jtl\\Connector\\Magento\\": "src/"
