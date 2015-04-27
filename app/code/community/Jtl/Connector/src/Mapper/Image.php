@@ -49,7 +49,7 @@ class Image
                 $image->setRelationType('product');
                 $image->setForeignKey(new Identity($productItem->entity_id, $productItem->jtl_erp_id));
                 $image->setFilename($galleryImage->url);
-                $image->setSort($galleryImage->position_default);
+                $image->setSort((int)$galleryImage->position_default);
 
                 $result[] = $image;
             }
