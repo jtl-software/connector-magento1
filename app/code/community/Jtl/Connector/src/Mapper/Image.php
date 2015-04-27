@@ -29,14 +29,15 @@ class Image
         $defaultLocale = key($stores);
         $defaultStoreId = array_shift($stores);
 
-        Magento::getInstance()->setCurrentStore($defaultStoreId);
+        Magento::getInstance()->setCurrentStore(\Mage_Core_Model_App::ADMIN_STORE_ID);
         $result = array();
 
         $products = \Mage::getResourceModel('catalog/product_collection');
         foreach ($products as $productItem) {
-            // $productItem->load();
+            $productModel = \Mage::getModel('catalog/product')
+                ->load($productItem->entity_id);
 
-            $galleryImages = $productItem->getMediaGalleryImages();
+            $galleryImages = $productModel->getMediaGalleryImages();
             if (is_null($galleryImages))
             	continue;
 
