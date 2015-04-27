@@ -267,9 +267,10 @@ class Image
 
             $products = \Mage::getResourceModel('catalog/product_collection');
             foreach ($products as $productItem) {
-                // $productItem->load();
+                $productModel = \Mage::getModel('catalog/product')
+                    ->load($productItem->entity_id);
 
-                $galleryImages = $productItem->getMediaGalleryImages();
+                $galleryImages = $productModel->getMediaGalleryImages();
                 if (is_null($galleryImages))
                     continue;
 
