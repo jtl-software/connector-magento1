@@ -714,7 +714,7 @@ class Product
         $product->setRecommendedRetailPrice((double)$productItem->msrp);
         $product->setMinimumOrderQuantity((double)($productItem->use_config_min_sale_qty == 1 ? 0 : $productItem->min_sale_qty));
         $product->setPackagingQuantity(1.0);
-        $product->setVat($this->getTaxRateByClassId($productItem->tax_class_id));
+        $product->setVat((double)$this->getTaxRateByClassId($productItem->tax_class_id));
         $product->setShippingWeight(0.0);
         $product->setProductWeight(0.0);
         $product->setIsMasterProduct(false);
