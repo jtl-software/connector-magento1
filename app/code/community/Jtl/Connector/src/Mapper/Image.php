@@ -57,10 +57,11 @@ class Image
 
 
         $rootCategoryId = \Mage::app()->getStore()->getRootCategoryId();
-        $categoryCollection = \Mage::getModel('catalog/category')
-            ->getCollection()
-            ->addAttributeToSelect('all_children')
-            ->addAttributeToFilter('parent_id', $rootCategoryId)
+        $rootCategory = \Mage::getModel('catalog/category')
+            ->load($rootCategoryId);
+
+        $categoryCollection = \Mage::getResourceModel('catalog/category_collection')
+            ->addFieldToFilter('path', array('like' => $rootCategory->getPath() . '/%'))
             ->load();
 
         $categoryIds = array();
