@@ -112,3 +112,14 @@ $setup->addAttribute('order', 'jtl_erp_id', array(
 ));
 
 $setup->endSetup();
+
+$authToken = Mage::helper('core')->decrypt(Mage::getStoreConfig('jtl_connector/general/auth_token'));
+if (empty($authToken)) {
+    $authToken = '';
+    for ($i = 0; $i < 16; $i++) {
+        $authToken .= sprintf('%02x', mt_rand(0, 255));
+    }
+
+    $config = new Mage_Core_Model_Config();
+    $config->saveConfig('jtl_connector/general/auth_token', Mage::helper('core')->encrypt($authToken), 'default', 0);
+}
