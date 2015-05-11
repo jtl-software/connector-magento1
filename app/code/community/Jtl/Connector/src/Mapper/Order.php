@@ -303,7 +303,7 @@ class Order
         }
 
         switch ($statusChange->getOrderStatus()) {
-            case ConnectorCustomerOrder::STATUS_PROCESSING:
+            case ConnectorCustomerOrder::STATUS_NEW:
                 $order->setState(\Mage_Sales_Model_Order::STATE_PROCESSING, true);
                 $order->save();
 
