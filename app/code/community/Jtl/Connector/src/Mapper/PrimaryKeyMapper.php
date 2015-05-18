@@ -170,4 +170,10 @@ class PrimaryKeyMapper implements IPrimaryKeyMapper
 
         return true;
     }
+
+    public function gc()
+    {
+        // Pseudo implementation for the gc() function since it is impossible to create links without a referenced entity
+        return true;
+    }
 }
