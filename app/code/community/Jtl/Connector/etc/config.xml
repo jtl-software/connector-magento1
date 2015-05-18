@@ -173,12 +173,4 @@
             </resources>
         </acl>
     </adminhtml>
-
-    <default>
-        <jtl_connector>
-            <general>
-                <enabled>0</enabled>
-            </general>
-        </jtl_connector>
-    </default>
 </config>
