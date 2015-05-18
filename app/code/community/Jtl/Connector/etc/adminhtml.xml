@@ -1,0 +1,23 @@
+<?xml version="1.0" ?>
+<config>
+    <acl>
+        <resources>
+            <admin>
+                <children>
+                    <system>
+                        <children>
+                            <config>
+                                <children>
+                                    <jtl_connector translate="title" module="jtl_connector">
+                                        <title>JTL-Connector</title>
+                                        <sort_order>200</sort_order>
+                                    </jtl_connector>
+                                </children>
+                            </config>
+                        </children>
+                    </system>
+                </children>
+            </admin>
+        </resources>
+    </acl>
+</config>

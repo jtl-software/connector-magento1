@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<config>
+    <modules>
+        <Jtl_Connector>
+            <active>true</active>
+            <codePool>community</codePool>
+            <depends>
+                <Mage_Core />
+                <Mage_Eav />
+            </depends>
+        </Jtl_Connector>
+    </modules>
+</config>

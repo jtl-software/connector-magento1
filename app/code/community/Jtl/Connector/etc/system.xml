@@ -1,0 +1,98 @@
+<?xml version="1.0"?>
+<config>
+    <tabs>
+        <jtl_connector_config translate="label" module="jtl_connector">
+            <label>JTL-Software-GmbH</label>
+            <sort_order>100</sort_order>
+        </jtl_connector_config>
+    </tabs>
+    <sections>
+        <jtl_connector translate="label" module="jtl_connector">
+            <label>JTL-Connector</label>
+            <tab>jtl_connector_config</tab>
+            <frontend_type>text</frontend_type>
+            <sort_order>1000</sort_order>
+            <show_in_default>1</show_in_default>
+            <show_in_website>0</show_in_website>
+            <show_in_store>0</show_in_store>
+
+            <groups>
+                <general translate="label">
+                    <label>General settings</label>
+                    <frontend_type>text</frontend_type>
+                    <sort_order>1</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>0</show_in_website>
+                    <show_in_store>0</show_in_store>
+
+                    <fields>
+                        <auth_token translate="label comment">
+                            <label>Authorization token</label>
+                            <comment>
+                                <![CDATA[This token is needed to authenticate JTL-Wawi against Magento. Use it as password when configuring your shop in JTL-Wawi.]]>
+                            </comment>
+                            <frontend_type>text</frontend_type>
+                            <backend_model>adminhtml/system_config_backend_encrypted</backend_model>
+                            <sort_order>20</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </auth_token>
+
+                        <root_category translate="label comment">
+                            <label>Root category</label>
+                            <comment>
+                                <![CDATA[This is the root category from which JTL-Connector will start syncing. All categories below this category will be transferred. You need to set this to your topmost category.]]>
+                            </comment>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_category</source_model>
+                            <sort_order>30</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </root_category>
+
+                        <default_customer_group translate="label comment">
+                            <label>Default customer group</label>
+                            <comment>
+                                <![CDATA[This is the customer group which JTL-Wawi should consider to be the default for this installation. This selection accounts for the default prices displayed in JTL-Wawi.]]>
+                            </comment>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_customer_group</source_model>
+                            <sort_order>40</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </default_customer_group>
+
+                        <store_mapping translate="label comment">
+                            <label>Store mapping</label>
+                            <comment>
+                                <![CDATA[Map Magento store views to JTL-Wawi languages. You have to make sure that each language is only mapped at most once.]]>
+                            </comment>
+                            <frontend_model>Jtl_Connector_Block_StoreMapping</frontend_model>
+                            <backend_model>adminhtml/system_config_backend_serialized_array</backend_model>
+                            <sort_order>50</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </store_mapping>
+
+                        <taxrate_mapping translate="label comment">
+                            <label>Tax rate mapping</label>
+                            <comment>
+                                <![CDATA[Map Magento tax rates to product tax classes. You have to make sure that each product tax class is only mapped at most once.]]>
+                            </comment>
+                            <frontend_model>Jtl_Connector_Block_TaxRateMapping</frontend_model>
+                            <backend_model>adminhtml/system_config_backend_serialized_array</backend_model>
+                            <sort_order>60</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </taxrate_mapping>
+                    </fields>
+                </general>
+            </groups>
+        </jtl_connector>
+    </sections>
+</config>
