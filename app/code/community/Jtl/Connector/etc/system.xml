@@ -26,6 +26,18 @@
                     <show_in_store>0</show_in_store>
 
                     <fields>
+                        <sync_url translate="label comment">
+                            <label>Synchronization URL</label>
+                            <comment>
+                                <![CDATA[Use this URL to synchronize Magento with JTL-Wawi.]]>
+                            </comment>
+                            <frontend_model>Jtl_Connector_Block_SynchronizationUrl</frontend_model>
+                            <sort_order>10</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </sync_url>
+
                         <auth_token translate="label comment">
                             <label>Authorization token</label>
                             <comment>

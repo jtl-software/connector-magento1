@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Jtl_Connector>
-            <version>1.0.0.0</version>
+            <version>1.0.1.0</version>
         </Jtl_Connector>
     </modules>
 
@@ -173,12 +173,4 @@
             </resources>
         </acl>
     </adminhtml>
-
-    <default>
-        <jtl_connector>
-            <general>
-                <enabled>0</enabled>
-            </general>
-        </jtl_connector>
-    </default>
 </config>
