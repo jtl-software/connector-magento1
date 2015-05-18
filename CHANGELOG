@@ -1,6 +1,7 @@
 1.0.2.0
 -------
 - Remove old tax rate priority
+- Include child entities in features.json to inform JTL-Wawi if they are supported or not
 
 1.0.1.0
 -------
