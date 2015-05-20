@@ -708,7 +708,7 @@ class Product
 
         $product = new ConnectorProduct();
         $product->setId(new Identity($productItem->entity_id, $productItem->jtl_erp_id));
-        $product->setMasterProductId(!is_null($productItem->parent_id) ? new Identity($productItem->parent_id) : null);
+        $product->setMasterProductId(!is_null($productItem->parent_id) ? new Identity($productItem->parent_id) : new Identity(''));
         // $product->setPartsListId(null);
         $product->setSku($productItem->sku);
         $product->setRecommendedRetailPrice((double)$productItem->msrp);
@@ -717,7 +717,7 @@ class Product
         $product->setVat((double)$this->getTaxRateByClassId($productItem->tax_class_id));
         $product->setShippingWeight(0.0);
         $product->setProductWeight(0.0);
-        $product->setIsMasterProduct(false);
+        $product->setIsMasterProduct($productItem->type_id == 'configurable');
         $product->setIsNewProduct(false);
         $product->setIsTopProduct(false);
         $product->setPermitNegativeStock(false);
@@ -885,7 +885,6 @@ class Product
             $productItem->load();
             
             $product = $this->magentoToConnector($productItem);
-            $product->setMasterProductId(new Identity(''));
 
             if (!is_null($product)) {
                 $result[] = $product;
