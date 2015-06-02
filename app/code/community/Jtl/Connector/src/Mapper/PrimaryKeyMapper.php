@@ -31,6 +31,10 @@ class PrimaryKeyMapper implements IPrimaryKeyMapper
                 $order = \Mage::getModel('sales/order')
                     ->load($endpointId);
                 return ($order != null ? $order->jtl_erp_id : null);
+            case IdentityLinker::TYPE_PAYMENT:
+                $payment = \Mage::getModel('sales/order_payment')
+                    ->load($endpointId);
+                return ($order != null ? $order->jtl_erp_id : null);
         }
     }
 
@@ -54,6 +58,10 @@ class PrimaryKeyMapper implements IPrimaryKeyMapper
                 return ($customer != null ? $customer->getId() : null);
             case IdentityLinker::TYPE_CUSTOMER_ORDER:
                 $order = \Mage::getModel('sales/order')
+                    ->load($hostId, 'jtl_erp_id');
+                return ($order != null ? $order->increment_id : null);
+            case IdentityLinker::TYPE_PAYMENT:
+                $payment = \Mage::getModel('sales/order_payment')
                     ->load($hostId, 'jtl_erp_id');
                 return ($order != null ? $order->increment_id : null);
         }
@@ -108,6 +116,14 @@ class PrimaryKeyMapper implements IPrimaryKeyMapper
                         break;
                 }
 
+                break;
+            case IdentityLinker::TYPE_PAYMENT:
+                \Mage::app()->setCurrentStore(\Mage_Core_Model_App::ADMIN_STORE_ID);
+                $order = \Mage::getModel('sales/order_payment')
+                    ->loadByIncrementId($endpointId);
+
+                $order->jtl_erp_id = $hostId;
+                $order->save();
                 break;
         }
     }
@@ -168,6 +184,23 @@ class PrimaryKeyMapper implements IPrimaryKeyMapper
             $order->save();
         }
 
+        // Clear Payment IDs
+        $payments = \Mage::getModel('sales/order_payment')
+            ->getCollection()
+            ->addAttributeToSelect(array('name','jtl_erp_id'))
+            ->addAttributeToFilter('jtl_erp_id', array('gt' => '0'));
+
+        foreach ($payments as $payment) {
+            $payment->setJtlErpId(0);
+            $payment->save();
+        }
+
+        return true;
+    }
+
+    public function gc()
+    {
+        // Pseudo implementation for the gc() function since it is impossible to create links without a referenced entity
         return true;
     }
 }

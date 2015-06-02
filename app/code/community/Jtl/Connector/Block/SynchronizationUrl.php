@@ -12,7 +12,7 @@ class Jtl_Connector_Block_SynchronizationUrl extends Mage_Adminhtml_Block_System
             $baseUrl = Mage::getStoreConfig('web/unsecure/base_url');
         }
 
-        $connectorUrl = sprintf('%sjtlconnector', $baseUrl);
+        $connectorUrl = sprintf('%sjtlconnector/', $baseUrl);
 
         return '<strong>' . $connectorUrl . '</strong>';
     }
