@@ -25,7 +25,7 @@ use jtl\Connector\Model\Identity;
  */
 class Order
 {
-    private $paymentMethods = array(
+    public static $paymentMethods = array(
         'checkmo' => 'pm_bank_transfer'
     );
 

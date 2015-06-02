@@ -200,7 +200,6 @@ class GlobalData
 
             $taxRate = new ConnectorTaxRate();
             $taxRate->setId(new Identity($item->getId()));
-            $taxRate->setPriority(0);
             $taxRate->setRate((double)$item->getRate());
 
             $result[] = $taxRate;
