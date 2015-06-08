@@ -1,3 +1,9 @@
+1.0.3.0
+-------
+- Bump internal version identification
+- Set package stability to "Beta"
+- Fix class overrides to suppress PHP warnings
+
 1.0.2.0
 -------
 - Remove old tax rate priority

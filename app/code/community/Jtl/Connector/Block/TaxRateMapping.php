@@ -33,7 +33,7 @@ class Jtl_Connector_Block_TaxRateMapping extends Mage_Adminhtml_Block_System_Con
         foreach ($taxClassList as $att => $innerArray) {
             $this->taxClassOptions[$innerArray['value']] = $innerArray['label'];
         }
-        asort($this->storeOptions);
+        asort($this->taxClassOptions);
 
 
         $defaultCountryCode = \Mage::getStoreConfig('general/country/default');
