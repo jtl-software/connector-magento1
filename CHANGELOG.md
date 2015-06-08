@@ -1,6 +1,7 @@
 1.0.4.0
 -------
 - Remove Twig as it is not used anymore
+- Fix wrong version number in etc/config.xml
 
 1.0.3.0
 -------
