@@ -22,9 +22,7 @@
     ],
     "require": {
         "php": ">=5.3.0",
-        "jtl/connector": "dev-master",
-        "twig/twig": "~1.18",
-        "twig/extensions": "~1.2"
+        "jtl/connector": "dev-master"
     },
     "minimum-stability": "dev",
     "autoload": {

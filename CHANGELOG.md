@@ -1,3 +1,7 @@
+1.0.4.0
+-------
+- Remove Twig as it is not used anymore
+
 1.0.3.0
 -------
 - Bump internal version identification
