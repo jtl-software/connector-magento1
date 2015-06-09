@@ -2,6 +2,7 @@
 -------
 - Remove Twig as it is not used anymore
 - Fix wrong version number in etc/config.xml
+- Fix pagination issues with products
 
 1.0.3.0
 -------
