@@ -33,11 +33,9 @@ class Image
         $result = array();
 
         $products = \Mage::getResourceModel('catalog/product_collection');
+        $this->addImagesToProductCollection($products);
         foreach ($products as $productItem) {
-            $productModel = \Mage::getModel('catalog/product')
-                ->load($productItem->entity_id);
-
-            $galleryImages = $productModel->getMediaGalleryImages();
+            $galleryImages = $productItem->getMediaGalleryImages();
             if (is_null($galleryImages))
             	continue;
 
@@ -267,11 +265,10 @@ class Image
             $result = 0;
 
             $products = \Mage::getResourceModel('catalog/product_collection');
-            foreach ($products as $productItem) {
-                $productModel = \Mage::getModel('catalog/product')
-                    ->load($productItem->entity_id);
+            $this->addImagesToProductCollection($products);
 
-                $galleryImages = $productModel->getMediaGalleryImages();
+            foreach ($products as $productItem) {
+                $galleryImages = $productItem->getMediaGalleryImages();
                 if (is_null($galleryImages))
                     continue;
 
@@ -299,5 +296,53 @@ class Image
         catch (Exception $e) {
             return 0;
         }
+    }
+
+    private function addImagesToProductCollection(\Mage_Catalog_Model_Resource_Eav_Mysql4_Product_Collection $_productCollection)
+    {
+        $_mediaGalleryAttributeId = \Mage::getSingleton('eav/config')
+            ->getAttribute('catalog_product', 'media_gallery')
+            ->getAttributeId();
+        $_read = \Mage::getSingleton('core/resource')
+            ->getConnection('catalog_read');
+    
+        $_mediaGalleryData = $_read->fetchAll('
+            SELECT
+                main.entity_id, `main`.`value_id`, `main`.`value` AS `file`,
+                `value`.`label`, `value`.`position`, `value`.`disabled`, `default_value`.`label` AS `label_default`,
+                `default_value`.`position` AS `position_default`,
+                `default_value`.`disabled` AS `disabled_default`
+            FROM `catalog_product_entity_media_gallery` AS `main`
+                LEFT JOIN `catalog_product_entity_media_gallery_value` AS `value`
+                    ON main.value_id=value.value_id AND value.store_id=' . \Mage::app()->getStore()->getId() . '
+                LEFT JOIN `catalog_product_entity_media_gallery_value` AS `default_value`
+                    ON main.value_id=default_value.value_id AND default_value.store_id=0
+            WHERE (
+                main.attribute_id = ' . $_read->quote($_mediaGalleryAttributeId) . ') 
+                AND (main.entity_id IN (' . $_read->quote($_productCollection->getAllIds()) . '))
+            ORDER BY IF(value.position IS NULL, default_value.position, value.position) ASC    
+        ');
+    
+    
+        $_mediaGalleryByProductId = array();
+        foreach ($_mediaGalleryData as $_galleryImage) {
+            $k = $_galleryImage['entity_id'];
+            unset($_galleryImage['entity_id']);
+            if (!isset($_mediaGalleryByProductId[$k])) {
+                $_mediaGalleryByProductId[$k] = array();
+            }
+            $_mediaGalleryByProductId[$k][] = $_galleryImage;
+        }
+        unset($_mediaGalleryData);
+
+        foreach ($_productCollection as &$_product) {
+            $_productId = $_product->getData('entity_id');
+            if (isset($_mediaGalleryByProductId[$_productId])) {
+                $_product->setData('media_gallery', array('images' => $_mediaGalleryByProductId[$_productId]));
+            }
+        }
+        unset($_mediaGalleryByProductId);
+
+        return $_productCollection;
     }
 }

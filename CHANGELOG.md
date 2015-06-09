@@ -3,6 +3,7 @@
 - Remove Twig as it is not used anymore
 - Fix wrong version number in etc/config.xml
 - Fix pagination issues with products
+- Speedup image handling drastically by employing raw SQL
 
 1.0.3.0
 -------
