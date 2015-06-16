@@ -878,7 +878,9 @@ class Product
             ->joinTable('catalog/product_relation', 'child_id=entity_id', array(
                 'parent_id' => 'parent_id'
             ), null, 'left')
-            ->addAttributeToSort('parent_id', 'ASC');
+            ->addAttributeToSort('parent_id', 'ASC')
+            ->setPageSize(50)
+            ->setCurPage(1);
 
         $result = array();
         foreach ($products as $productItem) {
