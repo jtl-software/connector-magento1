@@ -6,6 +6,7 @@
 - Speedup image handling drastically by employing raw SQL
 - Add SQLite3 as a dependency to the package XML
 - Bump minimum PHP version to 5.4
+- Introduce protocol version number evaluated by JTL-Wawi
 
 1.0.3.0
 -------
