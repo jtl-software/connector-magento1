@@ -1,3 +1,6 @@
+1.1.0.0
+-------
+
 1.0.4.0
 -------
 - Remove Twig as it is not used anymore
