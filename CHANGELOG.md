@@ -1,6 +1,7 @@
 1.1.0.0
 -------
 - Use Magento's table name prefix for plain SQL
+- Use jtlconnector's facilities to convert between locales and three-digit ISO language codes
 
 1.0.4.0
 -------
