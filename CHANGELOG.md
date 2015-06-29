@@ -1,5 +1,6 @@
 1.1.0.0
 -------
+- Use Magento's table name prefix for plain SQL
 
 1.0.4.0
 -------
