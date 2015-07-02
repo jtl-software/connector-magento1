@@ -2,6 +2,7 @@
 -------
 - Use Magento's table name prefix for plain SQL
 - Use jtlconnector's facilities to convert between locales and three-digit ISO language codes
+- Check for empty product collections while calculating image statistics
 
 1.0.4.0
 -------

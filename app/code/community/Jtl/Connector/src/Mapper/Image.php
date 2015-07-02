@@ -305,7 +305,10 @@ class Image
             ->getAttributeId();
         $_read = \Mage::getSingleton('core/resource')
             ->getConnection('catalog_read');
-    
+
+        if ($_productCollection->getSize() == 0)
+            return;
+
         $_mediaGalleryData = $_read->fetchAll('
             SELECT
                 main.entity_id, `main`.`value_id`, `main`.`value` AS `file`,
