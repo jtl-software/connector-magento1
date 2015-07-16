@@ -138,7 +138,7 @@ class Order
                         $variation->setProductVariationId(new Identity($option['option_id']));
                         $variation->setProductVariationValueId(new Identity($option['option_value']));
                         $variation->setProductVariationName($option['label']);
-                        $variation->setProductVariationValueName($option['print_value']);
+                        $variation->setValueName($option['print_value']);
                         $variation->setSurcharge(0.00);
 
                         $item->addVariation($variation);
@@ -172,7 +172,7 @@ class Order
                                     $variation->setProductVariationId(new Identity($attribute_id));
                                     $variation->setProductVariationValueId(new Identity($option['id']));
                                     $variation->setProductVariationName($attribute['label']);
-                                    $variation->setProductVariationValueName($option['label']);
+                                    $variation->setValueName($option['label']);
                                     $variation->setSurcharge((double)($option['price'] / (1 + $item->getVat() / 100.0)));
 
                                     $item->addVariation($variation);

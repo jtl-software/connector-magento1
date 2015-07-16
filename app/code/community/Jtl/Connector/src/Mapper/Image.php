@@ -305,17 +305,20 @@ class Image
             ->getAttributeId();
         $_read = \Mage::getSingleton('core/resource')
             ->getConnection('catalog_read');
-    
+
+        if ($_productCollection->getSize() == 0)
+            return;
+
         $_mediaGalleryData = $_read->fetchAll('
             SELECT
                 main.entity_id, `main`.`value_id`, `main`.`value` AS `file`,
                 `value`.`label`, `value`.`position`, `value`.`disabled`, `default_value`.`label` AS `label_default`,
                 `default_value`.`position` AS `position_default`,
                 `default_value`.`disabled` AS `disabled_default`
-            FROM `catalog_product_entity_media_gallery` AS `main`
-                LEFT JOIN `catalog_product_entity_media_gallery_value` AS `value`
+            FROM `' . \Mage::getSingleton('core/resource')->getTableName('catalog_product_entity_media_gallery') . '` AS `main`
+                LEFT JOIN `' . \Mage::getSingleton('core/resource')->getTableName('catalog_product_entity_media_gallery_value') . '` AS `value`
                     ON main.value_id=value.value_id AND value.store_id=' . \Mage::app()->getStore()->getId() . '
-                LEFT JOIN `catalog_product_entity_media_gallery_value` AS `default_value`
+                LEFT JOIN `' . \Mage::getSingleton('core/resource')->getTableName('catalog_product_entity_media_gallery_value') . '` AS `default_value`
                     ON main.value_id=default_value.value_id AND default_value.store_id=0
             WHERE (
                 main.attribute_id = ' . $_read->quote($_mediaGalleryAttributeId) . ') 

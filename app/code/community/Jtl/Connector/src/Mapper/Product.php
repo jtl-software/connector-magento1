@@ -879,7 +879,7 @@ class Product
                 'parent_id' => 'parent_id'
             ), null, 'left')
             ->addAttributeToSort('parent_id', 'ASC')
-            ->setPageSize(50)
+            ->setPageSize(25)
             ->setCurPage(1);
 
         $result = array();
@@ -1193,9 +1193,6 @@ class Product
             $productModel = \Mage::getModel('catalog/product');
             $productCollection = $productModel->getCollection()
                 ->addAttributeToSelect('*')
-                ->joinTable('catalog/product_relation', 'child_id=entity_id', array(
-                    'parent_id' => 'parent_id'
-                ), null, 'left')
                 ->addAttributeToFilter('jtl_erp_id',
                     array(
                         array('eq' => 0),

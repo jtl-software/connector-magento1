@@ -40,18 +40,14 @@ class Category extends AbstractController
                 $category->delete();
                 \Mage::unregister('isSecureArea');
             }
-
-            $result = new ConnectorCategory();
-            $result->setId(new Identity('', $hostId));
-
-            $action->setResult($result);
         }
         catch (\Exception $e) {
-            $err = new Error();
-            $err->setCode(31337); //$e->getCode());
-            $err->setMessage($e->getTraceAsString() . PHP_EOL . $e->getMessage()); //'Internal error'); //$e->getMessage());
-            $action->setError($err);
         }
+
+        $result = new ConnectorCategory();
+        $result->setId(new Identity('', $hostId));
+        $action->setResult($result);
+
         return $action;
     }
 

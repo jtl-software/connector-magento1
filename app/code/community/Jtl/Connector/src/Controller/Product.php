@@ -39,18 +39,14 @@ class Product extends AbstractController
                 $product->delete();
                 \Mage::unregister('isSecureArea');
             }
-
-            $result = new ConnectorProduct();
-            $result->setId(new Identity('', $hostId));
-
-            $action->setResult($result);
         }
         catch (\Exception $e) {
-            $err = new Error();
-            $err->setCode(31337); //$e->getCode());
-            $err->setMessage($e->getTraceAsString() . PHP_EOL . $e->getMessage()); //'Internal error'); //$e->getMessage());
-            $action->setError($err);
         }
+
+        $result = new ConnectorProduct();
+        $result->setId(new Identity('', $hostId));
+        $action->setResult($result);
+
         return $action;
     }
 

@@ -1,3 +1,15 @@
+1.1.0.0 (unreleased)
+--------------------
+
+1.0.5.0
+-------
+- Use Magento's table name prefix for plain SQL
+- Use jtlconnector's facilities to convert between locales and three-digit ISO language codes
+- Check for empty product collections while calculating image statistics
+- Fix old setters for variation value names in customer orders
+- Reduce page size for product.pull to prevent memory_limit exceptions
+- Be error-tolerant while deleting products and categories
+
 1.0.4.0
 -------
 - Remove Twig as it is not used anymore

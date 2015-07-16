@@ -6,23 +6,17 @@
  */
 namespace jtl\Connector\Magento\Mapper;
 
+use jtl\Connector\Core\Utilities\Language;
+
 class LocaleMapper
 {
-    private static $localeMappings = array(
-        'ger' => 'de_DE',
-        'eng' => 'en_US',
-        'fra' => 'fr_FR'
-    );
-
     public static function localeToLanguageIso($locale)
     {
-        return array_search($locale, self::$localeMappings) ?: null;
+        return Language::map($locale);
     }
 
     public static function languageToLocale($languageIso)
     {
-        if (array_key_exists($languageIso, self::$localeMappings)) {
-            return self::$localeMappings[$languageIso];
-        }
+        return Language::map(null, null, $languageIso);
     }
 }
