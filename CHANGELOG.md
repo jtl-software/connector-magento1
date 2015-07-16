@@ -4,6 +4,7 @@
 - Use jtlconnector's facilities to convert between locales and three-digit ISO language codes
 - Check for empty product collections while calculating image statistics
 - Fix old setters for variation value names in customer orders
+- Reduce page size for product.pull to prevent memory_limit exceptions
 
 1.0.4.0
 -------

@@ -879,7 +879,7 @@ class Product
                 'parent_id' => 'parent_id'
             ), null, 'left')
             ->addAttributeToSort('parent_id', 'ASC')
-            ->setPageSize(50)
+            ->setPageSize(25)
             ->setCurPage(1);
 
         $result = array();
