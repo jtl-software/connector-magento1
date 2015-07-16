@@ -5,6 +5,7 @@
 - Check for empty product collections while calculating image statistics
 - Fix old setters for variation value names in customer orders
 - Reduce page size for product.pull to prevent memory_limit exceptions
+- Be error-tolerant while deleting products and categories
 
 1.0.4.0
 -------
