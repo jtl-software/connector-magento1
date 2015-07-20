@@ -52,8 +52,8 @@ class Product
             $this->websites[] = $website->getId();
         }
 
-        Logger::write('default locale: ' . $this->defaultLocale);
-        Logger::write('default Store ID: ' . $this->defaultStoreId);
+        Logger::write('default locale: ' . $this->defaultLocale, Logger::DEBUG);
+        Logger::write('default Store ID: ' . $this->defaultStoreId, Logger::DEBUG);
     }
 
     private function isParent(ConnectorProduct $product)
@@ -68,7 +68,7 @@ class Product
 
     private function insert(ConnectorProduct $product)
     {
-        Logger::write('insert product');
+        Logger::write('insert product', Logger::DEBUG);
 
         $result = new ConnectorProduct();
         $identity = $product->getId();
@@ -91,7 +91,7 @@ class Product
         $model->setStatus(1);
 
         if ($this->isParent($product)) {
-            Logger::write(sprintf('PRODUCT "%s" TYPE: varcombi parent', $product->getSku()));
+            Logger::write(sprintf('PRODUCT "%s" TYPE: varcombi parent', $product->getSku()), Logger::DEBUG);
 
             // Varcombi parent
             $model->setTypeId('configurable');
@@ -105,7 +105,7 @@ class Product
                 ->load($model->getId());
         }
         elseif ($this->isChild($product)) {
-            Logger::write(sprintf('PRODUCT "%s" TYPE: varcombi child', $product->getSku()));
+            Logger::write(sprintf('PRODUCT "%s" TYPE: varcombi child', $product->getSku()), Logger::DEBUG);
 
             // Varcombi child
             $model->setTypeId('simple');
@@ -119,7 +119,7 @@ class Product
             $model->setVisibility(\Mage_Catalog_Model_Product_Visibility::VISIBILITY_NOT_VISIBLE);
         }
         else {
-            Logger::write(sprintf('PRODUCT "%s" TYPE: simple product', $product->getSku()));
+            Logger::write(sprintf('PRODUCT "%s" TYPE: simple product', $product->getSku()), Logger::DEBUG);
 
             // Simple product
             $model->setTypeId('simple');
@@ -163,7 +163,7 @@ class Product
         }, $product2Categories);
         $model->setStoreId(\Mage_Core_Model_App::ADMIN_STORE_ID);
         $model->setCategoryIds($categoryIds);
-        Logger::write('update with category IDs . ' . var_export($categoryIds, true));
+        Logger::write('update with category IDs . ' . var_export($categoryIds, true), Logger::DEBUG);
         $model->save();
         /* *** End Product2Category *** */
 
@@ -173,7 +173,7 @@ class Product
 
     private function update(ConnectorProduct $product)
     {
-        Logger::write('update product');
+        Logger::write('update product', Logger::DEBUG);
         $result = new ConnectorProduct();
 
         $identity = $product->getId();
@@ -189,7 +189,7 @@ class Product
 
         $model->setVisibility(\Mage_Catalog_Model_Product_Visibility::VISIBILITY_BOTH);
         if ($this->isParent($product)) {
-            Logger::write(sprintf('PRODUCT "%s" TYPE: varcombi parent', $product->getSku()));
+            Logger::write(sprintf('PRODUCT "%s" TYPE: varcombi parent', $product->getSku()), Logger::DEBUG);
 
             // Varcombi parent
             $model->setTypeId('configurable');
@@ -199,7 +199,7 @@ class Product
             $this->updateConfigurableData($model, $product, true);
         }
         elseif ($this->isChild($product)) {
-            Logger::write(sprintf('PRODUCT "%s" TYPE: varcombi child', $product->getSku()));
+            Logger::write(sprintf('PRODUCT "%s" TYPE: varcombi child', $product->getSku()), Logger::DEBUG);
 
             // Varcombi child
             $model->setTypeId('simple');
@@ -213,7 +213,7 @@ class Product
             $model->setVisibility(\Mage_Catalog_Model_Product_Visibility::VISIBILITY_NOT_VISIBLE);
         }
         else {
-            Logger::write(sprintf('PRODUCT "%s" TYPE: simple product', $product->getSku()));
+            Logger::write(sprintf('PRODUCT "%s" TYPE: simple product', $product->getSku()), Logger::DEBUG);
 
             // Simple product
             $model->setTypeId('simple');
@@ -258,7 +258,7 @@ class Product
         }, $product2Categories);
         $model->setStoreId(\Mage_Core_Model_App::ADMIN_STORE_ID);
         $model->setCategoryIds($categoryIds);
-        Logger::write('update with category IDs . ' . var_export($categoryIds, true));
+        Logger::write('update with category IDs . ' . var_export($categoryIds, true), Logger::DEBUG);
         $model->save();
         /* *** End Product2Category *** */
 
@@ -317,7 +317,7 @@ class Product
 
         $product = \Mage::getModel('catalog/product');
         
-        Logger::write(sprintf('process %u variations...', count($variations)));
+        Logger::write(sprintf('process %u variations...', count($variations)), Logger::DEBUG);
         foreach ($variations as $variation) {
             $attribute = $this->findAttributeByVariation($variation);
 
@@ -340,14 +340,14 @@ class Product
                     if ($matches)
                         continue;
 
-                    Logger::write(sprintf('value "%s" not found', $variationValue->getId()->getHost()));
+                    Logger::write(sprintf('value "%s" not found', $variationValue->getId()->getHost()), Logger::DEBUG);
 
                     $attribute_model = \Mage::getModel('eav/entity_attribute');
                     $attribute_options_model = \Mage::getModel('eav/entity_attribute_source_table');
 
                     $attribute_table = $attribute_options_model->setAttribute($attribute);
                     $options = $attribute_options_model->getAllOptions(false);
-                    Logger::write(var_export($options, true));
+                    Logger::write(var_export($options, true), Logger::DEBUG);
 
                     $stores = Magento::getInstance()->getStoreMapping();
                     $newAttributeValue = array('option' => array());
@@ -370,7 +370,7 @@ class Product
             }
             else {
                 // Is there an error in the matrix?
-                Logger::write('Spurious attribute not found: ' . $variationI18n->getName());
+                Logger::write('Spurious attribute not found: ' . $variationI18n->getName(), Logger::DEBUG);
                 throw new Exception('Spurious attribute not found: ' . $variationI18n->getName());
             }
         }
@@ -410,7 +410,7 @@ class Product
         $defaultAttributeSetId = \Mage::getSingleton('eav/config')
             ->getEntityType(\Mage_Catalog_Model_Product::ENTITY)
             ->getDefaultAttributeSetId();
-        Logger::write('default attr set ID: ' . $defaultAttributeSetId);
+        Logger::write('default attr set ID: ' . $defaultAttributeSetId, Logger::DEBUG);
 
         $productEntityTypeId = \Mage::getModel('eav/entity')
             ->setType('catalog_product')
@@ -420,7 +420,7 @@ class Product
 
         $variationTitles = $this->getVariationTitlesForProduct($product);
         $variationTitleList = implode(',', $variationTitles);
-        Logger::write('Looking for variation set: ' . $variationTitleList);
+        Logger::write('Looking for variation set: ' . $variationTitleList, Logger::DEBUG);
 
         foreach ($setCollection as $attributeSet)
         {
@@ -439,15 +439,15 @@ class Product
             sort($attrNames);
 
             $attrNameList = implode(',', $attrNames);
-            Logger::write('attr set ID: ' . $attributeSet['set_id'] . ' - list: ' . $attrNameList);
+            Logger::write('attr set ID: ' . $attributeSet['set_id'] . ' - list: ' . $attrNameList, Logger::DEBUG);
 
             if (count($attributes) == 0)
                 continue;
 
             // we have found a compatible attr set
             if (strtolower($attrNameList) === strtolower($variationTitleList)) {
-                Logger::write('found compatible attr set with ID ' . $attributeSet['set_id']);
-                Logger::write('check attribute values for existance...');
+                Logger::write('found compatible attr set with ID ' . $attributeSet['set_id'], Logger::DEBUG);
+                Logger::write('check attribute values for existance...', Logger::DEBUG);
 
                 $this->updateAttributeValues($product->getVariations());
 
@@ -455,7 +455,7 @@ class Product
             }
         }
 
-        Logger::write('no compatible attribute set found - creating one...');
+        Logger::write('no compatible attribute set found - creating one...', Logger::DEBUG);
 
         // Loop through all variations and check for appropriate attributes
         $attributeSetAttributes = array();
@@ -463,14 +463,14 @@ class Product
             $attribute = $this->findAttributeByVariation($variation);
 
             if (!is_null($attribute)) {
-                Logger::write('Attribute found - code: ' . $attribute['attribute_code']);
+                Logger::write('Attribute found - code: ' . $attribute['attribute_code'], Logger::DEBUG);
                 $attributeSetAttributes[] = $attribute['attribute_code'];
             }
             else {
                 $attributeName = $variationTitles[$variation->getId()->getHost()];
                 $attributeCode = self::getAttributeCodeForVariationName($attributeName);
 
-                Logger::write('Creating attribute: ' . $attributeCode);
+                Logger::write('Creating attribute: ' . $attributeCode, Logger::DEBUG);
 
                 $attributeData = array(
                     'attribute_code' => $attributeCode,
@@ -549,7 +549,7 @@ class Product
                 $attrModel->getAttributeCode(),
                 $attrSet->getAttributeSetName(),
                 $defaultGroup->getAttributeGroupName()
-            ));
+            ), Logger::DEBUG);
         }
         $attrSet->save();
 
@@ -593,7 +593,7 @@ class Product
             $attribute = $this->findAttributeByVariation($variation);
             $optionValueId = $this->findOptionValueIdByName($attribute, $defaultVariationValueI18n->getName());
 
-            Logger::write(sprintf('attr "%s" => value "%s"', $attribute->getAttributeCode(), $optionValueId));
+            Logger::write(sprintf('attr "%s" => value "%s"', $attribute->getAttributeCode(), $optionValueId), Logger::DEBUG);
             $model->setData($attribute->getAttributeCode(), $optionValueId);
         }
     }
@@ -671,7 +671,7 @@ class Product
         $collection = \Mage::getResourceModel('catalog/product_collection')
             ->addAttributeToFilter('jtl_erp_id', $hostId);
 
-        Logger::write('existsByHost: ' . $hostId, Logger::ERROR, 'general');
+        Logger::write('existsByHost: ' . $hostId, Logger::DEBUG, 'general');
 
         return $collection->getSize() > 0;
     }
@@ -689,7 +689,7 @@ class Product
         if ($hostId == 0)
             return null;
 
-        Logger::write('push product', Logger::ERROR, 'general');
+        Logger::write('push product', Logger::DEBUG, 'general');
         if ($this->existsByHost($hostId))
             $result = $this->update($product);
         else
@@ -778,7 +778,7 @@ class Product
             $typeInstance = $productItem->getTypeInstance(false);
             $productAttributeOptions = $typeInstance->getConfigurableAttributesAsArray($productItem);
 
-            Logger::write('options: ' . json_encode($productAttributeOptions));
+            Logger::write('options: ' . json_encode($productAttributeOptions), Logger::DEBUG);
 
             // Iterate over all variations
             $variations = array();
@@ -972,9 +972,9 @@ class Product
         $defaultProductPrice = ArrayTools::filterOneByItemKeyOrFirst($defaultGroupPriceItems, 0, 'quantity');
 
         if ($defaultProductPrice instanceof ConnectorProductPriceItem) {
-            Logger::write('default price: ' . $defaultProductPrice->getNetPrice());
-            Logger::write('gross: ' . ($defaultProductPrice->getNetPrice() * (1.0 + $this->getTaxRateByClassId($model->tax_class_id) / 100.0)));
-            Logger::write('product tax class ID: ' . $model->getTaxClassId());
+            Logger::write('default price: ' . $defaultProductPrice->getNetPrice(), Logger::DEBUG);
+            Logger::write('gross: ' . ($defaultProductPrice->getNetPrice() * (1.0 + $this->getTaxRateByClassId($model->tax_class_id) / 100.0)), Logger::DEBUG);
+            Logger::write('product tax class ID: ' . $model->getTaxClassId(), Logger::DEBUG);
             $model->setPrice($defaultProductPrice->getNetPrice() * (1.0 + $this->getTaxRateByClassId($model->tax_class_id) / 100.0));
         }
         else {
@@ -1019,12 +1019,12 @@ class Product
                 }
             }
         }
-        Logger::write('set tier prices');
-        Logger::write(var_export($tierPrice, true));
+        Logger::write('set tier prices', Logger::DEBUG);
+        Logger::write(var_export($tierPrice, true), Logger::DEBUG);
         $model->setTierPrice($tierPrice);
-        Logger::write('set group prices');
+        Logger::write('set group prices', Logger::DEBUG);
         $model->setGroupPrice($groupPrice);
-        Logger::write('save');
+        Logger::write('save', Logger::DEBUG);
         $model->save();
     }
 
@@ -1041,9 +1041,9 @@ class Product
         $defaultProductPrice = ArrayTools::filterOneByItemKeyOrFirst($defaultGroupPriceItems, 0, 'quantity');
 
         if ($defaultProductPrice instanceof ConnectorProductPriceItem) {
-            Logger::write('default price: ' . $defaultProductPrice->getNetPrice());
-            Logger::write('gross: ' . ($defaultProductPrice->getNetPrice() * (1.0 + $this->getTaxRateByClassId($model->tax_class_id) / 100.0)));
-            Logger::write('product tax class ID: ' . $model->getTaxClassId());
+            Logger::write('default price: ' . $defaultProductPrice->getNetPrice(), Logger::DEBUG);
+            Logger::write('gross: ' . ($defaultProductPrice->getNetPrice() * (1.0 + $this->getTaxRateByClassId($model->tax_class_id) / 100.0)), Logger::DEBUG);
+            Logger::write('product tax class ID: ' . $model->getTaxClassId(), Logger::DEBUG);
             $model->setPrice($defaultProductPrice->getNetPrice() * (1.0 + $this->getTaxRateByClassId($model->tax_class_id) / 100.0));
         }
         else {
@@ -1055,14 +1055,14 @@ class Product
         // Clear all tier prices and group prices first (are you f***king kidding me?)
         // 
         // (thanks to http://www.catgento.com/how-to-set-tier-prices-programmatically-in-magento/)
-        Logger::write('before clean');
+        Logger::write('before clean', Logger::DEBUG);
         $dbc = \Mage::getSingleton('core/resource')->getConnection('core_write');
         $resource = \Mage::getSingleton('core/resource');
         $table = $resource->getTableName('catalog/product').'_tier_price';
         $dbc->query("DELETE FROM $table WHERE entity_id = " . $model->entity_id);
         $table = $resource->getTableName('catalog/product').'_group_price';
         $dbc->query("DELETE FROM $table WHERE entity_id = " . $model->entity_id);
-        Logger::write('prices cleaned');
+        Logger::write('prices cleaned', Logger::DEBUG);
 
         $tierPrice = array();
         $groupPrice = array();
@@ -1092,17 +1092,17 @@ class Product
                 }
             }
         }
-        Logger::write('set tier prices:' . var_export($tierPrice, true));
+        Logger::write('set tier prices:' . var_export($tierPrice, true), Logger::DEBUG);
         $model->setTierPrice($tierPrice);
-        Logger::write('set group prices:' . var_export($groupPrice, true));
+        Logger::write('set group prices:' . var_export($groupPrice, true), Logger::DEBUG);
         $model->setGroupPrice($groupPrice);
-        Logger::write('save');
+        Logger::write('save', Logger::DEBUG);
         $model->save();
     }
 
     private function updateProductI18ns(\Mage_Catalog_Model_Product $model, ConnectorProduct $product)
     {
-        Logger::write('begin admin store i18n');
+        Logger::write('begin admin store i18n', Logger::DEBUG);
 
         // Reload model
         $tempProduct = \Mage::getModel('catalog/product')
@@ -1128,7 +1128,7 @@ class Product
         }
         $tempProduct->save();
 
-        Logger::write('begin productI18n');
+        Logger::write('begin productI18n', Logger::DEBUG);
         foreach ($this->stores as $locale => $storeId) {
             $productI18n = ArrayTools::filterOneByLanguage($product->getI18ns(), LocaleMapper::localeToLanguageIso($locale));
             if (!($productI18n instanceof ConnectorProductI18n))
@@ -1152,9 +1152,9 @@ class Product
 
             $tempProduct->save();
 
-            Logger::write('productI18n ' . $locale);
+            Logger::write('productI18n ' . $locale, Logger::DEBUG);
         }
-        Logger::write('end productI18n');
+        Logger::write('end productI18n', Logger::DEBUG);
     }
 
     private function updateProductStockLevel(\Mage_Catalog_Model_Product $model, ConnectorProduct $product)
