@@ -1,5 +1,6 @@
-1.1.0.0 (unreleased)
+1.0.6.0 (unreleased)
 --------------------
+- Reduce log verbosity by defining most log messages as Logger::DEBUG
 
 1.0.5.0
 -------
