@@ -1,7 +1,6 @@
 1.0.6.0 (unreleased)
 --------------------
 - Reduce log verbosity by defining most log messages as Logger::DEBUG
-- Fix handling of image.delete requests incoming as array
 
 1.0.5.0
 -------
