@@ -76,7 +76,7 @@ class Category
         $categoryI18n = reset($i18ns);
 
         $model->setStoreId(\Mage_Core_Model_App::ADMIN_STORE_ID);
-        $model->setIsActive(true);
+        $model->setIsActive($category->getIsActive());
 
         if ($categoryI18n instanceof ConnectorCategoryI18n) {
             $model->setName($categoryI18n->getName() !== '' ? $categoryI18n->getName() : 'Kategorie "' . $categoryI18n->getName() . '"');
@@ -135,6 +135,8 @@ class Category
         $model = \Mage::getModel('catalog/category')
             ->loadByAttribute('jtl_erp_id', $hostId);
         $result->setId(new Identity($model->getId(), $category->getId()->getHost()));
+        $model->setIsActive($category->getIsActive());
+        $model->save();
         
         foreach ($this->stores as $locale => $storeId) {
             $categoryI18n = ArrayTools::filterOneByLanguageOrFirst($category->getI18ns(), LocaleMapper::localeToLanguageIso($locale));
