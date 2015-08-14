@@ -1,5 +1,8 @@
-1.0.6.0 (unreleased)
+1.0.7.0 (unreleased)
 --------------------
+
+1.0.6.0
+-------
 - Reduce log verbosity by defining most log messages as Logger::DEBUG
 - Fix handling of image.delete requests incoming as array
 - Pull payments grouped to chunks of size 25
