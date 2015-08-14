@@ -38,7 +38,7 @@ class PrimaryKeyMapper implements IPrimaryKeyMapper
         }
     }
 
-    public function getEndpointId($hostId, $type)
+    public function getEndpointId($hostId, $type, $relationType = NULL)
     {
         switch ($type)
         {

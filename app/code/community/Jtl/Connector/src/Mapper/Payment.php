@@ -55,7 +55,9 @@ class Payment
                     array('null' => true)
                 ),
                 'left'
-            );
+            )
+            ->setPageSize(25)
+            ->setCurPage(1);
 
         $result = array();
         foreach ($paymentCollection as $item)

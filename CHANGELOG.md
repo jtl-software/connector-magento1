@@ -1,5 +1,12 @@
-1.1.0.0 (unreleased)
+1.0.7.0 (unreleased)
 --------------------
+
+1.0.6.0
+-------
+- Reduce log verbosity by defining most log messages as Logger::DEBUG
+- Fix handling of image.delete requests incoming as array
+- Pull payments grouped to chunks of size 25
+- Respect category isActive flag and provide a fallback evaluation of the respective category function attribute
 
 1.0.5.0
 -------

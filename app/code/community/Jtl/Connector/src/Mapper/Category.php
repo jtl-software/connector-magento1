@@ -76,7 +76,20 @@ class Category
         $categoryI18n = reset($i18ns);
 
         $model->setStoreId(\Mage_Core_Model_App::ADMIN_STORE_ID);
-        $model->setIsActive(true);
+        $model->setIsActive($category->getIsActive());
+
+        // Evaluate isactive function attribute (just in case of fire)
+        foreach ($category->getAttributes() as $i => $attribute) {
+            $i++;
+            foreach ($attribute->getI18ns() as $attributeI18n) {
+
+                // Active fix
+                $allowedActiveFlags = array('0', '1', 0, 1, false, true);
+                if (strtolower($attributeI18n->getName()) === 'isactive' && in_array($attributeI18n->getValue(), $allowedActiveFlags, true)) {
+                    $model->setIsActive((bool) $attributeI18n->getValue());
+                }
+            }
+        }
 
         if ($categoryI18n instanceof ConnectorCategoryI18n) {
             $model->setName($categoryI18n->getName() !== '' ? $categoryI18n->getName() : 'Kategorie "' . $categoryI18n->getName() . '"');
@@ -135,6 +148,22 @@ class Category
         $model = \Mage::getModel('catalog/category')
             ->loadByAttribute('jtl_erp_id', $hostId);
         $result->setId(new Identity($model->getId(), $category->getId()->getHost()));
+        $model->setIsActive($category->getIsActive());
+
+        // Evaluate isactive function attribute (just in case of fire)
+        foreach ($category->getAttributes() as $i => $attribute) {
+            $i++;
+            foreach ($attribute->getI18ns() as $attributeI18n) {
+
+                // Active fix
+                $allowedActiveFlags = array('0', '1', 0, 1, false, true);
+                if (strtolower($attributeI18n->getName()) === 'isactive' && in_array($attributeI18n->getValue(), $allowedActiveFlags, true)) {
+                    $model->setIsActive((bool) $attributeI18n->getValue());
+                }
+            }
+        }
+
+        $model->save();
         
         foreach ($this->stores as $locale => $storeId) {
             $categoryI18n = ArrayTools::filterOneByLanguageOrFirst($category->getI18ns(), LocaleMapper::localeToLanguageIso($locale));

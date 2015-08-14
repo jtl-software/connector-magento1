@@ -93,7 +93,7 @@ class Connector extends BaseConnector
         $this->_controller->setMethod($this->getMethod());
         
         if ($this->_action === Method::ACTION_PUSH || $this->_action === Method::ACTION_DELETE) {
-            if ($this->getMethod()->getController() === 'image') {
+            if ($this->getMethod()->getController() === 'image' && $this->_action === Method::ACTION_PUSH) {
                 return $this->_controller->{$this->_action}($requestpacket->getParams());
             }
 
