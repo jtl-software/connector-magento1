@@ -26,7 +26,8 @@ use jtl\Connector\Model\Identity;
 class Order
 {
     public static $paymentMethods = array(
-        'checkmo' => 'pm_bank_transfer'
+        'checkmo' => 'pm_bank_transfer',
+        'cashondelivery' => 'pm_cash_on_delivery'
     );
 
     public function getAvailableCount()
@@ -92,7 +93,6 @@ class Order
             // $customerOrder->setCredit(0.00);
             $customerOrder->setTotalSum((double)$order->grand_total);
             $customerOrder->setShippingMethodName($order->shipping_description);
-            $customerOrder->setPaymentModuleCode(''); // TODO
             $customerOrder->setOrderNumber($order->increment_id);
             $customerOrder->setShippingInfo('');
             // $customerOrder->setShippingDate(NULL);
@@ -107,10 +107,10 @@ class Order
             $payment = $order->getPayment();
             $code = $payment->getMethodInstance()->getCode();
 
-            // if (array_key_exists($code, $this->paymentMethods))
-            //     $customerOrder->setPaymentModuleType($this->paymentMethods[$code]);
-            // else
-            //     $customerOrder->setPaymentModuleType('pm_bank_transfer');
+            if (array_key_exists($code, self::$paymentMethods))
+                $customerOrder->setPaymentModuleCode(self::$paymentMethods[$code]);
+            else
+                $customerOrder->setPaymentModuleCode('pm_bank_transfer');
 
             foreach ($order->getAllItems() as $magento_item) {
                 $item = new ConnectorCustomerOrderItem();

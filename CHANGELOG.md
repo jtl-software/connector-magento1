@@ -3,6 +3,7 @@
 - Fix handling of product applicable to backorders
 - Fix handling of divisible products
 - Fix product metadata import
+- Add support for cash-on-delivery and fix payment module mapping
 
 1.0.6.0
 -------
