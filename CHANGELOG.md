@@ -1,6 +1,7 @@
 1.0.7.0 (unreleased)
 --------------------
 - Fix handling of product applicable to backorders
+- Fix handling of divisible products
 
 1.0.6.0
 -------

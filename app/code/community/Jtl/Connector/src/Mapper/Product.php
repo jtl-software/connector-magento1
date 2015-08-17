@@ -1174,16 +1174,18 @@ class Product
             ));
         }
         else {
-            $tempProduct->setStockData(array( 
+            $tempProduct->setStockData(array(
                 'use_config_manage_stock' => 0,
                 'is_in_stock' => (!$product->getConsiderStock() || ($product->getStockLevel()->getStockLevel() > 0)) ? 1 : 0,
                 'qty' => $product->getStockLevel()->getStockLevel(),
+                'is_qty_decimal' => $product->getIsDivisible() ? 1 : 0,
                 'manage_stock' => $product->getConsiderStock() ? 1 : 0,
                 'use_config_notify_stock_qty' => 0,
                 'use_config_backorders' => 0,
                 'backorders' => ($product->getPermitNegativeStock() ? \Mage_CatalogInventory_Model_Stock::BACKORDERS_YES_NONOTIFY : \Mage_CatalogInventory_Model_Stock::BACKORDERS_NO)
             ));
         }
+
         $tempProduct->save();
     }
 
