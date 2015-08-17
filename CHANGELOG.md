@@ -1,5 +1,6 @@
 1.0.7.0 (unreleased)
 --------------------
+- Fix handling of product applicable to backorders
 
 1.0.6.0
 -------

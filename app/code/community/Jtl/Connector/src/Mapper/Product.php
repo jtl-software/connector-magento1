@@ -737,7 +737,7 @@ class Product
         $product->setIsDivisible($stockItem->is_qty_decimal == '1');
         $product->setConsiderStock($stockItem->getManageStock() == '1');
         $product->setMinimumOrderQuantity((int)$stockItem->getMinSaleQty());
-        $product->setPermitNegativeStock($stockItem->getBackorders() == \Mage_CatalogInventory_Model_Stock::BACKORDERS_YES_NONOTIFY);
+        $product->setPermitNegativeStock(in_array($stockItem->getBackorders(), array(\Mage_CatalogInventory_Model_Stock::BACKORDERS_YES_NONOTIFY, \Mage_CatalogInventory_Model_Stock::BACKORDERS_YES_NOTIFY)));
         // $product->setPackagingUnit($stockItem->getQtyIncrements());
 
         // ProductI18n
@@ -1179,7 +1179,9 @@ class Product
                 'is_in_stock' => (!$product->getConsiderStock() || ($product->getStockLevel()->getStockLevel() > 0)) ? 1 : 0,
                 'qty' => $product->getStockLevel()->getStockLevel(),
                 'manage_stock' => $product->getConsiderStock() ? 1 : 0,
-                'use_config_notify_stock_qty' => 0
+                'use_config_notify_stock_qty' => 0,
+                'use_config_backorders' => 0,
+                'backorders' => ($product->getPermitNegativeStock() ? \Mage_CatalogInventory_Model_Stock::BACKORDERS_YES_NONOTIFY : \Mage_CatalogInventory_Model_Stock::BACKORDERS_NO)
             ));
         }
         $tempProduct->save();
