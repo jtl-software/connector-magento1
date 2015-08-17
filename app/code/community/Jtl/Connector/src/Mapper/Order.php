@@ -16,6 +16,7 @@ use jtl\Connector\Model\CustomerOrderItemVariation as ConnectorCustomerOrderItem
 use jtl\Connector\Model\CustomerOrderShippingAddress as ConnectorCustomerOrderShippingAddress;
 use jtl\Connector\Model\StatusChange as ConnectorStatusChange;
 use jtl\Connector\Model\Identity;
+use jtl\Connector\Payment\PaymentTypes;
 
 /**
  * Description of Order
@@ -26,8 +27,16 @@ use jtl\Connector\Model\Identity;
 class Order
 {
     public static $paymentMethods = array(
-        'checkmo' => 'pm_bank_transfer',
-        'cashondelivery' => 'pm_cash_on_delivery'
+        'checkmo' => PaymentTypes::TYPE_BANK_TRANSFER,
+        'cashondelivery' => PaymentTypes::TYPE_CASH_ON_DELIVERY,
+        'paypal_billing_agreement' => PaymentTypes::TYPE_PAYPAL_EXPRESS,
+        'paypal_direct' => PaymentTypes::TYPE_PAYPAL_EXPRESS,
+        'paypal_mep' => PaymentTypes::TYPE_PAYPAL_EXPRESS,
+        'paypal_mecl' => PaymentTypes::TYPE_PAYPAL_EXPRESS,
+        'paypal_standard' => PaymentTypes::TYPE_PAYPAL_EXPRESS,
+        'paypal_express' => PaymentTypes::TYPE_PAYPAL_EXPRESS,
+        'paypaluk_direct' => PaymentTypes::TYPE_PAYPAL_EXPRESS,
+        'paypaluk_express' => PaymentTypes::TYPE_PAYPAL_EXPRESS
     );
 
     public function getAvailableCount()
