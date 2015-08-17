@@ -754,6 +754,9 @@ class Product
             $productI18n->setUrlPath($productModel->getUrlPath());
             $productI18n->setDescription($productModel->getDescription());
             $productI18n->setShortDescription($productModel->getShortDescription());
+            $productI18n->setMetaDescription($productModel->getMetaDescription());
+            $productI18n->setMetaKeywords($productModel->getMetaKeyword());
+            $productI18n->setTitleTag($productModel->getMetaTitle());
 
             $product->addI18n($productI18n);
         }
@@ -1125,6 +1128,10 @@ class Product
                 $tempProduct->setDescription($productI18n->getDescription() ?: ' ');
             else
                 $tempProduct->setDescription("&nbsp;");
+
+            $tempProduct->setMetaTitle($productI18n->getTitleTag());
+            $tempProduct->setMetaDescription($productI18n->getMetaDescription());
+            $tempProduct->setMetaKeyword($productI18n->getMetaKeywords());
         }
         $tempProduct->save();
 
@@ -1149,6 +1156,10 @@ class Product
                 $tempProduct->setDescription($productI18n->getDescription() ?: ' ');
             else
                 $tempProduct->setDescription("&nbsp;");
+
+            $tempProduct->setMetaTitle($productI18n->getTitleTag());
+            $tempProduct->setMetaDescription($productI18n->getMetaDescription());
+            $tempProduct->setMetaKeyword($productI18n->getMetaKeywords());
 
             $tempProduct->save();
 

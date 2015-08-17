@@ -2,6 +2,7 @@
 --------------------
 - Fix handling of product applicable to backorders
 - Fix handling of divisible products
+- Fix product metadata import
 
 1.0.6.0
 -------
