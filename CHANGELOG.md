@@ -4,6 +4,7 @@
 - Fix handling of divisible products
 - Fix product metadata import
 - Add support for additional payment methods and fix payment module mapping
+- Fix a bug that caused core.linker.clear to fail
 
 1.0.6.0
 -------
