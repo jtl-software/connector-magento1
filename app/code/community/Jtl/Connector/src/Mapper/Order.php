@@ -312,11 +312,6 @@ class Order
         }
 
         switch ($statusChange->getOrderStatus()) {
-            case ConnectorCustomerOrder::STATUS_NEW:
-                $order->setState(\Mage_Sales_Model_Order::STATE_PROCESSING, true);
-                $order->save();
-
-                break;
             case ConnectorCustomerOrder::STATUS_COMPLETED:
                 if (!$order->canShip())
                     return $result;

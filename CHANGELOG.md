@@ -6,6 +6,7 @@
 - Add support for additional payment methods and fix payment module mapping
 - Fix a bug that caused core.linker.clear to fail
 - Provide a list of shipping methods to be mapped in JTL-Wawi
+- Add support for delivery notes
 
 1.0.6.0
 -------
