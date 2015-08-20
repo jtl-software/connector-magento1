@@ -7,6 +7,7 @@
 - Fix a bug that caused core.linker.clear to fail
 - Provide a list of shipping methods to be mapped in JTL-Wawi
 - Add support for delivery notes
+- Skip index dependencies while regenerating Magento indexes
 
 1.0.6.0
 -------

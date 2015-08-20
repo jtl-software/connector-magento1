@@ -133,9 +133,7 @@ class Magento extends Singleton
     public function reindexEverything()
     {
         $processes = \Mage::getSingleton('index/indexer')->getProcessesCollection();
-        foreach ($processes as $process) {
-            $process->reindexEverything();
-        }
+        $processes->walk('reindexAll');
     }
     
     /**
