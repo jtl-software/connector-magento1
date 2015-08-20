@@ -62,4 +62,9 @@ class DeliveryNote
 
         return $result;
     }
+
+    public function getAvailableCount()
+    {
+        return 0;
+    }
 }

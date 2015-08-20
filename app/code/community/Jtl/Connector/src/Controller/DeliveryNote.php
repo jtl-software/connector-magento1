@@ -59,7 +59,7 @@ class DeliveryNote extends AbstractController
         $action->setHandled(true);
         
         try {
-            $mapper = new PaymentMapper();
+            $mapper = new DeliveryNoteMapper();
             $available = $mapper->getAvailableCount();
 
             $statistic = new Statistic();
