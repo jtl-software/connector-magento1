@@ -7,7 +7,7 @@
 - Fix a bug that caused core.linker.clear to fail
 - Provide a list of shipping methods to be mapped in JTL-Wawi
 - Add support for delivery notes
-- Skip index dependencies while regenerating Magento indexes
+- Skip flat index generation if they have been disabled before (fixes #1)
 - Fix "Duplicate key" errors when updating varcombi parents
 
 1.0.6.0

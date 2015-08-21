@@ -132,8 +132,15 @@ class Magento extends Singleton
      */
     public function reindexEverything()
     {
-        $processes = \Mage::getSingleton('index/indexer')->getProcessesCollection();
-        $processes->walk('reindexAll');
+        if (\Mage::helper('catalog/category_flat')->isEnabled()) {
+            \Mage::getModel('catalog/category_indexer_flat')
+                ->reindexAll();
+        }
+
+        if (\Mage::helper('catalog/product_flat')->isEnabled()) {
+            \Mage::getModel('catalog/product_flat_indexer')
+                ->reindexAll();
+        }
     }
     
     /**
