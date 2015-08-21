@@ -16,6 +16,7 @@ use jtl\Connector\Model\CustomerOrderItemVariation as ConnectorCustomerOrderItem
 use jtl\Connector\Model\CustomerOrderShippingAddress as ConnectorCustomerOrderShippingAddress;
 use jtl\Connector\Model\StatusChange as ConnectorStatusChange;
 use jtl\Connector\Model\Identity;
+use jtl\Connector\Payment\PaymentTypes;
 
 /**
  * Description of Order
@@ -26,7 +27,16 @@ use jtl\Connector\Model\Identity;
 class Order
 {
     public static $paymentMethods = array(
-        'checkmo' => 'pm_bank_transfer'
+        'checkmo' => PaymentTypes::TYPE_BANK_TRANSFER,
+        'cashondelivery' => PaymentTypes::TYPE_CASH_ON_DELIVERY,
+        'paypal_billing_agreement' => PaymentTypes::TYPE_PAYPAL_EXPRESS,
+        'paypal_direct' => PaymentTypes::TYPE_PAYPAL_EXPRESS,
+        'paypal_mep' => PaymentTypes::TYPE_PAYPAL_EXPRESS,
+        'paypal_mecl' => PaymentTypes::TYPE_PAYPAL_EXPRESS,
+        'paypal_standard' => PaymentTypes::TYPE_PAYPAL_EXPRESS,
+        'paypal_express' => PaymentTypes::TYPE_PAYPAL_EXPRESS,
+        'paypaluk_direct' => PaymentTypes::TYPE_PAYPAL_EXPRESS,
+        'paypaluk_express' => PaymentTypes::TYPE_PAYPAL_EXPRESS
     );
 
     public function getAvailableCount()
@@ -92,7 +102,6 @@ class Order
             // $customerOrder->setCredit(0.00);
             $customerOrder->setTotalSum((double)$order->grand_total);
             $customerOrder->setShippingMethodName($order->shipping_description);
-            $customerOrder->setPaymentModuleCode(''); // TODO
             $customerOrder->setOrderNumber($order->increment_id);
             $customerOrder->setShippingInfo('');
             // $customerOrder->setShippingDate(NULL);
@@ -107,10 +116,10 @@ class Order
             $payment = $order->getPayment();
             $code = $payment->getMethodInstance()->getCode();
 
-            // if (array_key_exists($code, $this->paymentMethods))
-            //     $customerOrder->setPaymentModuleType($this->paymentMethods[$code]);
-            // else
-            //     $customerOrder->setPaymentModuleType('pm_bank_transfer');
+            if (array_key_exists($code, self::$paymentMethods))
+                $customerOrder->setPaymentModuleCode(self::$paymentMethods[$code]);
+            else
+                $customerOrder->setPaymentModuleCode('pm_bank_transfer');
 
             foreach ($order->getAllItems() as $magento_item) {
                 $item = new ConnectorCustomerOrderItem();
@@ -303,11 +312,6 @@ class Order
         }
 
         switch ($statusChange->getOrderStatus()) {
-            case ConnectorCustomerOrder::STATUS_NEW:
-                $order->setState(\Mage_Sales_Model_Order::STATE_PROCESSING, true);
-                $order->save();
-
-                break;
             case ConnectorCustomerOrder::STATUS_COMPLETED:
                 if (!$order->canShip())
                     return $result;

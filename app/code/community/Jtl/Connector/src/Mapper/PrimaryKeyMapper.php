@@ -187,7 +187,6 @@ class PrimaryKeyMapper implements IPrimaryKeyMapper
         // Clear Payment IDs
         $payments = \Mage::getModel('sales/order_payment')
             ->getCollection()
-            ->addAttributeToSelect(array('name','jtl_erp_id'))
             ->addAttributeToFilter('jtl_erp_id', array('gt' => '0'));
 
         foreach ($payments as $payment) {

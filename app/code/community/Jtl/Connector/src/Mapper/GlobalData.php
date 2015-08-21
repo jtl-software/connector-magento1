@@ -15,6 +15,7 @@ use jtl\Connector\Model\CustomerGroupI18n as ConnectorCustomerGroupI18n;
 use jtl\Connector\Model\GlobalData as ConnectorGlobalData;
 use jtl\Connector\Model\Identity;
 use jtl\Connector\Model\Language as ConnectorLanguage;
+use jtl\Connector\Model\ShippingMethod as ConnectorShippingMethod;
 use jtl\Connector\Model\TaxRate as ConnectorTaxRate;
 
 /**
@@ -50,6 +51,10 @@ class GlobalData
         $taxRates = $this->pullTaxRates();
         foreach ($taxRates as $taxRate)
             $globalData->addTaxRate($taxRate);
+
+        $shippingMethods = $this->pullShippingMethods();
+        foreach ($shippingMethods as $shippingMethod)
+            $globalData->addShippingMethod($shippingMethod);
 
 		return array($globalData);
 	}
@@ -203,6 +208,25 @@ class GlobalData
             $taxRate->setRate((double)$item->getRate());
 
             $result[] = $taxRate;
+        }
+
+        return $result;
+    }
+
+    public function pullShippingMethods()
+    {
+        Magento::getInstance();
+
+        $methods = \Mage::getSingleton('shipping/config')->getActiveCarriers();
+        $result = array();
+        foreach ($methods as $code => $method) {
+            $title = \Mage::getStoreConfig('carriers/' . $code . '/title');
+
+            $shippingMethod = new ConnectorShippingMethod();
+            $shippingMethod->setId(new Identity($method->getId()));
+            $shippingMethod->setName($title);
+
+            $result[] = $shippingMethod;
         }
 
         return $result;

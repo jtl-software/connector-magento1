@@ -1,5 +1,17 @@
-1.0.7.0 (unreleased)
+1.1.1.0 (unreleased)
 --------------------
+
+1.1.0.0
+-------
+- Fix handling of product applicable to backorders
+- Fix handling of divisible products
+- Fix product metadata import
+- Add support for additional payment methods and fix payment module mapping
+- Fix a bug that caused core.linker.clear to fail
+- Provide a list of shipping methods to be mapped in JTL-Wawi
+- Add support for delivery notes
+- Skip flat index generation if they have been disabled before (fixes #1)
+- Fix "Duplicate key" errors when updating varcombi parents
 
 1.0.6.0
 -------

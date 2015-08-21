@@ -234,7 +234,9 @@ class Product
         $model->setWeight($product->getProductWeight());
 
         /* *** Begin StockLevel *** */
-        $this->updateProductStockLevel($model, $product);
+        if (!$this->isParent($product)) {
+            $this->updateProductStockLevel($model, $product);
+        }
 
         $this->updateProductPrices($model, $product);
         $result->setId(new Identity($model->entity_id, $model->jtl_erp_id));
@@ -737,7 +739,7 @@ class Product
         $product->setIsDivisible($stockItem->is_qty_decimal == '1');
         $product->setConsiderStock($stockItem->getManageStock() == '1');
         $product->setMinimumOrderQuantity((int)$stockItem->getMinSaleQty());
-        $product->setPermitNegativeStock($stockItem->getBackorders() == \Mage_CatalogInventory_Model_Stock::BACKORDERS_YES_NONOTIFY);
+        $product->setPermitNegativeStock(in_array($stockItem->getBackorders(), array(\Mage_CatalogInventory_Model_Stock::BACKORDERS_YES_NONOTIFY, \Mage_CatalogInventory_Model_Stock::BACKORDERS_YES_NOTIFY)));
         // $product->setPackagingUnit($stockItem->getQtyIncrements());
 
         // ProductI18n
@@ -754,6 +756,9 @@ class Product
             $productI18n->setUrlPath($productModel->getUrlPath());
             $productI18n->setDescription($productModel->getDescription());
             $productI18n->setShortDescription($productModel->getShortDescription());
+            $productI18n->setMetaDescription($productModel->getMetaDescription());
+            $productI18n->setMetaKeywords($productModel->getMetaKeyword());
+            $productI18n->setTitleTag($productModel->getMetaTitle());
 
             $product->addI18n($productI18n);
         }
@@ -1125,6 +1130,10 @@ class Product
                 $tempProduct->setDescription($productI18n->getDescription() ?: ' ');
             else
                 $tempProduct->setDescription("&nbsp;");
+
+            $tempProduct->setMetaTitle($productI18n->getTitleTag());
+            $tempProduct->setMetaDescription($productI18n->getMetaDescription());
+            $tempProduct->setMetaKeyword($productI18n->getMetaKeywords());
         }
         $tempProduct->save();
 
@@ -1150,6 +1159,10 @@ class Product
             else
                 $tempProduct->setDescription("&nbsp;");
 
+            $tempProduct->setMetaTitle($productI18n->getTitleTag());
+            $tempProduct->setMetaDescription($productI18n->getMetaDescription());
+            $tempProduct->setMetaKeyword($productI18n->getMetaKeywords());
+
             $tempProduct->save();
 
             Logger::write('productI18n ' . $locale, Logger::DEBUG);
@@ -1174,14 +1187,18 @@ class Product
             ));
         }
         else {
-            $tempProduct->setStockData(array( 
+            $tempProduct->setStockData(array(
                 'use_config_manage_stock' => 0,
                 'is_in_stock' => (!$product->getConsiderStock() || ($product->getStockLevel()->getStockLevel() > 0)) ? 1 : 0,
                 'qty' => $product->getStockLevel()->getStockLevel(),
+                'is_qty_decimal' => $product->getIsDivisible() ? 1 : 0,
                 'manage_stock' => $product->getConsiderStock() ? 1 : 0,
-                'use_config_notify_stock_qty' => 0
+                'use_config_notify_stock_qty' => 0,
+                'use_config_backorders' => 0,
+                'backorders' => ($product->getPermitNegativeStock() ? \Mage_CatalogInventory_Model_Stock::BACKORDERS_YES_NONOTIFY : \Mage_CatalogInventory_Model_Stock::BACKORDERS_NO)
             ));
         }
+
         $tempProduct->save();
     }
 
