@@ -1,6 +1,10 @@
 1.1.1.0 (unreleased)
 --------------------
 
+1.1.0.1
+-------
+- Remove old order status change code
+
 1.1.0.0
 -------
 - Fix handling of product applicable to backorders
