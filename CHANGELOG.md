@@ -8,6 +8,7 @@
 - Provide a list of shipping methods to be mapped in JTL-Wawi
 - Add support for delivery notes
 - Skip index dependencies while regenerating Magento indexes
+- Fix "Duplicate key" errors when updating varcombi parents
 
 1.0.6.0
 -------

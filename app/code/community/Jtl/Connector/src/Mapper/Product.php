@@ -234,7 +234,9 @@ class Product
         $model->setWeight($product->getProductWeight());
 
         /* *** Begin StockLevel *** */
-        $this->updateProductStockLevel($model, $product);
+        if (!$this->isParent($product)) {
+            $this->updateProductStockLevel($model, $product);
+        }
 
         $this->updateProductPrices($model, $product);
         $result->setId(new Identity($model->entity_id, $model->jtl_erp_id));
