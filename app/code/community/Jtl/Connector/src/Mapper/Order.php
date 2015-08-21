@@ -312,28 +312,6 @@ class Order
         }
 
         switch ($statusChange->getOrderStatus()) {
-            case ConnectorCustomerOrder::STATUS_COMPLETED:
-                if (!$order->canShip())
-                    return $result;
-
-                $savedQtys = array();
-                $shipment = \Mage::getModel('sales/service_order', $order)
-                    ->prepareShipment($savedQtys);
-                if (!$shipment->getTotalQty())
-                    return $result;
-
-                $shipment->register();
-                
-                $shipment->getOrder()->setCustomerNoteNotify(true);
-                $shipment->getOrder()->setIsInProcess(true);
-
-                $transactionSave = \Mage::getModel('core/resource_transaction')
-                    ->addObject($shipment)
-                    ->addObject($shipment->getOrder());
-
-                $transactionSave->save();
-
-                break;
             case ConnectorCustomerOrder::STATUS_CANCELLED:
                 $order->setState(\Mage_Sales_Model_Order::STATE_CANCELED, true);
                 $order->save();

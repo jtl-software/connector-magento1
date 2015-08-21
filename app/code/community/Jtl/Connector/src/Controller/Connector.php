@@ -89,7 +89,7 @@ class Connector extends AbstractController
         $action->setHandled(true);
 
         $identification = new ConnectorIdentification();
-        $identification->setEndpointVersion('1.1.0.0')
+        $identification->setEndpointVersion('1.1.0.1')
             ->setPlatformName('Magento')
             ->setPlatformVersion(\Mage::getVersion())
             ->setProtocolVersion(Application()->getProtocolVersion());
