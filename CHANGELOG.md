@@ -1,3 +1,7 @@
+1.1.1.1 (unreleased)
+-------
+- Added floating point values support for php ini configurations
+
 1.1.1.0
 -------
 - Add multiple image push support
