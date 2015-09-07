@@ -1,5 +1,6 @@
-1.1.1.0 (unreleased)
---------------------
+1.1.1.0
+-------
+- Add multiple image push support
 
 1.1.0.1
 -------
