@@ -1,3 +1,8 @@
+1.1.1.1
+-------
+- Added floating point values support for php ini configurations
+- Changed identify serverinfo byte values to megabyte
+
 1.1.1.0
 -------
 - Add multiple image push support
