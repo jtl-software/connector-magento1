@@ -1,6 +1,7 @@
 1.2.0.0 (unreleased)
 --------------------
 - Experimental support for specifics
+- Fix handling of customer's company and VAT number
 
 1.1.1.1
 -------

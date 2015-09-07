@@ -42,9 +42,9 @@ class Customer
         }
     }
 
-	public function pull(QueryFilter $filter = null)
-	{
-		Magento::getInstance();
+    public function pull(QueryFilter $filter = null)
+    {
+        Magento::getInstance();
 
         $stores = Magento::getInstance()->getStoreMapping();
 
@@ -61,9 +61,9 @@ class Customer
 
 
         if (!is_null($filter)) {
-        	$customerCollection
-        		->getSelect()
-        		->limit($filter->getLimit());
+            $customerCollection
+                ->getSelect()
+                ->limit($filter->getLimit());
         }
 
         $customerCollection->load();
@@ -74,51 +74,50 @@ class Customer
             $customerGroup = \Mage::getModel('customer/group')
                 ->load($customerEntry->group_id);
 
-        	$created_at = new \DateTime($customerEntry->created_at);
+            $created_at = new \DateTime($customerEntry->created_at);
             $birthday = new \DateTime($customerEntry->dob);
 
-			$customer = new ConnectorCustomer();
-			$customer->setId(new Identity($customerEntry->entity_id, $customerEntry->jtl_erp_id));
-			$customer->setCustomerGroupId(new Identity($customerEntry->group_id, $customerGroup->jtl_erp_id));
-			$customer->setLanguageIso(
+            $customer = new ConnectorCustomer();
+            $customer->setId(new Identity($customerEntry->entity_id, $customerEntry->jtl_erp_id));
+            $customer->setCustomerGroupId(new Identity($customerEntry->group_id, $customerGroup->jtl_erp_id));
+            $customer->setLanguageIso(
                 LocaleMapper::localeToLanguageIso(
                     array_search($customerEntry->store_id, $stores) ?: key($stores)
                 )
             );
-			$customer->setCustomerNumber(NULL);
-			// $customer->setPassword($customerEntry->password_hash);
+            $customer->setCustomerNumber(NULL);
+            // $customer->setPassword($customerEntry->password_hash);
             // $customer->setBirthday($birthday);
-			$customer->setSalutation(NULL);
-			$customer->setTitle($customerEntry->prefix);
-			$customer->setFirstName($customerEntry->firstname);
-			$customer->setLastName($customerEntry->lastname);
-			$customer->setCompany(NULL);
-			$customer->setVatNumber($customerEntry->taxvat);
-			$customer->setEMail($customerEntry->email);
-			$customer->setIsActive(($customerEntry->is_active == 1));
-			// $customer->setHasCustomerAccount(true);
-			$customer->setHasNewsletterSubscription(false);
-			$customer->setDiscount(0.00);
-			$customer->setCreationDate($created_at);
+            $customer->setSalutation(NULL);
+            $customer->setTitle($customerEntry->prefix);
+            $customer->setFirstName($customerEntry->firstname);
+            $customer->setLastName($customerEntry->lastname);
+            $customer->setEMail($customerEntry->email);
+            $customer->setIsActive(($customerEntry->is_active == 1));
+            // $customer->setHasCustomerAccount(true);
+            $customer->setHasNewsletterSubscription(false);
+            $customer->setDiscount(0.00);
+            $customer->setCreationDate($created_at);
 
-			if (!is_null($customerEntry->default_billing)) {
-				$address = $customerEntry->getDefaultBillingAddress();
+            if (!is_null($customerEntry->default_billing)) {
+                $address = $customerEntry->getDefaultBillingAddress();
 
-				$customer->setCompany($address->getCompany());
-				$customer->setStreet(implode('', $address->getStreet()));
-				$customer->setZipCode($address->getPostcode());
-				$customer->setCity($address->getCity());
-				$customer->setState($address->getRegion());
-				$customer->setCountryIso($address->getCountryId());
-				$customer->setPhone($address->getTelephone());
-				$customer->setMobile(NULL);
-				$customer->setFax(NULL);
-			}
+                $customer->setCompany($address->getCompany());
+                $customer->setVatNumber($address->getVatId());
+                $customer->setStreet(implode('', $address->getStreet()));
+                $customer->setZipCode($address->getPostcode());
+                $customer->setCity($address->getCity());
+                $customer->setState($address->getRegion());
+                $customer->setCountryIso($address->getCountryId());
+                $customer->setPhone($address->getTelephone());
+                $customer->setMobile(NULL);
+                $customer->setFax(NULL);
+            }
 
-			$result[] = $customer;
+            $result[] = $customer;
         }
         unset($customerCollection);
-        
+
         return $result;
-	}
+    }
 }
