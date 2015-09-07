@@ -1,3 +1,7 @@
+1.2.0.0 (unreleased)
+--------------------
+- Experimental support for specifics
+
 1.1.1.1
 -------
 - Added floating point values support for php ini configurations
