@@ -325,6 +325,9 @@ class Product
 
             if (!is_null($attribute)) {
                 $attribute->setEntityType($product->getResource());
+                if (!$attribute->getSourceModel()) {
+                    $attribute->setSourceModel('eav/entity_attribute_source_table');
+                }
 
                 $values = $attribute
                     ->getSource()
@@ -576,6 +579,9 @@ class Product
 
         $product = \Mage::getModel('catalog/product');
         $attribute->setEntityType($product->getResource());
+        if (!$attribute->getSourceModel()) {
+            $attribute->setSourceModel('eav/entity_attribute_source_table');
+        }
         $values = $attribute
             ->getSource()
             ->getAllOptions(false);
@@ -821,8 +827,13 @@ class Product
 
                 $valueLabels = array();
                 foreach ($stores as $locale => $storeId) {
-                    $valueLabels[$locale] = \Mage::getModel('eav/config')->getAttribute('catalog_product', $attributeOption['attribute_code'])
-                        ->setStoreId($storeId)
+                    $attribute = \Mage::getModel('eav/config')->getAttribute('catalog_product', $attributeOption['attribute_code'])
+                        ->setStoreId($storeId);
+                    if (!$attribute->getSourceModel()) {
+                        $attribute->setSourceModel('eav/entity_attribute_source_table');
+                    }
+
+                    $valueLabels[$locale] = $attribute
                         ->getSource()
                         ->getAllOptions(false);
                 }
