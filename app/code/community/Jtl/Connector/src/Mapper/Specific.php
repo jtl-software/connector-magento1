@@ -7,6 +7,7 @@ use jtl\Connector\Core\Logger\Logger;
 use jtl\Connector\Magento\Magento;
 use jtl\Connector\Magento\Utilities\ArrayTools;
 use jtl\Connector\Model\Specific as ConnectorSpecific;
+use jtl\Connector\Model\SpecificI18n as ConnectorSpecificI18n;
 
 /**
  * Description of Specific
@@ -77,6 +78,19 @@ class Specific
         $defaultSpecificName = $this->getDefaultSpecificName($specific);
         $attributeCode = $this->getAttributeCodeForSpecificName($defaultSpecificName);
 
+        // Collect all frontend labels
+        $frontendLabels = array(
+            \Mage_Core_Model_App::ADMIN_STORE_ID => $defaultSpecificName
+        );
+        foreach ($this->stores as $locale => $storeId) {
+            $specificI18n = ArrayTools::filterOneByLanguage($specific->getI18ns(), LocaleMapper::localeToLanguageIso($locale));
+            if (!($specificI18n instanceof ConnectorSpecificI18n))
+                continue;
+
+            $frontendLabels[$storeId] = $specificI18n->getName();
+        }
+
+
         Logger::write('Creating specific: ' . $attributeCode, Logger::DEBUG);
         $attributeData = array(
             'attribute_code' => $attributeCode,
@@ -98,7 +112,7 @@ class Specific
             'is_required' => 0,
             'is_visible_in_advanced_search' => 0,
             'is_visible_on_checkout' => 1,
-            'frontend_label' => $defaultSpecificName,
+            'frontend_label' => $frontendLabels,
             'apply_to' => array()
         );
 
@@ -122,6 +136,12 @@ class Specific
     public function update(ConnectorSpecific $specific)
     {
         $result = new ConnectorSpecific();
+
+        $productEntityTypeId = \Mage::getModel('eav/entity')
+            ->setType('catalog_product')
+            ->getTypeId();
+
+
 
         return $result;
     }
