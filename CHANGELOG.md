@@ -2,6 +2,7 @@
 --------------------
 - Experimental support for specifics
 - Fix handling of customer's company and VAT number
+- Fix localized attribute names not being set correctly
 
 1.1.1.1
 -------

@@ -474,6 +474,18 @@ class Product
 
                 Logger::write('Creating attribute: ' . $attributeCode, Logger::DEBUG);
 
+                // Collect all frontend labels
+                $frontendLabels = array(
+                    \Mage_Core_Model_App::ADMIN_STORE_ID => $attributeName
+                );
+                foreach ($this->stores as $locale => $storeId) {
+                    $variationI18n = ArrayTools::filterOneByLanguage($variation->getI18ns(), LocaleMapper::localeToLanguageIso($locale));
+                    if (!($variationI18n instanceof ConnectorProductVariationI18n))
+                        continue;
+
+                    $frontendLabels[$storeId] = $variationI18n->getName();
+                }
+
                 $attributeData = array(
                     'attribute_code' => $attributeCode,
                     'is_global' => 1,
@@ -494,7 +506,7 @@ class Product
                     'is_required' => 0,
                     'is_visible_in_advanced_search' => 0,
                     'is_visible_on_checkout' => 1,
-                    'frontend_label' => $attributeName,
+                    'frontend_label' => $frontendLabels,
                     'apply_to' => array()
                 );
 
