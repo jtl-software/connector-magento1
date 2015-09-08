@@ -117,18 +117,18 @@
                     <product_indexer_price>Jtl_Connector_Catalog_Model_Resource_Eav_Mysql4_Product_Indexer_Price</product_indexer_price>
                 </rewrite>
             </catalog_resource_eav_mysql4>
-            <jtl_connector_specific_link>
-                <class>Jtl_Connector_Model_Specific_Link</class>
-                <resourceModel>jtl_connector_specific_link_resource</resourceModel>
-            </jtl_connector_specific_link>
-            <jtl_connector_specificlink_resource>
-                <class>Jtl_Connector_Model_Specific_Link_Resource</class>
+            <jtl_connector>
+                <class>Jtl_Connector_Model</class>
+                <resourceModel>jtl_connector_resource</resourceModel>
+            </jtl_connector>
+            <jtl_connector_resource>
+                <class>Jtl_Connector_Model_Resource</class>
                 <entities>
-                    <jtl_connector_specific_link>
+                    <specific_link>
                         <table>jtl_connector_link_specific</table>
-                    </jtl_connector_specific_link>
+                    </specific_link>
                 </entities>
-            </jtl_connector_specificlink_resource>
+            </jtl_connector_resource>
         </models>
 
         <helpers>
