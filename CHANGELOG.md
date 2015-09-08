@@ -3,7 +3,7 @@
 - Experimental support for specifics
 - Fix handling of customer's company and VAT number
 - Fix localized attribute names not being set correctly
-- Try to work around the undefined source model for predefined attributes
+- Fix missing simple product name on checkout pages
 
 1.1.1.1
 -------

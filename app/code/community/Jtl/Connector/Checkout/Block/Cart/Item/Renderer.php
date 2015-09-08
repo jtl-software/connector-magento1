@@ -35,12 +35,11 @@ class Jtl_Connector_Checkout_Block_Cart_Item_Renderer extends Mage_Checkout_Bloc
     
     public function getProductName()
     {
-        // if (Mage::getStoreConfig('SCP_options/cart/show_configurable_product_name')
-        //     && $this->getConfigurableProductParentId()) {
+        if ($this->getConfigurableProductParentId()) {
             return $this->getConfigurableProductParent()->getName();
-        // } else {
-        //     return parent::getProductName();
-        // }
+        }
+
+        return parent::getProductName();
     }
     
     /* Bit of a hack this - assumes configurable parent is always linkable */
