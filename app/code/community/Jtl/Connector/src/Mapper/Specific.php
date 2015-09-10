@@ -6,6 +6,7 @@ use jtl\Connector\Controller\Connector;
 use jtl\Connector\Core\Logger\Logger;
 use jtl\Connector\Magento\Magento;
 use jtl\Connector\Magento\Utilities\ArrayTools;
+use jtl\Connector\Model\Identity;
 use jtl\Connector\Model\Specific as ConnectorSpecific;
 use jtl\Connector\Model\SpecificI18n as ConnectorSpecificI18n;
 
@@ -75,6 +76,8 @@ class Specific
 
     private function createAttributeForSpecific(ConnectorSpecific $specific)
     {
+        $result = new ConnectorSpecific();
+
         $defaultSpecificName = $this->getDefaultSpecificName($specific);
         $attributeCode = $this->getAttributeCodeForSpecificName($defaultSpecificName);
 
@@ -132,6 +135,9 @@ class Specific
         $linkModel->save();
 
         $this->updateSpecificValues($specific, $attrModel);
+
+        $result->setId(new Identity($attributeCode, $specific->getId()->getHost()));
+        return $result;
     }
 
     private function updateSpecificValues(ConnectorSpecific $specific, $attribute)
@@ -193,6 +199,8 @@ class Specific
             ->loadByCode($productEntityTypeId, $specific->getId()->getEndpoint());
 
         $this->updateSpecificValues($specific, $attrModel);
+
+        $result->setId(new Identity($attributeCode, $specific->getId()->getHost()));
         return $result;
     }
 
