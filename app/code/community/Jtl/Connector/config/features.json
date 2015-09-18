@@ -161,24 +161,24 @@
       "delete": false
     },
     "Specific": {
-      "pull": true,
-      "push": true,
-      "delete": true
+      "pull": false,
+      "push": false,
+      "delete": false
     },
     "SpecificI18n": {
-      "pull": true,
-      "push": true,
-      "delete": true
+      "pull": false,
+      "push": false,
+      "delete": false
     },
     "SpecificValue": {
-      "pull": true,
-      "push": true,
-      "delete": true
+      "pull": false,
+      "push": false,
+      "delete": false
     },
     "SpecificValueI18n": {
-      "pull": true,
-      "push": true,
-      "delete": true
+      "pull": false,
+      "push": false,
+      "delete": false
     },
     "StatusChange": {
       "pull": false,
