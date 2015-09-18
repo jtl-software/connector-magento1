@@ -136,6 +136,8 @@ class Product
         $model->setSku($product->getSku());
         $model->setMsrp($product->getRecommendedRetailPrice());
         $model->setWeight($product->getProductWeight());
+        $this->updateProductSpecifics($model, $product);
+
         $model->save();
 
         /* *** Begin StockLevel *** */
@@ -232,6 +234,7 @@ class Product
 
         $model->setMsrp($product->getRecommendedRetailPrice());
         $model->setWeight($product->getProductWeight());
+        $this->updateProductSpecifics($model, $product);
 
         /* *** Begin StockLevel *** */
         if (!$this->isParent($product)) {
@@ -684,6 +687,14 @@ class Product
         $model->setCanSaveCustomOptions(true);
 
         $model->save();
+    }
+
+    private function updateProductSpecifics(\Mage_Catalog_Model_Product $model, ConnectorProduct $product)
+    {
+        $productSpecifics = $product->getSpecifics();
+        foreach ($productSpecifics as $productSpecific) {
+
+        }
     }
 
     public function existsByHost($hostId)
