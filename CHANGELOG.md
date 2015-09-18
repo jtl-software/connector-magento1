@@ -2,6 +2,10 @@
 --------------------
 - Experimental support for specifics
 
+1.2.1.0 (unreleased)
+--------------------
+- Improve image ID mapping
+
 1.2.0.0
 -------
 - Fix handling of customer's company and VAT number
