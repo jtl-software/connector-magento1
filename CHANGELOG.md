@@ -1,3 +1,14 @@
+1.3.0.0 (unreleased)
+--------------------
+- Experimental support for specifics
+
+1.2.0.0
+-------
+- Fix handling of customer's company and VAT number
+- Fix localized attribute names not being set correctly
+- Fix missing simple product name on checkout pages
+- Add VAT ID information to billing addresses
+
 1.1.1.1
 -------
 - Added floating point values support for php ini configurations

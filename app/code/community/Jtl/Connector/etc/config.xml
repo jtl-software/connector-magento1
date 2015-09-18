@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Jtl_Connector>
-            <version>1.1.1.1</version>
+            <version>1.2.0.0</version>
         </Jtl_Connector>
     </modules>
 
@@ -117,6 +117,18 @@
                     <product_indexer_price>Jtl_Connector_Catalog_Model_Resource_Eav_Mysql4_Product_Indexer_Price</product_indexer_price>
                 </rewrite>
             </catalog_resource_eav_mysql4>
+            <jtl_connector>
+                <class>Jtl_Connector_Model</class>
+                <resourceModel>jtl_connector_resource</resourceModel>
+            </jtl_connector>
+            <jtl_connector_resource>
+                <class>Jtl_Connector_Model_Resource</class>
+                <entities>
+                    <specific_link>
+                        <table>jtl_connector_link_specific</table>
+                    </specific_link>
+                </entities>
+            </jtl_connector_resource>
         </models>
 
         <helpers>
@@ -135,6 +147,16 @@
                     <use>core_setup</use>
                 </connection>
             </jtl_connector_setup>
+            <jtl_connector_read>
+                <connection>
+                    <use>core_read</use>
+                </connection>
+            </jtl_connector_read>
+            <jtl_connector_write>
+                <connection>
+                    <use>core_write</use>
+                </connection>
+            </jtl_connector_write>
         </resources>
 
         <fieldsets>

@@ -264,6 +264,7 @@ class Order
             $billingAddress->setMobile(NULL);
             $billingAddress->setFax(NULL);
             $billingAddress->setEMail($billingAddressEntry->email);
+            $billingAddress->setVatNumber($billingAddressEntry->getVatId());
 
             $customerOrder->setBillingAddress($billingAddress);
 

@@ -35,6 +35,10 @@ class PrimaryKeyMapper implements IPrimaryKeyMapper
                 $payment = \Mage::getModel('sales/order_payment')
                     ->load($endpointId);
                 return ($order != null ? $order->jtl_erp_id : null);
+            case IdentityLinker::TYPE_SPECIFIC:
+                $link = \Mage::getModel('jtl_connector/specific_link')
+                    ->load($endpointId, 'attribute_code');
+                return ($link != null ? $link->jtl_erp_id : null);
         }
     }
 
@@ -64,6 +68,10 @@ class PrimaryKeyMapper implements IPrimaryKeyMapper
                 $payment = \Mage::getModel('sales/order_payment')
                     ->load($hostId, 'jtl_erp_id');
                 return ($order != null ? $order->increment_id : null);
+            case IdentityLinker::TYPE_SPECIFIC:
+                $link = \Mage::getModel('jtl_connector/specific_link')
+                    ->load($hostId, 'jtl_erp_id');
+                return ($link != null ? $link->attribute_code : null);
         }
     }
 
@@ -124,6 +132,12 @@ class PrimaryKeyMapper implements IPrimaryKeyMapper
 
                 $order->jtl_erp_id = $hostId;
                 $order->save();
+                break;
+            case IdentityLinker::TYPE_SPECIFIC:
+                $link = \Mage::getModel('jtl_connector/specific_link');
+                $link->attribute_code = $endpointId;
+                $link->jtl_erp_id = $hostId;
+                $link->save();
                 break;
         }
     }
@@ -193,6 +207,10 @@ class PrimaryKeyMapper implements IPrimaryKeyMapper
             $payment->setJtlErpId(0);
             $payment->save();
         }
+
+        // Clear Specific IDs
+        \Mage::getResourceHelper('jtl_connector/specific_link')
+            ->truncate();
 
         return true;
     }

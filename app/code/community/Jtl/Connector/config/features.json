@@ -160,6 +160,26 @@
       "push": false,
       "delete": false
     },
+    "Specific": {
+      "pull": false,
+      "push": false,
+      "delete": false
+    },
+    "SpecificI18n": {
+      "pull": false,
+      "push": false,
+      "delete": false
+    },
+    "SpecificValue": {
+      "pull": false,
+      "push": false,
+      "delete": false
+    },
+    "SpecificValueI18n": {
+      "pull": false,
+      "push": false,
+      "delete": false
+    },
     "StatusChange": {
       "pull": false,
       "push": true,
