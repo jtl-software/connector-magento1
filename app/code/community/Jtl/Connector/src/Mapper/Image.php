@@ -43,7 +43,7 @@ class Image
 
             foreach ($galleryImages as $galleryImage) {
             	$image = new ConnectorImage();
-                $image->setId(new Identity('product-' . $galleryImage->value_id));
+                $image->setId(new Identity(sprintf('product-%u-%u', $galleryImage->value_id, $galleryImage->position_default));
                 $image->setRelationType('product');
                 $image->setForeignKey(new Identity($productItem->entity_id, $productItem->jtl_erp_id));
                 $image->setRemoteUrl($galleryImage->url);
@@ -177,6 +177,11 @@ class Image
                 );
 
                 $mediaApi->create($model->getId(), $newImage, null, 'id');
+
+                $result->setId(new Identity(
+                    sprintf('product-%u-%u', $model->getId(), $newImage['position']),
+                    $image->getId()->getHost()
+                ));
                 break;
 
             default:
