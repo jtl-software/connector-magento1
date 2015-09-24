@@ -2,7 +2,6 @@
 
 namespace jtl\Connector\Magento\Mapper;
 
-use jtl\Connector\Controller\Connector;
 use jtl\Connector\Core\Logger\Logger;
 use jtl\Connector\Magento\Magento;
 use jtl\Connector\Magento\Utilities\ArrayTools;
@@ -12,9 +11,6 @@ use jtl\Connector\Model\SpecificI18n as ConnectorSpecificI18n;
 
 /**
  * Description of Specific
- *
- * @access public
- * @author Christian Spoo <christian.spoo@jtl-software.com>
  */
 class Specific
 {
@@ -74,8 +70,10 @@ class Specific
         return substr($attributeCode, 0, 30);
     }
 
-    private function createAttributeForSpecific(ConnectorSpecific $specific)
+    public function insert(ConnectorSpecific $specific)
     {
+        $defaultLanguageIso = LocaleMapper::localeToLanguageIso($this->defaultLocale);
+
         $result = new ConnectorSpecific();
 
         $defaultSpecificName = $this->getDefaultSpecificName($specific);
@@ -123,55 +121,117 @@ class Specific
             ->getTypeId();
 
         $attrModel = \Mage::getModel('catalog/resource_eav_attribute');
-        $attributeData['backend_type'] = $attrModel->getBackendTypeByInput($attributeData['frontend_input']);
         $attrModel->addData($attributeData);
         $attrModel->setEntityTypeId($productEntityTypeId);
         $attrModel->setIsUserDefined(1);
-        $attrModel->save();
+
+        $stores = Magento::getInstance()->getStoreMapping();
+        $defaultValue = null;
+
+        $attrModel->addData(array(
+            'backend_type' => $attrModel->getBackendTypeByInput($attributeData['frontend_input'])
+        ));
+
+        foreach ($specific->getValues() as $specificValue) {
+            $defaultSpecificValueI18n = ArrayTools::filterOneByLanguageOrFirst($specificValue->getI18ns(), $defaultLanguageIso);
+
+            $adminValue = $defaultSpecificValueI18n->getValue();
+            $optionData = array(
+                \Mage_Core_Model_App::ADMIN_STORE_ID => $adminValue
+            );
+
+            foreach ($stores as $locale => $storeId) {
+                $specificValueI18n = ArrayTools::filterOneByLanguageOrFirst($specificValue->getI18ns(), LocaleMapper::localeToLanguageIso($locale));
+                $optionData[$storeId] = $specificValueI18n->getValue();
+            }
+
+            if (is_null($defaultValue)) {
+                $defaultValue = $adminValue;
+                $attrModel->setData('default_value', $defaultValue);
+            }
+
+            $attrModel->setData('option', array(
+                    'value' => array(
+                        'option' => $optionData
+                    )
+                )
+            );
+            $attrModel->save();
+        }
+
+        //
 
         $linkModel = \Mage::getModel('jtl_connector/specific_link');
         $linkModel->attribute_code = $attributeCode;
         $linkModel->jtl_erp_id = $specific->getId()->getHost();
         $linkModel->save();
 
-        $this->updateSpecificValues($specific, $attrModel);
+        $this->addSpecificToAttributeSets($attrModel);
 
         $result->setId(new Identity($attributeCode, $specific->getId()->getHost()));
+        foreach ($specific->getValues() as $specificValue) {
+            $id = $specificValue->getId();
+            $adminValue = ArrayTools::filterOneByLanguageOrFirst($specificValue->getI18ns(), $defaultLanguageIso)->getValue();
+
+            $specificValue->setId(new Identity($attrModel->getSource()->getOptionId($adminValue), $id->getHost()));
+            $result->addValue($specificValue);
+        }
+        
         return $result;
+    }
+
+    private function addSpecificToAttributeSets($attribute)
+    {
+        $productEntityTypeId = \Mage::getModel('eav/entity')
+            ->setType('catalog_product')
+            ->getTypeId();
+        $attributeSetCollection = \Mage::getModel('eav/entity_attribute_set')
+            ->getCollection()
+            ->setEntityTypeFilter($productEntityTypeId);
+
+        $i = 0;
+        foreach ($attributeSetCollection as $attributeSet)
+        {
+            $defaultGroup = \Mage::getModel('eav/entity_attribute_group')
+                ->getCollection()
+                ->addFieldToFilter('attribute_set_id', $attributeSet->getId())
+                ->setOrder('sort_order', 'ASC')
+                ->getFirstItem();
+
+            $newItem = \Mage::getModel('eav/entity_attribute')
+                ->setEntityTypeId($productEntityTypeId)
+                ->setAttributeSetId($attributeSet->getId())
+                ->setAttributeGroupId($defaultGroup->getId())
+                ->setAttributeId($attribute->getId())
+                ->setSortOrder(10000)
+                ->save();
+
+            $i += 10;
+
+            Logger::write(sprintf(
+                'Add specific "%s" to attribute set "%s" in group "%s"',
+                $attribute->getAttributeCode(),
+                $attributeSet->getAttributeSetName(),
+                $defaultGroup->getAttributeGroupName()
+            ), Logger::DEBUG);
+        }
     }
 
     private function updateSpecificValues(ConnectorSpecific $specific, $attribute)
     {
-        $values = $attribute
-            ->getSource()
-            ->getAllOptions(false);
-
+        $stores = Magento::getInstance()->getStoreMapping();
+        $options = array();
+        $defaultValue = null;
         foreach ($specific->getValues() as $specificValue) {
             $defaultSpecificValueI18n = ArrayTools::filterOneByLanguage($specificValue->getI18ns(), $defaultLanguageIso);
             if ($defaultSpecificValueI18n === null)
                 $defaultSpecificValueI18n = reset($specificValue->getI18ns());
-            $matches = array_filter($values, function ($value) use ($defaultSpecificValueI18n) {
-                return ($value['label'] === $defaultSpecificValueI18n->getValue());
-            });
 
-            // Value found
-            if ($matches)
-                continue;
-
-            Logger::write(sprintf('value "%s" not found', $specificValue->getId()->getHost()), Logger::DEBUG);
-
-            $attribute_model = \Mage::getModel('eav/entity_attribute');
-            $attribute_options_model = \Mage::getModel('eav/entity_attribute_source_table');
-
-            $attribute_table = $attribute_options_model->setAttribute($attribute);
-            $options = $attribute_options_model->getAllOptions(false);
-            Logger::write(var_export($options, true), Logger::DEBUG);
-
-            $stores = Magento::getInstance()->getStoreMapping();
-            $newAttributeValue = array('option' => array());
-            $newAttributeValue['option'] = array(
-                \Mage_Core_Model_App::ADMIN_STORE_ID => $defaultSpecificValueI18n->getValue()
+            $adminValue = $defaultSpecificValueI18n->getValue();
+            $optionData = array(
+                \Mage_Core_Model_App::ADMIN_STORE_ID => $adminValue
             );
+
             foreach ($stores as $locale => $storeId) {
                 $specificValueI18n = ArrayTools::filterOneByLanguage($specificValue->getI18ns(), LocaleMapper::localeToLanguageIso($locale));
                 if ($specificValueI18n === null) {
@@ -179,12 +239,70 @@ class Specific
                     $specificValueI18n = reset($i18ns);
                 }
 
-                $newAttributeValue['option'][$storeId] = $specificValueI18n->getValue();
+                $optionData[$storeId] = $specificValueI18n->getValue();
             }
-            $result = array('value' => $newAttributeValue);
-            $attribute->setData('option', $result);
-            $attribute->save();
+
+            if (is_null($defaultValue)) {
+                $defaultValue = $adminValue;
+            }
+            $options[$specificValue->getId()->getHost()] = $optionData;
         }
+
+        $attrModel = \Mage::getModel('eav/entity_attribute')
+            ->loadByCode('catalog_product', $attribute->attribute_code);
+        $attrModel->addData(array(
+            'backend_type' => $attrModel->getBackendTypeByInput('select')
+        ));
+        $attrModel->setData('option', array(
+            'value' => $options
+        ));
+        $attrModel->setData('default_value', $defaultValue);
+//        die(var_dump($attrModel));
+        $attrModel->save();
+
+        die(var_dump($attrModel));
+
+//        foreach ($specific->getValues() as $specificValue) {
+//            $defaultSpecificValueI18n = ArrayTools::filterOneByLanguage($specificValue->getI18ns(), $defaultLanguageIso);
+//            if ($defaultSpecificValueI18n === null)
+//                $defaultSpecificValueI18n = reset($specificValue->getI18ns());
+//            $matches = array_filter($values, function ($value) use ($defaultSpecificValueI18n) {
+//                return ($value['label'] === $defaultSpecificValueI18n->getValue());
+//            });
+//
+//            // Value found
+//            if ($matches)
+//                continue;
+//
+//            Logger::write(sprintf('value "%s" not found', $specificValue->getId()->getHost()), Logger::DEBUG);
+//
+//            $attribute_model = \Mage::getModel('eav/entity_attribute');
+//            $attribute_options_model = \Mage::getModel('eav/entity_attribute_source_table');
+//
+//            $attribute_table = $attribute_options_model->setAttribute($attribute);
+//            $options = $attribute_options_model->getAllOptions(false);
+//            Logger::write(var_export($options, true), Logger::DEBUG);
+//
+//            $stores = Magento::getInstance()->getStoreMapping();
+//            $newAttributeValue = array('option' => array());
+//            $newAttributeValue['option'] = array(
+//                \Mage_Core_Model_App::ADMIN_STORE_ID => $defaultSpecificValueI18n->getValue()
+//            );
+//            foreach ($stores as $locale => $storeId) {
+//                $specificValueI18n = ArrayTools::filterOneByLanguage($specificValue->getI18ns(), LocaleMapper::localeToLanguageIso($locale));
+//                if ($specificValueI18n === null) {
+//                    $i18ns = $specificValue->getI18ns();
+//                    $specificValueI18n = reset($i18ns);
+//                }
+//
+//                $newAttributeValue['option'][$storeId] = $specificValueI18n->getValue();
+//            }
+//            $result = array('value' => $newAttributeValue);
+//            $attribute->setData('option', $result);
+//            die(var_dump($attribute));
+//            $attribute->save();
+//
+//        }
     }
 
     public function update(ConnectorSpecific $specific)
@@ -201,15 +319,6 @@ class Specific
         $this->updateSpecificValues($specific, $attrModel);
 
         $result->setId(new Identity($attributeCode, $specific->getId()->getHost()));
-        return $result;
-    }
-
-    public function insert(ConnectorSpecific $specific)
-    {
-        $result = new ConnectorSpecific();
-
-        $this->createAttributeForSpecific($specific);
-
         return $result;
     }
 

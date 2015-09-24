@@ -34,10 +34,14 @@ class PrimaryKeyMapper implements IPrimaryKeyMapper
             case IdentityLinker::TYPE_PAYMENT:
                 $payment = \Mage::getModel('sales/order_payment')
                     ->load($endpointId);
-                return ($order != null ? $order->jtl_erp_id : null);
+                return ($payment != null ? $payment->entity_id : null);
             case IdentityLinker::TYPE_SPECIFIC:
                 $link = \Mage::getModel('jtl_connector/specific_link')
                     ->load($endpointId, 'attribute_code');
+                return ($link != null ? $link->jtl_erp_id : null);
+            case IdentityLinker::TYPE_SPECIFIC_VALUE:
+                $link = \Mage::getModel('jtl_connector/specificvalue_link')
+                    ->load($endpointId, 'option_id');
                 return ($link != null ? $link->jtl_erp_id : null);
             case IdentityLinker::TYPE_IMAGE:
                 $link = \Mage::getModel('jtl_connector/image_link')
@@ -74,11 +78,15 @@ class PrimaryKeyMapper implements IPrimaryKeyMapper
             case IdentityLinker::TYPE_PAYMENT:
                 $payment = \Mage::getModel('sales/order_payment')
                     ->load($hostId, 'jtl_erp_id');
-                return ($order != null ? $order->increment_id : null);
+                return ($payment != null ? $payment->entity_id : null);
             case IdentityLinker::TYPE_SPECIFIC:
                 $link = \Mage::getModel('jtl_connector/specific_link')
                     ->load($hostId, 'jtl_erp_id');
                 return ($link != null ? $link->attribute_code : null);
+            case IdentityLinker::TYPE_SPECIFIC_VALUE:
+                $link = \Mage::getModel('jtl_connector/specificvalue_link')
+                    ->load($hostId, 'jtl_erp_id');
+                return ($link != null ? $link->option_id : null);
             case IdentityLinker::TYPE_IMAGE:
                 $link = \Mage::getModel('jtl_connector/image_link')
                     ->getCollection()
@@ -152,12 +160,57 @@ class PrimaryKeyMapper implements IPrimaryKeyMapper
                 $link->jtl_erp_id = $hostId;
                 $link->save();
                 break;
+            case IdentityLinker::TYPE_SPECIFIC_VALUE:
+                $link = \Mage::getModel('jtl_connector/specificvalue_link');
+                $link->option_id = $endpointId;
+                $link->jtl_erp_id = $hostId;
+                $link->save();
+                break;
         }
     }
 
     public function delete($endpointId = null, $hostId = null, $type)
     {
+        switch ($type) {
+            case IdentityLinker::TYPE_IMAGE:
+                list($relationType, $foreignKey) = explode('-', $endpointId);
 
+                $collection = \Mage::getResourceModel('jtl_connector/image_link_collection')
+                    ->addFieldToFilter('jtl_erp_id', $hostId)
+                    ->addFieldToFilter('relation_type', $relationType)
+                    ->addFieldToFilter('foreign_key', $foreignKey);
+                break;
+            case IdentityLinker::TYPE_SPECIFIC:
+                $collection = \Mage::getResourceModel('jtl_connector/specific_link_collection')
+                    ->addFieldToFilter('jtl_erp_id', $hostId);
+
+                if (!is_null($endpointId)) {
+                    $collection->addFieldToFilter('attribute_code', $endpointId);
+                }
+                break;
+            case IdentityLinker::TYPE_SPECIFIC_VALUE:
+                $collection = \Mage::getResourceModel('jtl_connector/specificvalue_link_collection')
+                    ->addFieldToFilter('jtl_erp_id', $hostId);
+
+                if (!is_null($endpointId)) {
+                    $collection->addFieldToFilter('option_id', $endpointId);
+                }
+                break;
+            default:
+                return;
+        }
+
+        error_log(sprintf(
+            'Deleting for hostId == %s, endpointId == %s',
+            $hostId,
+            $endpointId
+        ));
+        if ($collection instanceof \Varien_Data_Collection_Db) {
+            foreach ($collection as $item) {
+                error_log('Delete entry: ' . json_encode($item->getData()));
+                $item->delete();
+            }
+        }
     }
 
     public function clear()
@@ -226,7 +279,11 @@ class PrimaryKeyMapper implements IPrimaryKeyMapper
             ->truncate();
 
         // Clear Specific IDs
-        \Mage::getResourceHelper('jtl_connector/specific_link')
+        \Mage::getResourceModel('jtl_connector/specific_link')
+            ->truncate();
+
+        // Clear Specific value IDs
+        \Mage::getResourceModel('jtl_connector/specificvalue_link')
             ->truncate();
 
         return true;
