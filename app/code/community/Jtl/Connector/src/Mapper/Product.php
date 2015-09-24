@@ -693,7 +693,7 @@ class Product
     {
         $productSpecifics = $product->getSpecifics();
         foreach ($productSpecifics as $productSpecific) {
-
+            $model->setData($productSpecific->getId()->getEndpoint(), $productSpecific->getSpecificValueId()->getEndpoint());
         }
     }
 
