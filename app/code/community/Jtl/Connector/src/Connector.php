@@ -52,6 +52,14 @@ class Connector extends BaseConnector
             session_destroy();
         }
 
+        // Ensure that we bypass Magento's flat indexes
+        \Mage::app()->getStore()->setConfig(
+            \Mage_Catalog_Helper_Category_Flat::XML_PATH_IS_ENABLED_FLAT_CATALOG_CATEGORY, '0'
+        );
+        \Mage::app()->getStore()->setConfig(
+            \Mage_Catalog_Helper_Product_Flat::XML_PATH_USE_PRODUCT_FLAT, '0'
+        );
+
         $this->setPrimaryKeyMapper(new PrimaryKeyMapper());
         $this->setTokenLoader(new TokenLoader());
         $this->setChecksumLoader(new ChecksumLoader());
