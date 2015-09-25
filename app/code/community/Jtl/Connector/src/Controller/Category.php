@@ -31,9 +31,8 @@ class Category extends AbstractController
         $action->setHandled(true);
         
         try {
-            $hostId = $model->getId()->getHost();
             $category = \Mage::getModel('catalog/category')
-                ->loadByAttribute('jtl_erp_id', $hostId);
+                ->load($model->getId()->getEndpoint());
 
             if ($category) {
                 \Mage::register('isSecureArea', true);
