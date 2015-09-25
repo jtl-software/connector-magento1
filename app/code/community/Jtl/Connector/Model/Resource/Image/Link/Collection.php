@@ -4,6 +4,7 @@ class Jtl_Connector_Model_Resource_Image_Link_Collection extends Mage_Core_Model
 {
     public function _construct()
     {
-        $this->_init('jtl_connector/image_link', 'id');
+        parent::_construct();
+        $this->_init('jtl_connector/image_link');
     }
 }

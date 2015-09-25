@@ -11,14 +11,13 @@ use jtl\Connector\Core\Model\QueryFilter;
 use jtl\Connector\Core\Rpc\Error;
 use jtl\Connector\Core\Utilities\ClassName;
 use jtl\Connector\Magento\Mapper\Specific as SpecificMapper;
+use jtl\Connector\Model\Identity;
+use jtl\Connector\Model\Specific as ConnectorSpecific;
 use jtl\Connector\Model\Statistic;
 use jtl\Connector\Result\Action;
 
 /**
  * Description of Specific
- *
- * @access public
- * @author Christian Spoo <christian.spoo@jtl-software.com>
  */
 class Specific extends AbstractController
 {
@@ -50,6 +49,23 @@ class Specific extends AbstractController
 
     public function delete(DataModel $model)
     {
+        $action = new Action();
+        $action->setHandled(true);
+
+        try {
+            $hostId = $model->getId()->getHost();
+
+            \Mage::getModel('catalog/product_attribute_api')
+                ->remove($model->getId()->getEndpoint());
+        }
+        catch (\Exception $e) {
+        }
+
+        $result = new ConnectorSpecific();
+        $result->setId(new Identity('', $hostId));
+        $action->setResult($result);
+
+        return $action;
 
     }
 

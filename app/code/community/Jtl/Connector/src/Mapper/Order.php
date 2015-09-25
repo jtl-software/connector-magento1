@@ -100,7 +100,7 @@ class Order
             $customerOrder->setLanguageIso(LocaleMapper::localeToLanguageIso(array_search($order->store_id, $stores)));
             $customerOrder->setCurrencyIso($order->order_currency_code);
             // $customerOrder->setCredit(0.00);
-            $customerOrder->setTotalSum((double)$order->grand_total);
+            $customerOrder->setTotalSum((double)$order->grand_total - (double)$order->tax_amount);
             $customerOrder->setShippingMethodName($order->shipping_description);
             $customerOrder->setOrderNumber($order->increment_id);
             $customerOrder->setShippingInfo('');
@@ -124,14 +124,14 @@ class Order
             foreach ($order->getAllItems() as $magento_item) {
                 $item = new ConnectorCustomerOrderItem();
                 $item->setId(new Identity($magento_item->item_id));
-                $item->setCustomerOrderId(new Identity($order->entity_id));
+                $item->setCustomerOrderId(new Identity($order->increment_id));
                 $item->setProductId(new Identity($magento_item->product_id));
                 // $item->setShippingClassId(NULL);
                 $item->setName($magento_item->name);
                 $item->setSku($magento_item->sku);
                 $item->setVat((double)$magento_item->tax_percent);
                 $item->setPrice((double)$magento_item->getPriceInclTax() / (1 + (double)$magento_item->tax_percent / 100.0));
-                $item->setQuantity($magento_item->getQtyToInvoice());
+                $item->setQuantity((double)$magento_item->getQtyOrdered());
                 $item->setType('product');
                 $item->setUnique(NULL);
                 // $item->setConfigItemId(NULL);
