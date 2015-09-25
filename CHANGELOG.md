@@ -1,6 +1,7 @@
 1.3.0.0 (unreleased)
 --------------------
 - Experimental support for specifics
+- Bypass flat catalogs for all operations
 
 1.2.1.0 (unreleased)
 --------------------
