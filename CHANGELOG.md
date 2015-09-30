@@ -1,5 +1,5 @@
-1.3.0.0 (unreleased)
---------------------
+1.3.0.0
+-------
 - Experimental support for specifics
 - Bypass flat catalogs for all operations
 - Improve image ID mapping
