@@ -56,6 +56,7 @@ class Payment
                 ),
                 'left'
             )
+            ->addAttributeToFilter('last_trans_id != null')
             ->setPageSize(25)
             ->setCurPage(1);
 
@@ -64,12 +65,11 @@ class Payment
         {
             $order = $item->getOrder();
 
-
             $payment = new ConnectorPayment();
             $payment
                 ->setId(new Identity($item->entity_id))
-                ->setCustomerOrderId(new Identity($order->increment_id))
-                ->setCreationDate(new \DateTime($order->created_at))
+                ->setCustomerOrderId(new Identity($item->order_id))
+                ->setCreationDate(new \DateTime($item->created_at))
                 ->setTotalSum((double)$item->amount_paid)
                 ->setTransactionId($item->last_trans_id);
 

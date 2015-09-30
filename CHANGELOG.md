@@ -1,6 +1,10 @@
-1.3.0.0 (unreleased)
---------------------
+1.3.0.0
+-------
 - Experimental support for specifics
+- Bypass flat catalogs for all operations
+- Improve image ID mapping
+- Fix generated synchronization URL when "Add store code to URL" is active
+- Fix calculation of order totals and quantities when using IPN-based payment methods
 
 1.2.0.0
 -------

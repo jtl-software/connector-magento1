@@ -136,6 +136,8 @@ class Product
         $model->setSku($product->getSku());
         $model->setMsrp($product->getRecommendedRetailPrice());
         $model->setWeight($product->getProductWeight());
+        $this->updateProductSpecifics($model, $product);
+
         $model->save();
 
         /* *** Begin StockLevel *** */
@@ -232,6 +234,7 @@ class Product
 
         $model->setMsrp($product->getRecommendedRetailPrice());
         $model->setWeight($product->getProductWeight());
+        $this->updateProductSpecifics($model, $product);
 
         /* *** Begin StockLevel *** */
         if (!$this->isParent($product)) {
@@ -684,6 +687,30 @@ class Product
         $model->setCanSaveCustomOptions(true);
 
         $model->save();
+    }
+
+    private function clearSpecificData(\Mage_Catalog_Model_Product $model)
+    {
+        $attributes = \Mage::getModel('eav/entity_attribute')
+            ->getCollection()
+            ->setEntityTypeFilter($model->getEntityTypeId())
+            ->addFilter('is_user_defined', '1')
+            ->addFilter('is_filterable', '1');
+
+        foreach ($attributes as $attribute)
+        {
+            $model->setData($attribute->attribute_code, null);
+        }
+    }
+
+    private function updateProductSpecifics(\Mage_Catalog_Model_Product $model, ConnectorProduct $product)
+    {
+        $this->clearSpecificData($model);
+
+        $productSpecifics = $product->getSpecifics();
+        foreach ($productSpecifics as $productSpecific) {
+            $model->setData($productSpecific->getId()->getEndpoint(), $productSpecific->getSpecificValueId()->getEndpoint());
+        }
     }
 
     public function existsByHost($hostId)
