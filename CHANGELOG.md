@@ -1,3 +1,7 @@
+1.3.1.0 (unreleased)
+--------------------
+- Provide fallback values to limit customer.pull and customer_order.pull
+
 1.3.0.0
 -------
 - Experimental support for specifics
