@@ -691,9 +691,8 @@ class Product
 
     private function clearSpecificData(\Mage_Catalog_Model_Product $model)
     {
-        $attributes = \Mage::getModel('eav/entity_attribute')
-            ->getCollection()
-            ->setEntityTypeFilter($model->getEntityTypeId())
+        $attributes = \Mage::getResourceModel('catalog/product_attribute_collection')
+            ->setItemObjectClass('catalog/resource_eav_attribute')
             ->addFilter('is_user_defined', '1')
             ->addFilter('is_filterable', '1');
 

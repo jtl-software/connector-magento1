@@ -1,5 +1,6 @@
 1.3.1.0 (unreleased)
 --------------------
+- Fix a bug causing EAV product attribute enumeration to fail
 - Provide fallback values to limit customer.pull and customer_order.pull
 
 1.3.0.0
