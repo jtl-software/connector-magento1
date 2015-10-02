@@ -2,6 +2,27 @@
 
 class Jtl_Connector_Checkout_Block_Cart_Item_Renderer extends Mage_Checkout_Block_Cart_Item_Renderer
 {
+    /**
+     * Holds the instance for the current Product.
+     *
+     * @var Mage_Catalog_Model_Product
+     */
+    protected $_product;
+
+    /**
+     * Holds the instance for the current parent Product.
+     *
+     * @var Mage_Catalog_Model_Product
+     */
+    protected $_configurableProductParent;
+
+    /**
+     * Holds the current quote item id.
+     *
+     * @var int
+     */
+    protected $_quoteItemId;
+
     protected function getConfigurableProductParentId()
     {
         if ($this->getItem()->getOptionByCode('cpid')) {
@@ -11,7 +32,7 @@ class Jtl_Connector_Checkout_Block_Cart_Item_Renderer extends Mage_Checkout_Bloc
         // but then it's Magento we're talking about, so I've not a clue what's *meant* to happen.
         try {
             $buyRequest = unserialize($this->getItem()->getOptionByCode('info_buyRequest')->getValue());
-            if(!empty($buyRequest['cpid'])) {
+            if (!empty($buyRequest['cpid'])) {
                 return $buyRequest['cpid'];
             }
         } catch (Exception $e) {
@@ -19,20 +40,44 @@ class Jtl_Connector_Checkout_Block_Cart_Item_Renderer extends Mage_Checkout_Bloc
         return null;
     }
 
+    /**
+     * Returns the current Configurable parent product.
+     *
+     * @return Mage_Catalog_Model_Product
+     */
     protected function getConfigurableProductParent()
     {
-        return Mage::getModel('catalog/product')
-            ->setStoreId(Mage::app()->getStore()->getId())
-            ->load($this->getConfigurableProductParentId());
+        $quoteItemId = $this->getItem()->getId();
+
+        // check is the product already loaded for this item is better for performance
+        if (!isset($this->_configurableProductParent) || $quoteItemId !== $this->_quoteItemId) {
+            $this->_configurableProductParent = Mage::getModel('catalog/product')->setStoreId(
+                Mage::app()->getStore()->getId()
+            )->load($this->getConfigurableProductParentId());
+        }
+
+        return $this->_configurableProductParent;
     }
-    
+
+    /**
+     * Returns the current configurable product.
+     *
+     * @return Mage_Catalog_Model_Product
+     */
     public function getProduct()
     {
-        return Mage::getModel('catalog/product')
-           ->setStoreId(Mage::app()->getStore()->getId())
-                ->load($this->getItem()->getProductId());
+        $quoteItemId = $this->getItem()->getId();
+
+        // check is the product already loaded for this item is better for performance
+        if (!isset($this->_product) || $quoteItemId !== $this->_quoteItemId) {
+            $this->_product = Mage::getModel('catalog/product')->setStoreId(Mage::app()->getStore()->getId())->load(
+                $this->getItem()->getProductId()
+            );
+        }
+
+        return $this->_product;
     }
-    
+
     public function getProductName()
     {
         if ($this->getConfigurableProductParentId()) {
@@ -41,7 +86,7 @@ class Jtl_Connector_Checkout_Block_Cart_Item_Renderer extends Mage_Checkout_Bloc
 
         return parent::getProductName();
     }
-    
+
     /* Bit of a hack this - assumes configurable parent is always linkable */
     public function hasProductUrl()
     {
@@ -51,7 +96,7 @@ class Jtl_Connector_Checkout_Block_Cart_Item_Renderer extends Mage_Checkout_Bloc
             return parent::hasProductUrl();
         }
     }
-    
+
     public function getProductUrl()
     {
         if ($this->getConfigurableProductParentId()) {
@@ -61,30 +106,26 @@ class Jtl_Connector_Checkout_Block_Cart_Item_Renderer extends Mage_Checkout_Bloc
             // return $this->getProduct()->getProductUrl();
         }
     }
-    
+
     public function getOptionList()
     {
         $options = false;
         // if (Mage::getStoreConfig('SCP_options/cart/show_custom_options')) {
-            $options = parent::getOptionList();
+        $options = parent::getOptionList();
         // }
         // if (Mage::getStoreConfig('SCP_options/cart/show_config_product_options')) {
-            if ($this->getConfigurableProductParentId()) {
-                $attributes = $this->getConfigurableProductParent()
-                    ->getTypeInstance()
-                    ->getUsedProductAttributes();
-                foreach($attributes as $attribute) {
-                    $options[] = array(
-                        'label' => $attribute->getFrontendLabel(),
-                        'value' => $this->getProduct()->getAttributeText($attribute->getAttributeCode()),
-                        'option_id' => $attribute->getId(),
-                    );
-                }
+        if ($this->getConfigurableProductParentId()) {
+            $attributes = $this->getConfigurableProductParent()->getTypeInstance()->getUsedProductAttributes();
+            foreach ($attributes as $attribute) {
+                $options[] = array('label' => $attribute->getFrontendLabel(),
+                                   'value' => $this->getProduct()->getAttributeText($attribute->getAttributeCode()),
+                                   'option_id' => $attribute->getId(),);
             }
+        }
         // }
         return $options;
     }
-    
+
     /*
     Logic is:
     If not SCP product, use normal thumbnail behaviour
@@ -98,15 +139,15 @@ class Jtl_Connector_Checkout_Block_Cart_Item_Renderer extends Mage_Checkout_Bloc
     {
         // If product not added via SCP, use default behaviour
         if (!$this->getConfigurableProductParentId()) {
-           return parent::getProductThumbnail();
+            return parent::getProductThumbnail();
         }
         // If showing simple product image
         // if (!Mage::getStoreConfig('SCP_options/cart/show_configurable_product_image')) {
-            $product = $this->getProduct();
-            // if product image is not a thumbnail
-            if($product->getData('thumbnail') && ($product->getData('thumbnail') != 'no_selection')) {
-                return $this->helper('catalog/image')->init($product, 'thumbnail');
-            }
+        $product = $this->getProduct();
+        // if product image is not a thumbnail
+        if ($product->getData('thumbnail') && ($product->getData('thumbnail') != 'no_selection')) {
+            return $this->helper('catalog/image')->init($product, 'thumbnail');
+        }
         // }
         // If simple prod thumbnail image is placeholder, or we're not using simple product image
         // show configurable product image
