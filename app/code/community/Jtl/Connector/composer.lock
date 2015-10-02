@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "1f5c8b87c28870fc6d4dc29deeb59332",
-    "content-hash": "01f686a1bb43beeb31e8aadb780394e7",
+    "hash": "ffe9dccb2a139fca7f4b603770c4a994",
+    "content-hash": "7d109c48da04f3be90bfd6e8b58e8dd1",
     "packages": [
         {
             "name": "doctrine/annotations",
@@ -405,11 +405,11 @@
         },
         {
             "name": "jtl/connector",
-            "version": "dev-master",
+            "version": "1.0.0",
             "source": {
                 "type": "git",
                 "url": "git@gitlab.jtl-software.de:jtl-software-gmbh/jtlconnector.git",
-                "reference": "e8cf169731a7476877df35f3579ed41e63e4e045"
+                "reference": "16524d1c63cada0310119c289907b0a68da7884e"
             },
             "require": {
                 "doctrine/collections": "1.2.*@dev",
@@ -453,7 +453,7 @@
                 "model",
                 "protocol"
             ],
-            "time": "2015-10-02 06:57:43"
+            "time": "2015-10-02 07:24:30"
         },
         {
             "name": "monolog/monolog",
@@ -780,9 +780,7 @@
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "jtl/connector": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
