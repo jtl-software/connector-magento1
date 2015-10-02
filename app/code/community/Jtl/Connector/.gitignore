@@ -2,7 +2,6 @@ api/**
 bin/**
 build/**
 .buildpath
-composer.lock
 composer.phar
 db/*
 dist/**
