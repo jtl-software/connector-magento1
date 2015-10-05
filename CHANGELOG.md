@@ -2,6 +2,8 @@
 --------------------
 - Fix a bug causing EAV product attribute enumeration to fail
 - Provide fallback values to limit customer.pull and customer_order.pull
+- Fix MSRP being stored without tax
+
 1.3.0.1
 -------
 - Update to the latest version of jtlconnector including a new protocol version

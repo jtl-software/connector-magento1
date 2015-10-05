@@ -134,7 +134,7 @@ class Product
 
         /* *** Begin Product *** */
         $model->setSku($product->getSku());
-        $model->setMsrp($product->getRecommendedRetailPrice());
+        $model->setMsrp($product->getRecommendedRetailPrice() * (1.0 + $this->getTaxRateByClassId($model->tax_class_id) / 100.0));
         $model->setWeight($product->getProductWeight());
         $this->updateProductSpecifics($model, $product);
 
@@ -232,7 +232,7 @@ class Product
         $taxClassId = $this->getTaxClassIdByRate($product->getVat());
         $model->setTaxClassId($taxClassId);
 
-        $model->setMsrp($product->getRecommendedRetailPrice());
+        $model->setMsrp($product->getRecommendedRetailPrice() * (1.0 + $this->getTaxRateByClassId($model->tax_class_id) / 100.0));
         $model->setWeight($product->getProductWeight());
         $this->updateProductSpecifics($model, $product);
 
