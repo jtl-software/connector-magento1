@@ -1,6 +1,7 @@
 1.3.2.0 (unreleased)
 --------------------
 - Remove unneeded and deprecated code
+- Remove all traces of the old configuration system
 
 1.3.1.0
 -------

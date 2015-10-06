@@ -38,13 +38,7 @@ class Connector extends BaseConnector
      * @var string
      */
     protected $_action;
-    
-    /**
-     *
-     * @var string
-     */
-    protected $_config;
-    
+
     protected function __construct()
     {
         // Destroy Magento's session
@@ -92,11 +86,6 @@ class Connector extends BaseConnector
      */
     public function handle(RequestPacket $requestpacket)
     {
-        $config = $this->getConfig();
-        
-        // Set the config to our controller 
-        $this->_controller->setConfig($config);
-
         // Set the method to our controller
         $this->_controller->setMethod($this->getMethod());
         
