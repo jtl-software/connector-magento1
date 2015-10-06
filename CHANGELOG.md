@@ -1,5 +1,5 @@
-1.3.1.0 (unreleased)
---------------------
+1.3.1.0
+-------
 - Fix a bug causing EAV product attribute enumeration to fail
 - Provide fallback values to limit customer.pull and customer_order.pull
 - Fix MSRP being stored without tax
