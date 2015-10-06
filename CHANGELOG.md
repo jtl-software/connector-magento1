@@ -1,3 +1,7 @@
+1.3.2.0 (unreleased)
+--------------------
+- Remove unneeded and deprecated code
+
 1.3.1.0
 -------
 - Fix a bug causing EAV product attribute enumeration to fail
