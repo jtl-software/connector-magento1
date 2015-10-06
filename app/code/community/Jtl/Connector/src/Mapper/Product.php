@@ -134,7 +134,7 @@ class Product
 
         /* *** Begin Product *** */
         $model->setSku($product->getSku());
-        $model->setMsrp($product->getRecommendedRetailPrice());
+        $model->setMsrp($product->getRecommendedRetailPrice() * (1.0 + $this->getTaxRateByClassId($model->tax_class_id) / 100.0));
         $model->setWeight($product->getProductWeight());
         $this->updateProductSpecifics($model, $product);
 
@@ -232,7 +232,7 @@ class Product
         $taxClassId = $this->getTaxClassIdByRate($product->getVat());
         $model->setTaxClassId($taxClassId);
 
-        $model->setMsrp($product->getRecommendedRetailPrice());
+        $model->setMsrp($product->getRecommendedRetailPrice() * (1.0 + $this->getTaxRateByClassId($model->tax_class_id) / 100.0));
         $model->setWeight($product->getProductWeight());
         $this->updateProductSpecifics($model, $product);
 
@@ -691,9 +691,8 @@ class Product
 
     private function clearSpecificData(\Mage_Catalog_Model_Product $model)
     {
-        $attributes = \Mage::getModel('eav/entity_attribute')
-            ->getCollection()
-            ->setEntityTypeFilter($model->getEntityTypeId())
+        $attributes = \Mage::getResourceModel('catalog/product_attribute_collection')
+            ->setItemObjectClass('catalog/resource_eav_attribute')
             ->addFilter('is_user_defined', '1')
             ->addFilter('is_filterable', '1');
 

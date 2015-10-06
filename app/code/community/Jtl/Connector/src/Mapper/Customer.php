@@ -57,7 +57,9 @@ class Customer
                     array('null' => true)
                 ),
                 'left'
-            );
+            )
+            ->setPageSize(50)
+            ->setCurPage(1);
 
 
         if (!is_null($filter)) {
