@@ -61,9 +61,7 @@ class Specific extends AbstractController
         catch (\Exception $e) {
         }
 
-        $result = new ConnectorSpecific();
-        $result->setId(new Identity('', $hostId));
-        $action->setResult($result);
+        $action->setResult($model);
 
         return $action;
 

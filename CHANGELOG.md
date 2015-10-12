@@ -2,6 +2,7 @@
 --------------------
 - Remove unneeded and deprecated code
 - Remove all traces of the old configuration system
+- Always return full model data upon delete operations
 
 1.3.1.0
 -------

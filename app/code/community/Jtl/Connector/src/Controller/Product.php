@@ -43,9 +43,7 @@ class Product extends AbstractController
         catch (\Exception $e) {
         }
 
-        $result = new ConnectorProduct();
-        $result->setId(new Identity('', $hostId));
-        $action->setResult($result);
+        $action->setResult($model);
 
         return $action;
     }

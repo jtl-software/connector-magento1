@@ -43,9 +43,7 @@ class Category extends AbstractController
         catch (\Exception $e) {
         }
 
-        $result = new ConnectorCategory();
-        $result->setId(new Identity('', $hostId));
-        $action->setResult($result);
+        $action->setResult($model);
 
         return $action;
     }
