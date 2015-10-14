@@ -19,12 +19,6 @@ use jtl\Connector\Magento\Connector as MagentoConnector;
 class Magento extends Singleton
 {
     /**
-     * Configuration object
-     * @var \jtl\Core\Utilities\Config\Config 
-     */
-    protected $_config = null;
-    
-    /**
      * Current store
      * @var int
      */
@@ -59,10 +53,6 @@ class Magento extends Singleton
      */
     protected function __construct()
     {
-        $connector = MagentoConnector::getInstance();
-        $config = $connector->getConfig();
-        $this->setConfig($config);
-
         \Mage::app()->setCurrentStore(\Mage_Core_Model_App::ADMIN_STORE_ID);
         $configStoreMapping = unserialize(\Mage::getStoreConfig('jtl_connector/general/store_mapping'));
         foreach ($configStoreMapping as $mapping) {
@@ -78,17 +68,6 @@ class Magento extends Singleton
 
             $this->_taxRateMapping[$mapping['taxClass']] = $taxRate->getRate();
         }
-    }
-    
-    /**
-     * Get the path to the Magento installation
-     * 
-     * @return string
-     */
-    public function getRoot()
-    {
-        $path = $this->_config->read('connector_root');
-        return $path;
     }
     
     /**
@@ -203,27 +182,7 @@ class Magento extends Singleton
     {
         return \Mage::getStoreConfig('jtl_connector/general/default_customer_group');
     }
-   
-    /**
-     * Getter for $_config
-     * 
-     * @return \jtl\Core\Utilities\Config\Config 
-     */
-    public function getConfig()
-    {
-        return $this->_config;
-    }
-    
-    /**
-     * Setter for $_config
-     * 
-     * @param \jtl\Core\Utilities\Config\Config $config
-     */
-    public function setConfig(Config $config)
-    {
-        $this->_config = $config;
-    }
-   
+
     /**
      * Getter for $_storeMapping
      * 
