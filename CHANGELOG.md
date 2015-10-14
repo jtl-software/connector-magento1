@@ -1,5 +1,8 @@
-1.3.2.0 (unreleased)
+1.3.3.0 (unreleased)
 --------------------
+
+1.3.2.0
+-------
 - Remove unneeded and deprecated code
 - Remove all traces of the old configuration system
 - Always return full model data upon delete operations
