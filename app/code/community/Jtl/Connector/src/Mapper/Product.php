@@ -721,7 +721,7 @@ class Product
 
         Logger::write('specificOptions: ' . json_encode($specificOptions), Logger::DEBUG);
         foreach ($specificOptions as $specificId => $optionIds) {
-            $model->addData($specificId, implode(',', $optionIds));
+            $model->setData($specificId, implode(',', $optionIds));
         }
     }
 
