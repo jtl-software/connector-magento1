@@ -106,12 +106,13 @@ class Specific
             'used_in_product_listing' => 1,
             'used_for_sort_by' => 1,
             'is_configurable' => 0,
-            'frontend_input' => 'select',
+            'frontend_input' => 'multiselect',
             'is_wysiwyg_enabled' => 0,
             'is_unique' => 0,
             'is_required' => 0,
             'is_visible_in_advanced_search' => 0,
             'is_visible_on_checkout' => 1,
+            'backend_model' => 'eav/entity_attribute_backend_array',
             'frontend_label' => $frontendLabels,
             'apply_to' => array()
         );
