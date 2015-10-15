@@ -1,5 +1,9 @@
-1.3.3.0 (unreleased)
+1.3.4.0 (unreleased)
 --------------------
+
+1.3.3.0
+-------
+- Fix multiselect specific support
 
 1.3.2.0
 -------
