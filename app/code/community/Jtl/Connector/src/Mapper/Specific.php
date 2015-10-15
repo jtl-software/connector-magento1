@@ -261,8 +261,6 @@ class Specific
 //        die(var_dump($attrModel));
         $attrModel->save();
 
-        die(var_dump($attrModel));
-
 //        foreach ($specific->getValues() as $specificValue) {
 //            $defaultSpecificValueI18n = ArrayTools::filterOneByLanguage($specificValue->getI18ns(), $defaultLanguageIso);
 //            if ($defaultSpecificValueI18n === null)
