@@ -707,8 +707,21 @@ class Product
         $this->clearSpecificData($model);
 
         $productSpecifics = $product->getSpecifics();
+        $specificOptions = array();
         foreach ($productSpecifics as $productSpecific) {
-            $model->setData($productSpecific->getId()->getEndpoint(), $productSpecific->getSpecificValueId()->getEndpoint());
+            $specificId = $productSpecific->getId()->getEndpoint();
+            $specificValueId = $productSpecific->getSpecificValueId()->getEndpoint();
+
+            if (!array_key_exists($specificId, $specificOptions)) {
+                $specificOptions[$specificId] = array();
+            }
+
+            $specificOptions[$specificId][] = $specificValueId;
+        }
+
+        Logger::write('specificOptions: ' . json_encode($specificOptions), Logger::DEBUG);
+        foreach ($specificOptions as $specificId => $optionIds) {
+            $model->setData($specificId, implode(',', $optionIds));
         }
     }
 
