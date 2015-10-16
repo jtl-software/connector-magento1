@@ -1,5 +1,6 @@
 1.3.4.0 (unreleased)
 --------------------
+- Allow memory_limit to be specified in bytes (useful for 64-Bit builds or HHVM)
 
 1.3.3.0
 -------
