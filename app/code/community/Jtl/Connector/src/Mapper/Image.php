@@ -105,11 +105,12 @@ class Image
                     basename($image->getFilename())
                 ));
                 if (file_exists($mediaFilename)) {
+                    $count = 1;
                     $mediaFilename = implode(DIRECTORY_SEPARATOR, array(
                         \Mage::getBaseDir('media'),
                         'catalog',
                         'category',
-                        str_replace('.', '-' . $hostId . '.', basename($image->getFilename()), 1)
+                        str_replace('.', '-' . $hostId . '.', basename($image->getFilename()), $count)
                     ));
                 }
 

@@ -77,20 +77,23 @@
         },
         {
             "name": "doctrine/collections",
-            "version": "v1.2.1",
+            "version": "v1.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/collections.git",
-                "reference": "4c926609fe198833934600b55d99ff6f59effaf5"
+                "reference": "6c1e4eef75f310ea1b3e30945e9f06e652128b8a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/collections/zipball/4c926609fe198833934600b55d99ff6f59effaf5",
-                "reference": "4c926609fe198833934600b55d99ff6f59effaf5",
+                "url": "https://api.github.com/repos/doctrine/collections/zipball/6c1e4eef75f310ea1b3e30945e9f06e652128b8a",
+                "reference": "6c1e4eef75f310ea1b3e30945e9f06e652128b8a",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.2"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "~4.0"
             },
             "type": "library",
             "extra": {
@@ -136,7 +139,7 @@
                 "collections",
                 "iterator"
             ],
-            "time": "2015-06-16 18:50:45"
+            "time": "2015-04-14 22:21:58"
         },
         {
             "name": "doctrine/instantiator",
@@ -405,14 +408,14 @@
         },
         {
             "name": "jtl/connector",
-            "version": "2.0.1",
+            "version": "2.1.0",
             "source": {
                 "type": "git",
                 "url": "git@gitlab.jtl-software.de:jtl-software-gmbh/jtlconnector.git",
-                "reference": "9a77ac3e7f5ce5082af801d9024d2eb7c535f770"
+                "reference": "3a6c723ed3caf352fbf8c24f86f13b4d47c9476b"
             },
             "require": {
-                "doctrine/collections": "1.2.*@dev",
+                "doctrine/collections": "~1.2",
                 "jms/serializer": "~1.0",
                 "monolog/monolog": "~1.11",
                 "php": ">=5.4.0",
@@ -448,7 +451,7 @@
                 "model",
                 "protocol"
             ],
-            "time": "2015-10-14 10:52:03"
+            "time": "2015-10-16 09:42:25"
         },
         {
             "name": "monolog/monolog",

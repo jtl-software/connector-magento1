@@ -93,11 +93,13 @@ class Connector extends AbstractController
             $unit = strtolower($value[strlen($value) - 1]);
             switch ($unit) {
                 case 'g':
-                    $value *= 1024;
-                //case 'm':
-                //    $value *= 1024;
-                //case 'k':
-                //    $value *= 1024;
+                    return ($value * 1024);
+                case 'm':
+                    return (int)$value;
+                case 'k':
+                    return ($value / 1024);
+                default:
+                    return ($value / 1048576);
             }
 
             return (int) $value;
@@ -110,7 +112,7 @@ class Connector extends AbstractController
             ->setUploadMaxFilesize($returnMegaBytes(ini_get('upload_max_filesize')));
 
         $identification = new ConnectorIdentification();
-        $identification->setEndpointVersion('1.3.3.0')
+        $identification->setEndpointVersion('1.3.4.0')
             ->setPlatformName('Magento')
             ->setPlatformVersion(\Mage::getVersion())
             ->setProtocolVersion(Application()->getProtocolVersion())
