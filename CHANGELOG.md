@@ -1,7 +1,11 @@
-1.3.4.0 (unreleased)
+1.3.5.0 (unreleased)
 --------------------
+
+1.3.4.0
+-------
 - Allow memory_limit to be specified in bytes (useful for 64-Bit builds or HHVM)
 - Fix reference parameter passing to str_replace
+- Update jtlconnector to version 2.1.0
 
 1.3.3.0
 -------
