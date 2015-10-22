@@ -1,5 +1,6 @@
 1.3.5.0 (unreleased)
 --------------------
+- Fix product variation import
 
 1.3.4.0
 -------

@@ -835,10 +835,12 @@ class Product
         $product->addPrice($productPrice);
 
         // ProductVariation
-        if (in_array($productItem->getTypeId(), array('configurable'))) {
+        if ($productItem->isConfigurable()) {
             $productAttributeOptions = array();
             $typeInstance = $productItem->getTypeInstance(false);
-            $productAttributeOptions = $typeInstance->getConfigurableAttributesAsArray($productItem);
+            $productAttributeOptions = $productItem
+                ->getTypeInstance(false)
+                ->getConfigurableAttributesAsArray($productItem);
 
             Logger::write('options: ' . json_encode($productAttributeOptions), Logger::DEBUG);
 
@@ -880,14 +882,14 @@ class Product
                 foreach ($attributeOption['values'] as $valueIndex => $value) {
                     $productVariationValue = new ConnectorProductVariationValue();
                     $productVariationValue
-                        ->setId(new Identity($value['value_id']))
+                        ->setId(new Identity($value['value_index']))
                         ->setProductVariationId(new Identity($attributeOption['id']))
                         ->setSort($valueIndex);
 
                     foreach ($stores as $locale => $storeId) {
                         $productVariationValueI18n = new ConnectorProductVariationValueI18n();
                         $productVariationValueI18n
-                            ->setProductVariationValueId(new Identity($value['value_id']))
+                            ->setProductVariationValueId(new Identity($value['value_index']))
                             ->setLanguageIso(LocaleMapper::localeToLanguageIso($locale))
                             ->setName($valueLabels[$locale][$valueIndex]['label']);
 
@@ -896,12 +898,116 @@ class Product
 
                     $productVariationValueExtraCharge = new ConnectorProductVariationValueExtraCharge();
                     $productVariationValueExtraCharge
-                        ->setProductVariationValueId(new Identity($value['value_id']))
+                        ->setProductVariationValueId(new Identity($value['value_index']))
                         ->setExtraChargeNet($value['pricing_value'] / (1 + $product->getVat() / 100.0));
                     $productVariationValue->addExtraCharge($productVariationValueExtraCharge);
 
                     $productVariation->addValue($productVariationValue);
                 }
+
+                $product->addVariation($productVariation);
+            }
+        }
+        else if (!is_null($productItem->parent_id)) {
+            $parentProductItem = \Mage::getModel('catalog/product')
+                ->load($productItem->parent_id);
+
+            $productAttributeOptions = array();
+            $productAttributeOptions = $parentProductItem
+                ->getTypeInstance(false)
+                ->getConfigurableAttributesAsArray($parentProductItem);
+
+            // Iterate over all variations
+            $variations = array();
+            foreach ($productAttributeOptions as $attributeIndex => $attributeOption) {
+                $productVariation = new ConnectorProductVariation();
+                $productVariation
+                    ->setId(new Identity($attributeOption['id']))
+                    ->setProductId(new Identity($productItem->entity_id))
+                    ->setSort((int)$attributeOption['position']);
+
+                $attrModel = \Mage::getModel('catalog/resource_eav_attribute')
+                    ->load($attributeOption['attribute_id']);
+
+                foreach ($stores as $locale => $storeId) {
+                    $productVariationI18n = new ConnectorProductVariationI18n();
+                    $productVariationI18n
+                        ->setLanguageIso(LocaleMapper::localeToLanguageIso($locale))
+                        ->setName($attrModel->getStoreLabel($storeId))
+                        ->setProductVariationId(new Identity($attributeOption['id']));
+
+                    $productVariation->addI18n($productVariationI18n);
+                }
+
+                $valueLabels = array();
+                foreach ($stores as $locale => $storeId) {
+                    $valueLabels[$locale] = array();
+                    $attribute = \Mage::getModel('eav/config')->getAttribute('catalog_product', $attributeOption['attribute_code'])
+                        ->setStoreId($storeId);
+                    if (!$attribute->getSourceModel()) {
+                        $attribute->setSourceModel('eav/entity_attribute_source_table');
+                    }
+
+                    $optionData = $attribute
+                        ->getSource()
+                        ->getAllOptions(false);
+
+                    foreach ($optionData as $entry) {
+                        $valueLabels[$locale][$entry['value']] = $entry['label'];
+                    }
+                }
+
+                $attributeValue = (int)$productItem->getData($attributeOption['attribute_code']);
+
+                foreach ($attributeOption['values'] as $valueIndex => $value) {
+                    if ($value['value_index'] == (int)$attributeValue) {
+                        $productVariationValue = new ConnectorProductVariationValue();
+                        $productVariationValue
+                            ->setId(new Identity($value['value_index']))
+                            ->setProductVariationId(new Identity($attributeOption['id']))
+                            ->setSort($valueIndex);
+
+                        foreach ($stores as $locale => $storeId) {
+                            $productVariationValueI18n = new ConnectorProductVariationValueI18n();
+                            $productVariationValueI18n
+                                ->setProductVariationValueId(new Identity($value['value_id']))
+                                ->setLanguageIso(LocaleMapper::localeToLanguageIso($locale))
+                                ->setName($valueLabels[$locale][$value['value_index']]['label']);
+
+                            $productVariationValue->addI18n($productVariationValueI18n);
+                        }
+
+                        $productVariation->addValue($productVariationValue);
+
+                        break;
+                    }
+                }
+
+//                foreach ($attributeOption['values'] as $valueIndex => $value) {
+//                    $productVariationValue = new ConnectorProductVariationValue();
+//                    $productVariationValue
+//                        ->setId(new Identity($value['value_id']))
+//                        ->setProductVariationId(new Identity($attributeOption['id']))
+//                        ->setSort($valueIndex);
+//
+//                    foreach ($stores as $locale => $storeId) {
+//                        $productVariationValueI18n = new ConnectorProductVariationValueI18n();
+//                        $productVariationValueI18n
+//                            ->setProductVariationValueId(new Identity($value['value_id']))
+//                            ->setLanguageIso(LocaleMapper::localeToLanguageIso($locale))
+//                            ->setName($valueLabels[$locale][$valueIndex]['label']);
+//
+//                        $productVariationValue->addI18n($productVariationValueI18n);
+//                    }
+//
+//                    $productVariationValueExtraCharge = new ConnectorProductVariationValueExtraCharge();
+//                    $productVariationValueExtraCharge
+//                        ->setProductVariationValueId(new Identity($value['value_id']))
+//                        ->setExtraChargeNet($value['pricing_value'] / (1 + $product->getVat() / 100.0));
+//                    $productVariationValue->addExtraCharge($productVariationValueExtraCharge);
+//
+//                    $productVariation->addValue($productVariationValue);
+//                }
 
                 $product->addVariation($productVariation);
             }
