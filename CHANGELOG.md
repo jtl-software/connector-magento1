@@ -1,6 +1,8 @@
 1.3.5.0 (unreleased)
 --------------------
 - Fix product variation import
+- Update jtlconnector to version 2.1.1
+- Introduce predefined category function attributes
 
 1.3.4.0
 -------
