@@ -104,7 +104,7 @@ class Image extends AbstractController
         }
         catch (\Exception $exc) {
             $err = new Error();
-            $err->setCode($exc->getCode());
+            $err->setCode(32699);
             $err->setMessage($exc->getMessage());
             $action->setError($err);
         }
