@@ -39,6 +39,30 @@ class Category
         $this->defaultStoreId = current($this->stores);
     }
 
+    private function handlePredefinedFunctionAttributes(ConnectorCategory $category, \Mage_Catalog_Model_Category $model)
+    {
+        foreach ($category->getAttributes() as $attribute) {
+            foreach ($attribute->getI18ns() as $attributeI18n) {
+                // Allow "is_active" to be set by category attribute
+                $allowedBoolValues = array('0', '1', 0, 1, false, true);
+                $normalizedAttributeName = strtolower($attributeI18n->getName());
+                if (in_array($normalizedAttributeName, array('isactive', 'is_active'))) {
+                    if (!in_array($attributeI18n->getValue(), $allowedBoolValues, true))
+                        continue;
+
+                    $model->setIsActive((bool) $attributeI18n->getValue());
+                }
+
+                if ($normalizedAttributeName === 'include_in_navigation') {
+                    if (!in_array($attributeI18n->getValue(), $allowedBoolValues, true))
+                        continue;
+
+                    $model->setIncludeInMenu((bool) $attributeI18n->getValue());
+                }
+            }
+        }
+    }
+
     private function insert(ConnectorCategory $category)
     {
         Logger::write('insert category', Logger::ERROR, 'general');
@@ -78,18 +102,7 @@ class Category
         $model->setStoreId(\Mage_Core_Model_App::ADMIN_STORE_ID);
         $model->setIsActive($category->getIsActive());
 
-        // Evaluate isactive function attribute (just in case of fire)
-        foreach ($category->getAttributes() as $i => $attribute) {
-            $i++;
-            foreach ($attribute->getI18ns() as $attributeI18n) {
-
-                // Active fix
-                $allowedActiveFlags = array('0', '1', 0, 1, false, true);
-                if (strtolower($attributeI18n->getName()) === 'isactive' && in_array($attributeI18n->getValue(), $allowedActiveFlags, true)) {
-                    $model->setIsActive((bool) $attributeI18n->getValue());
-                }
-            }
-        }
+        $this->handlePredefinedFunctionAttributes($category, $model);
 
         if ($categoryI18n instanceof ConnectorCategoryI18n) {
             $model->setName($categoryI18n->getName() !== '' ? $categoryI18n->getName() : 'Kategorie "' . $categoryI18n->getName() . '"');
@@ -150,18 +163,7 @@ class Category
         $result->setId(new Identity($model->getId(), $category->getId()->getHost()));
         $model->setIsActive($category->getIsActive());
 
-        // Evaluate isactive function attribute (just in case of fire)
-        foreach ($category->getAttributes() as $i => $attribute) {
-            $i++;
-            foreach ($attribute->getI18ns() as $attributeI18n) {
-
-                // Active fix
-                $allowedActiveFlags = array('0', '1', 0, 1, false, true);
-                if (strtolower($attributeI18n->getName()) === 'isactive' && in_array($attributeI18n->getValue(), $allowedActiveFlags, true)) {
-                    $model->setIsActive((bool) $attributeI18n->getValue());
-                }
-            }
-        }
+        $this->handlePredefinedFunctionAttributes($category, $model);
 
         $model->save();
         
