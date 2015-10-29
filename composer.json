@@ -1,0 +1,51 @@
+{
+  "name": "jtl/connector-magento",
+  "type": "magento-module",
+  "description": "JTL-Connector Magento endpoint",
+  "keywords": [
+    "jtl",
+    "Connector",
+    "Magento"
+  ],
+  "homepage": "http://www.jtl-software.de",
+  "license": "LGPL",
+  "authors": [
+    {
+      "name": "JTL-Software GmbH",
+      "email": "info@jtl-software.de",
+      "homepage": "http://www.jtl-software.de",
+      "role": "Founder"
+    }
+  ],
+  "repositories": [
+    {
+      "type": "git",
+      "url": "git@gitlab.jtl-software.de:jtl-software-gmbh/jtlconnector.git",
+      "reference": "origin/master"
+    }
+  ],
+  "require": {
+    "php": ">=5.4.0",
+    "magento-hackathon/magento-composer-installer": "*",
+    "jtl/connector": "~2.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "jtl\\Connector\\Magento\\": "src/",
+      "": "plugins/"
+    }
+  },
+  "extra": {
+    "map": [
+      ["app/code/community/Jtl/Connector","app/code/community/Jtl/Connector"],
+      ["app/design/adminhtml/default/default/template/jtl/connector","app/design/adminhtml/default/default/template/jtl/connector"],
+      ["app/design/frontend/base/default/layout/*","app/design/frontend/base/default/layout/"],
+      ["app/design/frontend/base/default/template/catalog/product/view/*","app/design/frontend/base/default/template/catalog/product/view/"],
+      ["app/design/frontend/base/default/template/page/*","app/design/frontend/base/default/template/page/"],
+      ["app/design/frontend/base/default/template/sales/reorder/*","app/design/frontend/base/default/template/sales/reorder/"],
+      ["app/etc/modules/Jtl_Connector.xml","app/etc/modules/Jtl_Connector.xml"],
+      ["skin/frontend/base/default/images/*","skin/frontend/base/default/images/"],
+      ["skin/frontend/base/default/js/*","skin/frontend/base/default/js/"]
+    ]
+  }
+}
