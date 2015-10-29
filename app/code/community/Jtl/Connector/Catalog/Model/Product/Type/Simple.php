@@ -31,7 +31,6 @@ class Jtl_Connector_Catalog_Model_Product_Type_Simple extends Mage_Catalog_Model
     public function hasConfigurableProductParentId()
     {
         $cpid = $this->getCpid();
-        Mage::log("cpid: ". $cpid);
         return !empty($cpid);
     }
     public function getConfigurableProductParentId()
