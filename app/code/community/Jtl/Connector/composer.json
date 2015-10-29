@@ -1,0 +1,33 @@
+{
+    "name": "jtl/connector-magento",
+    "type": "project",
+    "description": "JTL-Connector Magento endpoint",
+    "keywords": ["jtl", "Connector", "Magento"],
+    "homepage": "http://www.jtl-software.de",
+    "license": "LGPL",
+    "authors": [
+        {
+            "name": "JTL-Software GmbH",
+            "email": "info@jtl-software.de",
+            "homepage": "http://www.jtl-software.de",
+            "role": "Founder"
+        }
+    ],
+    "repositories": [
+        {
+            "type": "git",
+            "url": "git@gitlab.jtl-software.de:jtl-software-gmbh/jtlconnector.git",
+            "reference": "origin/master"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.0",
+        "jtl/connector": "~2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "jtl\\Connector\\Magento\\": "src/",
+            "": "plugins/"
+        }
+    }
+}
