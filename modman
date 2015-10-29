@@ -5,5 +5,6 @@ app/design/frontend/base/default/template/catalog/product/view/*    app/design/f
 app/design/frontend/base/default/template/page/*                    app/design/frontend/base/default/template/page/
 app/design/frontend/base/default/template/sales/reorder/*           app/design/frontend/base/default/template/sales/reorder/
 app/etc/modules/Jtl_Connector.xml                                   app/etc/modules/Jtl_Connector.xml
+lib/jtlconnector                                                    lib/jtlconnector
 skin/frontend/base/default/images/*                                 skin/frontend/base/default/images/
 skin/frontend/base/default/js/*                                     skin/frontend/base/default/js/
