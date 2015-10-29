@@ -1,8 +1,9 @@
-1.3.5.0 (unreleased)
+1.4.0.0 (unreleased)
 --------------------
 - Fix product variation import
 - Update jtlconnector to version 2.2.0
 - Introduce predefined category function attributes
+- Put jtlconnector dependencies into Magento's system-wide lib directory
 
 1.3.4.0
 -------
