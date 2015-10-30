@@ -30,7 +30,7 @@
   "autoload": {
     "psr-4": {
       "jtl\\Connector\\Magento\\": "app/code/community/Jtl/Connector/src/",
-      "": "plugins/"
+      "": "app/code/community/Jtl/Connector/plugins/"
     }
   }
 }
