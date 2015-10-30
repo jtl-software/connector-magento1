@@ -1,5 +1,6 @@
 1.4.1.0 (unreleased)
 --------------------
+- Exclude cancelled and holded orders from being pulled into JTL-Wawi
 
 1.4.0.1
 -------
