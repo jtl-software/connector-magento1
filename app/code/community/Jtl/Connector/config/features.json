@@ -100,12 +100,37 @@
       "push": true,
       "delete": true
     },
+    "Product2Category": {
+      "pull": true,
+      "push": true,
+      "delete": true
+    },
     "ProductAttr": {
       "pull": true,
       "push": true,
       "delete": false
     },
-    "Product2Category": {
+    "ProductAttrI18n": {
+      "pull": true,
+      "push": true,
+      "delete": false
+    },
+    "ProductMediaFile": {
+      "pull": true,
+      "push": true,
+      "delete": true
+    },
+    "ProductMediaFileAttr": {
+      "pull": true,
+      "push": true,
+      "delete": true
+    },
+    "ProductMediaFileAttrI18n": {
+      "pull": true,
+      "push": true,
+      "delete": true
+    },
+    "ProductMediaFileI18n": {
       "pull": true,
       "push": true,
       "delete": true

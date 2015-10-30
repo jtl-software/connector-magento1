@@ -1,6 +1,10 @@
 1.4.1.0 (unreleased)
 --------------------
 
+1.4.0.1
+-------
+- Update jtlconnector to version 2.2.1 to improve HHVM compatibility
+
 1.4.0.0
 -------
 - Fix product variation import
