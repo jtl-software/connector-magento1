@@ -1,5 +1,8 @@
-1.4.0.3 (unreleased)
+1.4.0.4 (unreleased)
 --------------------
+
+1.4.0.3
+-------
 - Add support for is_anchor on categories
 
 1.4.0.2
