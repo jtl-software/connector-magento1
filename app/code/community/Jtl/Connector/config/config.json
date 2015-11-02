@@ -1,4 +1,5 @@
 {
     "platform_root": "\/var",
-    "connector_root": "\/var\/www"
+    "connector_root": "\/var\/www",
+    "developer_logging": false
 }
