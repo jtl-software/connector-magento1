@@ -5,6 +5,16 @@
       "push": true,
       "delete": true
     },
+    "CategoryAttr": {
+      "pull": true,
+      "push": true,
+      "delete": true
+    },
+    "CategoryAttrI18n": {
+      "pull": true,
+      "push": true,
+      "delete": true
+    },
     "CategoryI18n": {
       "pull": true,
       "push": true,

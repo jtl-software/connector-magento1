@@ -41,6 +41,9 @@ class Category
 
     private function handlePredefinedFunctionAttributes(ConnectorCategory $category, \Mage_Catalog_Model_Category $model)
     {
+        $model->save();
+        $model->load($model->getId());
+
         foreach ($category->getAttributes() as $attribute) {
             foreach ($attribute->getI18ns() as $attributeI18n) {
                 // Allow "is_active" to be set by category attribute
@@ -51,6 +54,13 @@ class Category
                         continue;
 
                     $model->setIsActive((bool) $attributeI18n->getValue());
+                }
+
+                if ($normalizedAttributeName === 'is_anchor') {
+                    if (!in_array($attributeI18n->getValue(), $allowedBoolValues, true))
+                        continue;
+
+                    $model->setIsAnchor(((bool) $attributeI18n->getValue()) ? 1 : 0);
                 }
 
                 if ($normalizedAttributeName === 'include_in_navigation') {
