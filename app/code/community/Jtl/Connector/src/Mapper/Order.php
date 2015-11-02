@@ -47,6 +47,9 @@ class Order
             $orderCollection = \Mage::getModel('sales/order')
                 ->getCollection()
                 ->addAttributeToSelect('*')
+                ->addFieldToFilter('status', array(
+                    'nin' => array(\Mage_Sales_Model_Order::STATE_CANCELED, \Mage_Sales_Model_Order::STATE_HOLDED)
+                ))
                 ->addAttributeToFilter('jtl_erp_id',
                     array(
                         array('eq' => 0),
@@ -70,6 +73,9 @@ class Order
         $orderCollection = \Mage::getModel('sales/order')
             ->getCollection()
             ->addAttributeToSelect('*')
+            ->addFieldToFilter('status', array(
+                'nin' => array(\Mage_Sales_Model_Order::STATE_CANCELED, \Mage_Sales_Model_Order::STATE_HOLDED)
+            ))
             ->addAttributeToFilter('jtl_erp_id',
                 array(
                     array('eq' => 0),
