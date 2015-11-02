@@ -1,6 +1,10 @@
 1.4.1.0 (unreleased)
 --------------------
+
+1.4.0.2
+-------
 - Exclude cancelled and holded orders from being pulled into JTL-Wawi
+- Fix plugin path in composer.json
 
 1.4.0.1
 -------
