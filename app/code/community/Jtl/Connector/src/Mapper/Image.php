@@ -383,7 +383,7 @@ class Image
         }
         unset($_mediaGalleryData);
 
-        foreach ($_productCollection as &$_product) {
+        foreach ($_productCollection as $_product) {
             $_productId = $_product->getData('entity_id');
             if (isset($_mediaGalleryByProductId[$_productId])) {
                 $_product->setData('media_gallery', array('images' => $_mediaGalleryByProductId[$_productId]));
