@@ -330,7 +330,7 @@ class Specific
             return null;
 
         Logger::write('push specific', Logger::DEBUG, 'general');
-        if (!empty($specific->getId()->getEndpoint()))
+        if ('' == $specific->getId()->getEndpoint())
             $result = $this->update($specific);
         else
             $result = $this->insert($specific);
