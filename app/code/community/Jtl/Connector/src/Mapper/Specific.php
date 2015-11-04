@@ -223,6 +223,8 @@ class Specific
         $stores = Magento::getInstance()->getStoreMapping();
         $options = array();
         $defaultValue = null;
+        $defaultLanguageIso = LocaleMapper::localeToLanguageIso($this->defaultLocale);
+
         foreach ($specific->getValues() as $specificValue) {
             $defaultSpecificValueI18n = ArrayTools::filterOneByLanguage($specificValue->getI18ns(), $defaultLanguageIso);
             if ($defaultSpecificValueI18n === null)
@@ -330,7 +332,7 @@ class Specific
             return null;
 
         Logger::write('push specific', Logger::DEBUG, 'general');
-        if ('' == $specific->getId()->getEndpoint())
+        if (null != $specific->getId()->getEndpoint())
             $result = $this->update($specific);
         else
             $result = $this->insert($specific);
