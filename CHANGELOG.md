@@ -1,5 +1,6 @@
-1.4.0.4 (unreleased)
+1.4.1.0 (unreleased)
 --------------------
+- Improve image update and delete operations
 
 1.4.0.3
 -------
