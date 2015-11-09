@@ -27,12 +27,15 @@ use jtl\Connector\Payment\PaymentTypes;
 class Order
 {
     public static $paymentMethods = array(
+        'amazonpayments_advanced' => PaymentTypes::TYPE_AMAZON_PAYMENTS,
         'bankpayment' => PaymentTypes::TYPE_BANK_TRANSFER,
         'cash' => PaymentTypes::TYPE_CASH,
         'cashondelivery' => PaymentTypes::TYPE_CASH_ON_DELIVERY,
         'checkmo' => PaymentTypes::TYPE_BANK_TRANSFER,
         'invoice' => PaymentTypes::TYPE_INVOICE,
         'invoicepay' => PaymentTypes::TYPE_INVOICE,
+        'iways_paypalplus_payment' => PaymentTypes::TYPE_PAYPAL_PLUS,
+        'paymentnetwork_pnsofortueberweisung' => PaymentTypes::TYPE_SOFORT,
         'paypal_billing_agreement' => PaymentTypes::TYPE_PAYPAL_EXPRESS,
         'paypal_direct' => PaymentTypes::TYPE_PAYPAL_EXPRESS,
         'paypal_express' => PaymentTypes::TYPE_PAYPAL_EXPRESS,
