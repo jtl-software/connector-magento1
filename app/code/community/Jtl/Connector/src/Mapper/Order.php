@@ -27,16 +27,22 @@ use jtl\Connector\Payment\PaymentTypes;
 class Order
 {
     public static $paymentMethods = array(
-        'checkmo' => PaymentTypes::TYPE_BANK_TRANSFER,
+        'bankpayment' => PaymentTypes::TYPE_BANK_TRANSFER,
+        'cash' => PaymentTypes::TYPE_CASH,
         'cashondelivery' => PaymentTypes::TYPE_CASH_ON_DELIVERY,
+        'checkmo' => PaymentTypes::TYPE_BANK_TRANSFER,
+        'invoice' => PaymentTypes::TYPE_INVOICE,
+        'invoicepay' => PaymentTypes::TYPE_INVOICE,
         'paypal_billing_agreement' => PaymentTypes::TYPE_PAYPAL_EXPRESS,
         'paypal_direct' => PaymentTypes::TYPE_PAYPAL_EXPRESS,
+        'paypal_express' => PaymentTypes::TYPE_PAYPAL_EXPRESS,
         'paypal_mep' => PaymentTypes::TYPE_PAYPAL_EXPRESS,
         'paypal_mecl' => PaymentTypes::TYPE_PAYPAL_EXPRESS,
         'paypal_standard' => PaymentTypes::TYPE_PAYPAL_EXPRESS,
-        'paypal_express' => PaymentTypes::TYPE_PAYPAL_EXPRESS,
         'paypaluk_direct' => PaymentTypes::TYPE_PAYPAL_EXPRESS,
-        'paypaluk_express' => PaymentTypes::TYPE_PAYPAL_EXPRESS
+        'paypaluk_express' => PaymentTypes::TYPE_PAYPAL_EXPRESS,
+        'phoenix_cashondelivery' => PaymentTypes::TYPE_CASH_ON_DELIVERY,
+        'saferpaynew' => PaymentTypes::TYPE_SAFERPAY
     );
 
     public function getAvailableCount()
