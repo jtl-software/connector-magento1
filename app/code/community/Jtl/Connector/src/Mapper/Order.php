@@ -130,6 +130,10 @@ class Order
             $payment = $order->getPayment();
             $code = $payment->getMethodInstance()->getCode();
 
+            if (in_array($order->getState(), array(\Mage_Sales_Model_Order::STATE_PROCESSING, \Mage_Sales_Model_Order::STATE_COMPLETE))) {
+                $customerOrder->setPaymentStatus(ConnectorCustomerOrder::PAYMENT_STATUS_COMPLETED);
+            }
+
             if (array_key_exists($code, self::$paymentMethods))
                 $customerOrder->setPaymentModuleCode(self::$paymentMethods[$code]);
             else
