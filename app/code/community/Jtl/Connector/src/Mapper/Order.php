@@ -27,7 +27,7 @@ use jtl\Connector\Payment\PaymentTypes;
 class Order
 {
     public static $paymentMethods = array(
-        'amazonpayments_advanced' => PaymentTypes::TYPE_AMAZON_PAYMENTS,
+        'amazonpayments_advanced' => PaymentTypes::TYPE_AMAPAY,
         'bankpayment' => PaymentTypes::TYPE_BANK_TRANSFER,
         'cash' => PaymentTypes::TYPE_CASH,
         'cashondelivery' => PaymentTypes::TYPE_CASH_ON_DELIVERY,
