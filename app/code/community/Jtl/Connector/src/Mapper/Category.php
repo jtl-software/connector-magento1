@@ -53,7 +53,7 @@ class Category
                     if (!in_array($attributeI18n->getValue(), $allowedBoolValues, true))
                         continue;
 
-                    $model->setIsActive((bool) $attributeI18n->getValue());
+                    $model->setIsActive(((bool) $attributeI18n->getValue()) ? 1 : 0);
                 }
 
                 if ($normalizedAttributeName === 'is_anchor') {
@@ -67,7 +67,7 @@ class Category
                     if (!in_array($attributeI18n->getValue(), $allowedBoolValues, true))
                         continue;
 
-                    $model->setIncludeInMenu((bool) $attributeI18n->getValue());
+                    $model->setIncludeInMenu(((bool) $attributeI18n->getValue()) ? 1 : 0);
                 }
             }
         }
