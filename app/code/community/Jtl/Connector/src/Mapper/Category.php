@@ -47,13 +47,13 @@ class Category
         foreach ($category->getAttributes() as $attribute) {
             foreach ($attribute->getI18ns() as $attributeI18n) {
                 // Allow "is_active" to be set by category attribute
-                $allowedBoolValues = array('0', '1', 0, 1, false, true);
+                $allowedBoolValues = array('0', '1', 0, 1, false, true, 'false', 'true');
                 $normalizedAttributeName = strtolower($attributeI18n->getName());
                 if (in_array($normalizedAttributeName, array('isactive', 'is_active'))) {
                     if (!in_array($attributeI18n->getValue(), $allowedBoolValues, true))
                         continue;
 
-                    $model->setIsActive((bool) $attributeI18n->getValue());
+                    $model->setIsActive(((bool) $attributeI18n->getValue()) ? 1 : 0);
                 }
 
                 if ($normalizedAttributeName === 'is_anchor') {
@@ -67,7 +67,7 @@ class Category
                     if (!in_array($attributeI18n->getValue(), $allowedBoolValues, true))
                         continue;
 
-                    $model->setIncludeInMenu((bool) $attributeI18n->getValue());
+                    $model->setIncludeInMenu(((bool) $attributeI18n->getValue()) ? 1 : 0);
                 }
             }
         }

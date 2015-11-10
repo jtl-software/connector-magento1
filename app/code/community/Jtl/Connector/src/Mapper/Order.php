@@ -27,16 +27,25 @@ use jtl\Connector\Payment\PaymentTypes;
 class Order
 {
     public static $paymentMethods = array(
-        'checkmo' => PaymentTypes::TYPE_BANK_TRANSFER,
+        'amazonpayments_advanced' => PaymentTypes::TYPE_AMAPAY,
+        'bankpayment' => PaymentTypes::TYPE_BANK_TRANSFER,
+        'cash' => PaymentTypes::TYPE_CASH,
         'cashondelivery' => PaymentTypes::TYPE_CASH_ON_DELIVERY,
+        'checkmo' => PaymentTypes::TYPE_BANK_TRANSFER,
+        'invoice' => PaymentTypes::TYPE_INVOICE,
+        'invoicepay' => PaymentTypes::TYPE_INVOICE,
+        'iways_paypalplus_payment' => PaymentTypes::TYPE_PAYPAL_PLUS,
+        'paymentnetwork_pnsofortueberweisung' => PaymentTypes::TYPE_SOFORT,
         'paypal_billing_agreement' => PaymentTypes::TYPE_PAYPAL_EXPRESS,
         'paypal_direct' => PaymentTypes::TYPE_PAYPAL_EXPRESS,
+        'paypal_express' => PaymentTypes::TYPE_PAYPAL_EXPRESS,
         'paypal_mep' => PaymentTypes::TYPE_PAYPAL_EXPRESS,
         'paypal_mecl' => PaymentTypes::TYPE_PAYPAL_EXPRESS,
         'paypal_standard' => PaymentTypes::TYPE_PAYPAL_EXPRESS,
-        'paypal_express' => PaymentTypes::TYPE_PAYPAL_EXPRESS,
         'paypaluk_direct' => PaymentTypes::TYPE_PAYPAL_EXPRESS,
-        'paypaluk_express' => PaymentTypes::TYPE_PAYPAL_EXPRESS
+        'paypaluk_express' => PaymentTypes::TYPE_PAYPAL_EXPRESS,
+        'phoenix_cashondelivery' => PaymentTypes::TYPE_CASH_ON_DELIVERY,
+        'saferpaynew' => PaymentTypes::TYPE_SAFERPAY
     );
 
     public function getAvailableCount()
@@ -123,6 +132,10 @@ class Order
 
             $payment = $order->getPayment();
             $code = $payment->getMethodInstance()->getCode();
+
+            if (in_array($order->getState(), array(\Mage_Sales_Model_Order::STATE_PROCESSING, \Mage_Sales_Model_Order::STATE_COMPLETE))) {
+                $customerOrder->setPaymentStatus(ConnectorCustomerOrder::PAYMENT_STATUS_COMPLETED);
+            }
 
             if (array_key_exists($code, self::$paymentMethods))
                 $customerOrder->setPaymentModuleCode(self::$paymentMethods[$code]);

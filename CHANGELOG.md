@@ -1,5 +1,16 @@
-1.4.0.4 (unreleased)
+1.4.2.0 (unreleased)
 --------------------
+
+1.4.1.0
+-------
+- Improve image update and delete operations
+- Fix 'Can't use method return value in write context at specific.push'
+- Fix logic bug in specific update code
+- Allow 'false' and 'true' to be used for predefined category attributes
+- Add more payment method mappings
+- Import paid orders with correct payment state
+- Update jtl/connector to version 2.2.2
+- Fix handling of predefined category attributes with regard to boolean values
 
 1.4.0.3
 -------

@@ -148,7 +148,7 @@ class Image
                 Logger::write(sprintf('set product image %s', $image->getFilename()));
 
                 $mediaFilename = $this->importProductImage($image->getFilename());
-                Logger::write('product image: ' . $mediaFilename);
+                Logger::write('product image: ' . $mediaFilename, Logger::DEBUG);
 
                 $fileinfo = pathinfo($mediaFilename);
                 switch ($fileinfo['extension']) {
@@ -177,7 +177,25 @@ class Image
                     'exclude' => 0
                 );
 
-                $mediaApi->create($model->getId(), $newImage, null, 'id');
+                $currentItems = $mediaApi->items($model->getId(), \Mage_Core_Model_App::ADMIN_STORE_ID);
+                foreach ($currentItems as $currentItem) {
+                    if ((int)$currentItem['position'] == (int)$image->getSort()) {
+                        try {
+                            $mediaApi->remove($model->getId(), $currentItem['file']);
+                        }
+                        catch (\Exception $ex) {
+                        }
+                    }
+                }
+
+                try {
+                    $mediaApi->update($model->getId(), $mediaFilename, $newImage, \Mage_Core_Model_App::ADMIN_STORE_ID, 'id');
+                }
+                catch (\Mage_Api_Exception $ex) {
+                    Logger::write('error while updating image: ' . $ex->getMessage(), Logger::DEBUG);
+                    Logger::write('re-creating image....', Logger::DEBUG);
+                    $mediaApi->create($model->getId(), $newImage, \Mage_Core_Model_App::ADMIN_STORE_ID, 'id');
+                }
 
                 $result->setId(new Identity(
                     sprintf('product-%u-%u', $model->getId(), $newImage['position']),
@@ -228,8 +246,6 @@ class Image
 
     public function delete(ConnectorImage $image)
     {
-        $result = new ConnectorImage();
-
         $hostId = $image->getForeignKey()->getHost();
 
         switch ($image->getRelationType()) {
@@ -250,10 +266,33 @@ class Image
                 ));
 
                 break;
+            case ImageRelationType::TYPE_PRODUCT:
+                $model = \Mage::getModel('catalog/product')
+                    ->loadByAttribute('jtl_erp_id', $hostId);
+                if ($model === false || ($model->getId() == 0)) {
+                    // Send "seems legit" to the client
+                    break;
+                }
+
+                \Mage::app()->setCurrentStore(\Mage_Core_Model_App::ADMIN_STORE_ID);
+                $mediaApi = \Mage::getModel('catalog/product_attribute_media_api');
+
+                $currentItems = $mediaApi->items($model->getId(), \Mage_Core_Model_App::ADMIN_STORE_ID);
+                foreach ($currentItems as $currentItem) {
+                    if ((int)$currentItem['position'] == (int)$image->getSort()) {
+                        try {
+                            $mediaApi->remove($model->getId(), $currentItem['file']);
+                        }
+                        catch (\Exception $ex) {
+                            die(var_dump($ex->getMessage()));
+                        }
+                    }
+                }
+
+                break;
         }
 
-        $result->setRelationType($image->getRelationType());
-        return $result;
+        return $image;
     }
 
     public function getAvailableCount()
@@ -344,7 +383,7 @@ class Image
         }
         unset($_mediaGalleryData);
 
-        foreach ($_productCollection as &$_product) {
+        foreach ($_productCollection as $_product) {
             $_productId = $_product->getData('entity_id');
             if (isset($_mediaGalleryByProductId[$_productId])) {
                 $_product->setData('media_gallery', array('images' => $_mediaGalleryByProductId[$_productId]));
