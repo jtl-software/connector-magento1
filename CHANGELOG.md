@@ -1,5 +1,8 @@
-1.4.1.0 (unreleased)
+1.4.2.0 (unreleased)
 --------------------
+
+1.4.1.0
+-------
 - Improve image update and delete operations
 - Fix 'Can't use method return value in write context at specific.push'
 - Fix logic bug in specific update code
