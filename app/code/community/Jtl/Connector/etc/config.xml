@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Jtl_Connector>
-            <version>1.4.0.3</version>
+            <version>1.4.1.0</version>
         </Jtl_Connector>
     </modules>
 
