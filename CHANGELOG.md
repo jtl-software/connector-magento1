@@ -1,5 +1,6 @@
 1.4.2.0 (unreleased)
 --------------------
+- Improve the performance of image.statistic
 
 1.4.1.0
 -------

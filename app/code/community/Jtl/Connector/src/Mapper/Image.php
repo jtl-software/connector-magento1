@@ -297,46 +297,51 @@ class Image
 
     public function getAvailableCount()
     {
-        Magento::getInstance();
-
         try {
             $stores = Magento::getInstance()->getStoreMapping();
             reset($stores);
-            $defaultLocale = key($stores);
             $defaultStoreId = array_shift($stores);
 
-            Magento::getInstance()->setCurrentStore($defaultStoreId);
-
-            $result = 0;
-
-            $products = \Mage::getResourceModel('catalog/product_collection');
-            $this->addImagesToProductCollection($products);
-
-            foreach ($products as $productItem) {
-                $galleryImages = $productItem->getMediaGalleryImages();
-                if (is_null($galleryImages))
-                    continue;
-
-                $result += count($galleryImages);
-            }
-
+            $_readConnection = \Mage::getSingleton('core/resource')
+                ->getConnection('catalog_read');
 
             $rootCategoryId = \Mage::getStoreConfig('jtl_connector/general/root_category');
             $rootCategory = \Mage::getModel('catalog/category')
                 ->load($rootCategoryId);
-                
+
             $categoryCollection = \Mage::getResourceModel('catalog/category_collection')
-                ->addFieldToFilter('path', array('like' => $rootCategory->getPath() . '/%'))
-                ->load();
+                ->addAttributeToSelect('image')
+                ->addAttributeToFilter('path', array('like' => $rootCategory->getPath() . '/%'))
+                ->addAttributeToFilter('image',
+                    array('neq' => ''),
+                    'left'
+                )
+                ->addAttributeToFilter('jtl_erp_image_id',
+                    array(
+                        array('eq' => 0),
+                        array('null' => true)
+                    ),
+                    'left'
+                );
 
-            foreach ($categoryCollection as $category) {
-                if (false == $category->getImageUrl())
-                    continue;
+            $categoryImageCount = $categoryCollection->count();
 
-                $result++;
-            }
+            $statisticSql = '
+              SELECT
+                COUNT(gv.`value_id`)
+              FROM ' . \Mage::getSingleton('core/resource')->getTableName('catalog_product_entity_media_gallery_value') . ' gv
+              INNER JOIN
+                ' . \Mage::getSingleton('core/resource')->getTableName('catalog_product_entity_media_gallery') . ' g
+                ON g.`value_id` = gv.`value_id`
+              LEFT JOIN
+                ' . \Mage::getSingleton('core/resource')->getTableName('jtl_connector_link_image') . ' li
+                ON li.`foreign_key` = gv.`value_id` AND li.`relation_type` = \'product\' AND li.`jtl_erp_id` IS NULL
+              WHERE
+                gv.store_id = ' . $defaultStoreId . ' AND gv.disabled = 0 OR gv.store_id = 0';
 
-            return $result;
+            $productImageCount = (int)$_readConnection->fetchOne($statisticSql);
+
+            return $categoryImageCount + $productImageCount;
         }
         catch (Exception $e) {
             return 0;
