@@ -137,7 +137,7 @@ class Image
             $image->setId(new Identity($magentoImage['foreign_key']));
             $image->setRelationType('product');
             $image->setForeignKey(new Identity($magentoImage['image_id'], $productHostId));
-            $image->setRemoteUrl($imageBaseUrl . $magentoImage['filename']);
+            $image->setRemoteUrl($imageBaseUrl . 'catalog/product' . $magentoImage['filename']);
             $image->setSort((int)$magentoImage['sort']);
 
             $result[] = $image;
