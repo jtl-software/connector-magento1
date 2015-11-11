@@ -1,6 +1,7 @@
 1.4.2.0 (unreleased)
 --------------------
 - Improve the performance of image.statistic and image.pull
+- Fix SQL query in payment.pull
 
 1.4.1.0
 -------
