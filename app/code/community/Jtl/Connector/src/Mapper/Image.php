@@ -335,9 +335,9 @@ class Image
                 ON g.`value_id` = gv.`value_id`
               LEFT JOIN
                 ' . \Mage::getSingleton('core/resource')->getTableName('jtl_connector_link_image') . ' li
-                ON li.`foreign_key` = gv.`value_id` AND li.`relation_type` = \'product\' AND li.`jtl_erp_id` IS NULL
+                ON li.`image_id` = gv.`value_id` AND li.`foreign_key` = g.`entity_id` AND li.`relation_type` = \'product\'
               WHERE
-                gv.store_id = ' . $defaultStoreId . ' AND gv.disabled = 0 OR gv.store_id = 0';
+                gv.store_id = ' . $defaultStoreId . ' AND (gv.disabled = 0 OR gv.store_id = 0) AND li.`jtl_erp_id` IS NULL';
 
             $productImageCount = (int)$_readConnection->fetchOne($statisticSql);
 
