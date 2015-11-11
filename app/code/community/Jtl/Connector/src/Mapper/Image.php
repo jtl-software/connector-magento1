@@ -22,64 +22,123 @@ class Image
 {
     public function pull()
     {
-        Magento::getInstance();
-        
-        $stores = Magento::getInstance()->getStoreMapping();
-        reset($stores);
-        $defaultLocale = key($stores);
-        $defaultStoreId = array_shift($stores);
-
-        Magento::getInstance()->setCurrentStore(\Mage_Core_Model_App::ADMIN_STORE_ID);
+        $limit = 50;
         $result = array();
+        $n = 0;
 
-        $products = \Mage::getResourceModel('catalog/product_collection');
-        $this->addImagesToProductCollection($products);
-        foreach ($products as $productItem) {
-            $galleryImages = $productItem->getMediaGalleryImages();
-            if (is_null($galleryImages))
-            	continue;
+        // Pull category images first
+        if ($this->getUnmappedCategoryImageCount() > 0) {
+            $categoryImages = $this->pullUnmappedCategoryImages($limit);
+            $result = array_merge($result, $categoryImages);
+            $n += count($categoryImages);
 
-            $defaultImagePath = $productItem->getImage();
-
-            foreach ($galleryImages as $galleryImage) {
-            	$image = new ConnectorImage();
-                $image->setId(new Identity(sprintf('product-%u-%u', $galleryImage->value_id, $galleryImage->position_default)));
-                $image->setRelationType('product');
-                $image->setForeignKey(new Identity($productItem->entity_id, $productItem->jtl_erp_id));
-                $image->setRemoteUrl($galleryImage->url);
-                $image->setSort((int)$galleryImage->position_default);
-
-                $result[] = $image;
+            if ($n >= $limit) {
+                return $result;
             }
         }
 
+        // If there is space left, add product images
+        if ($this->getUnmappedProductImageCount() > 0) {
+            $productImages = $this->pullUnmappedProductImages($limit - $n);
+            $result = array_merge($result, $productImages);
+            $n += count($productImages);
 
-        $rootCategoryId = \Mage::app()->getStore()->getRootCategoryId();
+            if ($n >= $limit) {
+                return $result;
+            }
+        }
+
+        return $result;
+    }
+
+    private function pullUnmappedCategoryImages($limit)
+    {
+        $result = array();
+
+        $rootCategoryId = \Mage::getStoreConfig('jtl_connector/general/root_category');
         $rootCategory = \Mage::getModel('catalog/category')
             ->load($rootCategoryId);
 
         $categoryCollection = \Mage::getResourceModel('catalog/category_collection')
-            ->addFieldToFilter('path', array('like' => $rootCategory->getPath() . '/%'))
-            ->load();
+            ->addAttributeToSelect('image')
+            ->addAttributeToFilter('path', array('like' => $rootCategory->getPath() . '/%'))
+            ->addAttributeToFilter('image',
+                array('neq' => ''),
+                'left'
+            )
+            ->addAttributeToFilter('jtl_erp_image_id',
+                array(
+                    array('eq' => 0),
+                    array('null' => true)
+                ),
+                'left'
+            )
+            ->setPageSize($limit)
+            ->setCurPage(1);
 
-        $categoryIds = array();
         foreach ($categoryCollection as $category) {
-            $categoryIds  = array_merge_recursive($categoryIds, explode(',', $category->getAllChildren()));
+            $image = new ConnectorImage();
+            $image->setId(new Identity($category->entity_id));
+            $image->setRelationType('category');
+            $image->setForeignKey(new Identity($category->entity_id, $category->jtl_erp_id));
+            $image->setRemoteUrl($category->getImageUrl());
+            $image->setSort(0);
+
+            $result[] = $image;
         }
 
-        foreach ($categoryIds as $category_id) {
-            $model = \Mage::getModel('catalog/category')
-                ->load($category_id);
+        return $result;
+    }
 
-            if (false == $model->getImageUrl())
-            	continue;
+    private function pullUnmappedProductImages($limit)
+    {
+        $result = array();
+        $productMapCache = array();
+
+        $stores = Magento::getInstance()->getStoreMapping();
+        reset($stores);
+        $defaultStoreId = array_shift($stores);
+
+        $_readConnection = \Mage::getSingleton('core/resource')
+            ->getConnection('catalog_read');
+        $imageBaseUrl = \Mage::getBaseUrl(\Mage_Core_Model_Store::URL_TYPE_MEDIA);
+
+        $statisticSql = '
+              SELECT
+                gv.`value_id` AS image_id,
+                gv.`position` AS sort,
+                g.`entity_id` AS foreign_key,
+                g.`value` AS filename
+              FROM ' . \Mage::getSingleton('core/resource')->getTableName('catalog_product_entity_media_gallery_value') . ' gv
+              INNER JOIN
+                ' . \Mage::getSingleton('core/resource')->getTableName('catalog_product_entity_media_gallery') . ' g
+                ON g.`value_id` = gv.`value_id`
+              LEFT JOIN
+                ' . \Mage::getSingleton('core/resource')->getTableName('jtl_connector_link_image') . ' li
+                ON li.`image_id` = gv.`value_id` AND li.`foreign_key` = g.`entity_id` AND li.`relation_type` = \'product\'
+              WHERE
+                gv.store_id = ' . $defaultStoreId . ' AND (gv.disabled = 0 OR gv.store_id = 0) AND li.`jtl_erp_id` IS NULL
+              LIMIT ' . (int)$limit;
+
+        $images = $_readConnection->fetchAll($statisticSql);
+
+        foreach ($images as $magentoImage) {
+            if (!array_key_exists((int)$magentoImage['foreign_key'], $productMapCache)) {
+                $productHostId = \Mage::getModel('catalog/product')
+                    ->load($magentoImage['foreign_key'])
+                    ->getJtlErpId();
+                $productMapCache[(int)$magentoImage['foreign_key']] = $productHostId;
+            }
+            else {
+                $productHostId = $productMapCache[(int)$magentoImage['foreign_key']];
+            }
 
             $image = new ConnectorImage();
-            $image->setId(new Identity('category-' . $category_id));
-            $image->setRelationType('category');
-            $image->setForeignKey(new Identity($category_id, $model->jtl_erp_id));
-            $image->setRemoteUrl($model->getImageUrl());
-            $image->setSort(0);
+            $image->setId(new Identity($magentoImage['foreign_key']));
+            $image->setRelationType('product');
+            $image->setForeignKey(new Identity($magentoImage['image_id'], $productHostId));
+            $image->setRemoteUrl($imageBaseUrl . $magentoImage['filename']);
+            $image->setSort((int)$magentoImage['sort']);
 
             $result[] = $image;
         }
@@ -297,14 +356,15 @@ class Image
 
     public function getAvailableCount()
     {
+        $categoryImageCount = $this->getUnmappedCategoryImageCount();
+        $productImageCount = $this->getUnmappedProductImageCount();
+
+        return $categoryImageCount + $productImageCount;
+    }
+
+    private function getUnmappedCategoryImageCount()
+    {
         try {
-            $stores = Magento::getInstance()->getStoreMapping();
-            reset($stores);
-            $defaultStoreId = array_shift($stores);
-
-            $_readConnection = \Mage::getSingleton('core/resource')
-                ->getConnection('catalog_read');
-
             $rootCategoryId = \Mage::getStoreConfig('jtl_connector/general/root_category');
             $rootCategory = \Mage::getModel('catalog/category')
                 ->load($rootCategoryId);
@@ -324,7 +384,23 @@ class Image
                     'left'
                 );
 
-            $categoryImageCount = $categoryCollection->count();
+            return $categoryCollection->count();
+        }
+        catch (\Exception $ex)
+        {
+            return 0;
+        }
+    }
+
+    private function getUnmappedProductImageCount()
+    {
+        try {
+            $stores = Magento::getInstance()->getStoreMapping();
+            reset($stores);
+            $defaultStoreId = array_shift($stores);
+
+            $_readConnection = \Mage::getSingleton('core/resource')
+                ->getConnection('catalog_read');
 
             $statisticSql = '
               SELECT
@@ -339,63 +415,10 @@ class Image
               WHERE
                 gv.store_id = ' . $defaultStoreId . ' AND (gv.disabled = 0 OR gv.store_id = 0) AND li.`jtl_erp_id` IS NULL';
 
-            $productImageCount = (int)$_readConnection->fetchOne($statisticSql);
-
-            return $categoryImageCount + $productImageCount;
+            return (int)$_readConnection->fetchOne($statisticSql);
         }
-        catch (Exception $e) {
+        catch (\Exception $ex) {
             return 0;
         }
-    }
-
-    private function addImagesToProductCollection(\Mage_Catalog_Model_Resource_Eav_Mysql4_Product_Collection $_productCollection)
-    {
-        $_mediaGalleryAttributeId = \Mage::getSingleton('eav/config')
-            ->getAttribute('catalog_product', 'media_gallery')
-            ->getAttributeId();
-        $_read = \Mage::getSingleton('core/resource')
-            ->getConnection('catalog_read');
-
-        if ($_productCollection->getSize() == 0)
-            return;
-
-        $_mediaGalleryData = $_read->fetchAll('
-            SELECT
-                main.entity_id, `main`.`value_id`, `main`.`value` AS `file`,
-                `value`.`label`, `value`.`position`, `value`.`disabled`, `default_value`.`label` AS `label_default`,
-                `default_value`.`position` AS `position_default`,
-                `default_value`.`disabled` AS `disabled_default`
-            FROM `' . \Mage::getSingleton('core/resource')->getTableName('catalog_product_entity_media_gallery') . '` AS `main`
-                LEFT JOIN `' . \Mage::getSingleton('core/resource')->getTableName('catalog_product_entity_media_gallery_value') . '` AS `value`
-                    ON main.value_id=value.value_id AND value.store_id=' . \Mage::app()->getStore()->getId() . '
-                LEFT JOIN `' . \Mage::getSingleton('core/resource')->getTableName('catalog_product_entity_media_gallery_value') . '` AS `default_value`
-                    ON main.value_id=default_value.value_id AND default_value.store_id=0
-            WHERE (
-                main.attribute_id = ' . $_read->quote($_mediaGalleryAttributeId) . ') 
-                AND (main.entity_id IN (' . $_read->quote($_productCollection->getAllIds()) . '))
-            ORDER BY IF(value.position IS NULL, default_value.position, value.position) ASC    
-        ');
-    
-    
-        $_mediaGalleryByProductId = array();
-        foreach ($_mediaGalleryData as $_galleryImage) {
-            $k = $_galleryImage['entity_id'];
-            unset($_galleryImage['entity_id']);
-            if (!isset($_mediaGalleryByProductId[$k])) {
-                $_mediaGalleryByProductId[$k] = array();
-            }
-            $_mediaGalleryByProductId[$k][] = $_galleryImage;
-        }
-        unset($_mediaGalleryData);
-
-        foreach ($_productCollection as $_product) {
-            $_productId = $_product->getData('entity_id');
-            if (isset($_mediaGalleryByProductId[$_productId])) {
-                $_product->setData('media_gallery', array('images' => $_mediaGalleryByProductId[$_productId]));
-            }
-        }
-        unset($_mediaGalleryByProductId);
-
-        return $_productCollection;
     }
 }

@@ -1,6 +1,6 @@
 1.4.2.0 (unreleased)
 --------------------
-- Improve the performance of image.statistic
+- Improve the performance of image.statistic and image.pull
 
 1.4.1.0
 -------
