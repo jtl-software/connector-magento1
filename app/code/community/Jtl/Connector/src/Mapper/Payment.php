@@ -33,6 +33,9 @@ class Payment
                         array('null' => true)
                     ),
                     'left'
+                )
+                ->addAttributeToFilter('last_trans_id',
+                    array('neq' => 'null')
                 );
 
             return $paymentCollection->count();
