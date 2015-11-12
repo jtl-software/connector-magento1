@@ -180,7 +180,7 @@ class Magento extends Singleton
      */
     public function getDefaultCustomerGroupId()
     {
-        return \Mage::getStoreConfig('jtl_connector/general/default_customer_group');
+        return (int)\Mage::getStoreConfig('jtl_connector/general/default_customer_group');
     }
 
     /**

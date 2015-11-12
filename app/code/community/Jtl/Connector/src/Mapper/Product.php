@@ -1125,6 +1125,7 @@ class Product
             return false;
 
         $defaultCustomerGroupId = Magento::getInstance()->getDefaultCustomerGroupId();
+        Logger::write('default customer group: ' . $defaultCustomerGroupId, Logger::DEBUG);
 
         $firstPrice = reset($prices);
         $identity = $firstPrice->getProductId();
@@ -1172,21 +1173,32 @@ class Product
                 continue;
 
             foreach ($currentPrice->getItems() as $currentPriceItem) {
+                $customerGroupId = (int)$currentPrice->getCustomerGroupId()->getEndpoint();
+
                 if ($currentPriceItem->getQuantity() > 0) {
                     // Tier price (qty > 0)
                     $tierPrice[] = array(
-                        'website_id' => \Mage::app()->getStore()->getWebsiteId(),
-                        'cust_group' => (int)$currentPrice->getCustomerGroupId()->getEndpoint(),
+                        'website_id' => $websiteId,
+                        'cust_group' => $customerGroupId,
                         'price_qty' => $currentPriceItem->getQuantity(),
                         'price' => $currentPriceItem->getNetPrice() * (1.0 + $this->getTaxRateByClassId($model->tax_class_id) / 100.0)
                     );
+
+                    if ($customerGroupId == $defaultCustomerGroupId) {
+                        $tierPrice[] = array(
+                            'website_id' => $websiteId,
+                            'cust_group' => 0,
+                            'price_qty' => $currentPriceItem->getQuantity(),
+                            'price' => $currentPriceItem->getNetPrice() * (1.0 + $this->getTaxRateByClassId($model->tax_class_id) / 100.0)
+                        );
+                    }
                 }
                 else {
                     // Group price (qty == 0)
                     $groupPrice[] = array(
-                        'website_id' => \Mage::app()->getStore()->getWebsiteId(),
-                        'all_groups' => (int)$currentPrice->getCustomerGroupId()->getEndpoint() == 0 ? 1 : 0,
-                        'cust_group' => (int)$currentPrice->getCustomerGroupId()->getEndpoint(),
+                        'website_id' => $websiteId,
+                        'all_groups' => (($customerGroupId == 0) || ($customerGroupId == $defaultCustomerGroupId)) ? 1 : 0,
+                        'cust_group' => $customerGroupId,
                         'price' => $currentPriceItem->getNetPrice() * (1.0 + $this->getTaxRateByClassId($model->tax_class_id) / 100.0)
                     );
                 }
@@ -1204,6 +1216,7 @@ class Product
     private function updateProductPrices(\Mage_Catalog_Model_Product $model, ConnectorProduct $product)
     {
         $defaultCustomerGroupId = Magento::getInstance()->getDefaultCustomerGroupId();
+        Logger::write('default customer group: ' . $defaultCustomerGroupId, Logger::DEBUG);
 
         $prices = $product->getPrices();
 
@@ -1245,21 +1258,32 @@ class Product
                 continue;
 
             foreach ($currentPrice->getItems() as $currentPriceItem) {
+                $customerGroupId = (int)$currentPrice->getCustomerGroupId()->getEndpoint();
+
                 if ($currentPriceItem->getQuantity() > 0) {
                     // Tier price (qty > 0)
                     $tierPrice[] = array(
                         'website_id' => $websiteId,
-                        'cust_group' => (int)$currentPrice->getCustomerGroupId()->getEndpoint(),
+                        'cust_group' => $customerGroupId,
                         'price_qty' => $currentPriceItem->getQuantity(),
                         'price' => $currentPriceItem->getNetPrice() * (1.0 + $this->getTaxRateByClassId($model->tax_class_id) / 100.0)
                     );
+
+                    if ($customerGroupId == $defaultCustomerGroupId) {
+                        $tierPrice[] = array(
+                            'website_id' => $websiteId,
+                            'cust_group' => 0,
+                            'price_qty' => $currentPriceItem->getQuantity(),
+                            'price' => $currentPriceItem->getNetPrice() * (1.0 + $this->getTaxRateByClassId($model->tax_class_id) / 100.0)
+                        );
+                    }
                 }
                 else {
                     // Group price (qty == 0)
                     $groupPrice[] = array(
                         'website_id' => $websiteId,
-                        'all_groups' => (int)$currentPrice->getCustomerGroupId()->getEndpoint() == 0 ? 1 : 0,
-                        'cust_group' => (int)$currentPrice->getCustomerGroupId()->getEndpoint(),
+                        'all_groups' => (($customerGroupId == 0) || ($customerGroupId == $defaultCustomerGroupId)) ? 1 : 0,
+                        'cust_group' => $customerGroupId,
                         'price' => $currentPriceItem->getNetPrice() * (1.0 + $this->getTaxRateByClassId($model->tax_class_id) / 100.0)
                     );
                 }
