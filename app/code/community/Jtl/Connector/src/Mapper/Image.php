@@ -319,11 +319,6 @@ class Image
                 $model->setJtlErpImageId(0);
                 $model->save();
 
-                $result->setId(new Identity(
-                    sprintf('category-%u', $model->getId()),
-                    $image->getId()->getHost()
-                ));
-
                 break;
             case ImageRelationType::TYPE_PRODUCT:
                 $model = \Mage::getModel('catalog/product')
