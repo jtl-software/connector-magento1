@@ -1357,7 +1357,7 @@ class Product
         else {
             $tempProduct->setStockData(array(
                 'use_config_manage_stock' => 0,
-                'is_in_stock' => (!$product->getConsiderStock() || ($product->getStockLevel()->getStockLevel() > 0)) ? 1 : 0,
+                'is_in_stock' => ($product->getPermitNegativeStock() || !$product->getConsiderStock() || ($product->getStockLevel()->getStockLevel() > 0)) ? 1 : 0,
                 'qty' => $product->getStockLevel()->getStockLevel(),
                 'is_qty_decimal' => $product->getIsDivisible() ? 1 : 0,
                 'manage_stock' => $product->getConsiderStock() ? 1 : 0,
