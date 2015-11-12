@@ -1348,7 +1348,7 @@ class Product
             $tempProduct->setStockData(array( 
                 'use_config_manage_stock' => 0,
                 'is_in_stock' => 1,
-                'manage_stock' => 0,
+                'manage_stock' => 1,
                 'use_config_notify_stock_qty' => 0,
                 'can_back_in_stock' => 1,
                 'qty' => 99999999.9999
