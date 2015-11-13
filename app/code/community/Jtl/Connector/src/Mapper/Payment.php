@@ -33,6 +33,9 @@ class Payment
                         array('null' => true)
                     ),
                     'left'
+                )
+                ->addAttributeToFilter('last_trans_id',
+                    array('neq' => 'null')
                 );
 
             return $paymentCollection->count();
@@ -56,7 +59,9 @@ class Payment
                 ),
                 'left'
             )
-            ->addAttributeToFilter('last_trans_id != null')
+            ->addAttributeToFilter('last_trans_id',
+                array('neq' => 'null')
+            )
             ->setPageSize(25)
             ->setCurPage(1);
 
