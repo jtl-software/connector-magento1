@@ -9,6 +9,7 @@ namespace jtl\Connector\Magento\Mapper;
 use jtl\Connector\Core\Logger\Logger;
 use jtl\Connector\Drawing\ImageRelationType;
 use jtl\Connector\Magento\Magento;
+use jtl\Connector\Magento\Utilities\IdConcatenator;
 use jtl\Connector\Model\Identity;
 use jtl\Connector\Model\Image as ConnectorImage;
 
@@ -66,19 +67,24 @@ class Image
                 array('neq' => ''),
                 'left'
             )
-            ->addAttributeToFilter('jtl_erp_image_id',
-                array(
-                    array('eq' => 0),
-                    array('null' => true)
-                ),
-                'left'
+            ->joinTable('jtl_connector/image_link', 'foreign_key=entity_id', array(
+                'endpoint_id' => 'endpoint_id'
+            ), null, 'left')
+            ->addFieldToFilter('endpoint_id',
+                array('null' => true)
             )
             ->setPageSize($limit)
             ->setCurPage(1);
 
         foreach ($categoryCollection as $category) {
             $image = new ConnectorImage();
-            $image->setId(new Identity($category->entity_id));
+            $image->setId(new Identity(
+                IdConcatenator::link(
+                    'category',
+                    $category->entity_id,
+                    $category->entity_id
+                )
+            ));
             $image->setRelationType('category');
             $image->setForeignKey(new Identity($category->entity_id, $category->jtl_erp_id));
             $image->setRemoteUrl($category->getImageUrl());
@@ -103,7 +109,7 @@ class Image
             ->getConnection('catalog_read');
         $imageBaseUrl = \Mage::getBaseUrl(\Mage_Core_Model_Store::URL_TYPE_MEDIA);
 
-        $statisticSql = '
+        $imageSql = '
               SELECT
                 gv.`value_id` AS image_id,
                 gv.`position` AS sort,
@@ -115,12 +121,12 @@ class Image
                 ON g.`value_id` = gv.`value_id`
               LEFT JOIN
                 ' . \Mage::getSingleton('core/resource')->getTableName('jtl_connector_link_image') . ' li
-                ON li.`image_id` = gv.`value_id` AND li.`foreign_key` = g.`entity_id` AND li.`relation_type` = \'product\'
+                ON li.`endpoint_id` = gv.`value_id` AND li.`foreign_key` = g.`entity_id` AND li.`relation_type` = \'product\'
               WHERE
                 gv.store_id = ' . $defaultStoreId . ' AND (gv.disabled = 0 OR gv.store_id = 0) AND li.`jtl_erp_id` IS NULL
               LIMIT ' . (int)$limit;
 
-        $images = $_readConnection->fetchAll($statisticSql);
+        $images = $_readConnection->fetchAll($imageSql);
 
         foreach ($images as $magentoImage) {
             if (!array_key_exists((int)$magentoImage['foreign_key'], $productMapCache)) {
@@ -134,9 +140,15 @@ class Image
             }
 
             $image = new ConnectorImage();
-            $image->setId(new Identity($magentoImage['foreign_key']));
+            $image->setId(new Identity(
+                IdConcatenator::link(
+                    'product',
+                    $magentoImage['foreign_key'],
+                    $magentoImage['image_id']
+                )
+            ));
             $image->setRelationType('product');
-            $image->setForeignKey(new Identity($magentoImage['image_id'], $productHostId));
+            $image->setForeignKey(new Identity($magentoImage['foreign_key'], $productHostId));
             $image->setRemoteUrl($imageBaseUrl . 'catalog/product' . $magentoImage['filename']);
             $image->setSort((int)$magentoImage['sort']);
 
@@ -371,12 +383,11 @@ class Image
                     array('neq' => ''),
                     'left'
                 )
-                ->addAttributeToFilter('jtl_erp_image_id',
-                    array(
-                        array('eq' => 0),
-                        array('null' => true)
-                    ),
-                    'left'
+                ->joinTable('jtl_connector/image_link', 'foreign_key=entity_id', array(
+                    'endpoint_id' => 'endpoint_id'
+                ), null, 'left')
+                ->addFieldToFilter('endpoint_id',
+                    array('null' => true)
                 );
 
             return $categoryCollection->count();
@@ -406,7 +417,7 @@ class Image
                 ON g.`value_id` = gv.`value_id`
               LEFT JOIN
                 ' . \Mage::getSingleton('core/resource')->getTableName('jtl_connector_link_image') . ' li
-                ON li.`image_id` = gv.`value_id` AND li.`foreign_key` = g.`entity_id` AND li.`relation_type` = \'product\'
+                ON li.`endpoint_id` = gv.`value_id` AND li.`foreign_key` = g.`entity_id` AND li.`relation_type` = \'product\'
               WHERE
                 gv.store_id = ' . $defaultStoreId . ' AND (gv.disabled = 0 OR gv.store_id = 0) AND li.`jtl_erp_id` IS NULL';
 

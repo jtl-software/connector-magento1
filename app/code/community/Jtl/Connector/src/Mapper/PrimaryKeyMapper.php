@@ -5,6 +5,7 @@ namespace jtl\Connector\Magento\Mapper;
 use jtl\Connector\Core\Logger\Logger;
 use jtl\Connector\Drawing\ImageRelationType;
 use jtl\Connector\Linker\IdentityLinker;
+use jtl\Connector\Magento\Utilities\IdConcatenator;
 use jtl\Connector\Mapper\IPrimaryKeyMapper;
 
 class PrimaryKeyMapper implements IPrimaryKeyMapper
@@ -44,9 +45,11 @@ class PrimaryKeyMapper implements IPrimaryKeyMapper
                     ->load($endpointId, 'option_id');
                 return ($link != null ? $link->jtl_erp_id : null);
             case IdentityLinker::TYPE_IMAGE:
+                $endpointIds = IdConcatenator::unlink($endpointId);
+
                 $link = \Mage::getModel('jtl_connector/image_link')
                     ->getCollection()
-                    ->addFieldToFilter('relation_type', $type)
+                    ->addFieldToFilter('relation_type', $endpointIds[0])
                     ->addFieldToFilter('image_id', $endpointId)
                     ->getFirstItem();
                 return ($link != null ? $link->jtl_erp_id : null);
@@ -90,7 +93,6 @@ class PrimaryKeyMapper implements IPrimaryKeyMapper
             case IdentityLinker::TYPE_IMAGE:
                 $link = \Mage::getModel('jtl_connector/image_link')
                     ->getCollection()
-                    ->addFieldToFilter('relation_type', $type)
                     ->addFieldToFilter('jtl_erp_id', $hostId)
                     ->getFirstItem();
                 return ($link != null ? $link->image_id : null);
@@ -136,11 +138,12 @@ class PrimaryKeyMapper implements IPrimaryKeyMapper
             case IdentityLinker::TYPE_IMAGE:
                 \Mage::app()->setCurrentStore(\Mage_Core_Model_App::ADMIN_STORE_ID);
 
-                list($relationType, $foreignKey) = explode('-', $endpointId);
+                $endpointIds = IdConcatenator::unlink($endpointId);
                 $link = \Mage::getModel('jtl_connector/image_link');
-                $link->relation_type = $relationType;
+                $link->relation_type = $endpointIds[0];
                 $link->image_id = $endpointId;
-                $link->foreign_key = $foreignKey;
+                $link->endpoint_id = $endpointIds[2];
+                $link->foreign_key = $endpointIds[1];
                 $link->jtl_erp_id = $hostId;
 
                 $link->save();
@@ -173,12 +176,13 @@ class PrimaryKeyMapper implements IPrimaryKeyMapper
     {
         switch ($type) {
             case IdentityLinker::TYPE_IMAGE:
-                list($relationType, $foreignKey) = explode('-', $endpointId);
+                $endpointIds = IdConcatenator::unlink($endpointId);
 
                 $collection = \Mage::getResourceModel('jtl_connector/image_link_collection')
                     ->addFieldToFilter('jtl_erp_id', $hostId)
-                    ->addFieldToFilter('relation_type', $relationType)
-                    ->addFieldToFilter('foreign_key', $foreignKey);
+                    ->addFieldToFilter('relation_type', $endpointIds[0])
+                    ->addFieldToFilter('foreign_key', $endpointIds[1])
+                    ->addFieldToFilter('endpoint_id', $endpointIds[2]);
                 break;
             case IdentityLinker::TYPE_SPECIFIC:
                 $collection = \Mage::getResourceModel('jtl_connector/specific_link_collection')

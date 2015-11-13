@@ -1,6 +1,7 @@
 1.4.2.0 (unreleased)
 --------------------
 - Improve the performance of image.statistic and image.pull
+- Completely rewritten image import process
 - Fix SQL query in payment.pull
 - Mark all products as "In Stock" that permit backorders
 - Fix tier price logic for guests
