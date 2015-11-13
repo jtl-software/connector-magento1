@@ -236,7 +236,7 @@ class Order
             $item->setVat((double)$shippingTaxRate);
             $item->setPrice($shippingGrossAmount / (1 + $shippingTaxRate / 100.0));
             $item->setQuantity(1.0);
-            $item->setType('shipment');
+            $item->setType(ConnectorCustomerOrderItem::TYPE_SHIPPING);
             $item->setUnique(NULL);
             // $item->setConfigItemId(NULL);
 
