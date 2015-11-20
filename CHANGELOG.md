@@ -1,5 +1,6 @@
 1.4.3.0 (unreleased)
 --------------------
+- Update jtl/connector to version 2.2.4
 
 1.4.2.0
 -------
