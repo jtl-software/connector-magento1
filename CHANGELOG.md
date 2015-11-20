@@ -1,5 +1,11 @@
-1.4.3.0 (unreleased)
+1.4.4.0 (unreleased)
 --------------------
+
+1.4.3.0
+-------
+- Update jtl/connector to version 2.2.5
+- Import specifics as select or textarea depending on the type selected in JTL-Wawi
+- Fix payment status for postpaid methods
 
 1.4.2.0
 -------
