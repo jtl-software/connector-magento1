@@ -411,11 +411,11 @@
         },
         {
             "name": "jtl/connector",
-            "version": "2.2.4",
+            "version": "2.2.5",
             "source": {
                 "type": "git",
                 "url": "git@gitlab.jtl-software.de:jtl-software-gmbh/jtlconnector.git",
-                "reference": "4913f5d5d90cb4aea5b769899aba52d8146dffc4"
+                "reference": "07f76fa6058188f5114083a5dce7841ffa22833f"
             },
             "require": {
                 "doctrine/collections": "~1.2",
@@ -454,7 +454,7 @@
                 "model",
                 "protocol"
             ],
-            "time": "2015-11-18 12:54:09"
+            "time": "2015-11-20 13:01:30"
         },
         {
             "name": "monolog/monolog",
