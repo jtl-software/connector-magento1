@@ -1,6 +1,7 @@
 1.4.3.0 (unreleased)
 --------------------
 - Update jtl/connector to version 2.2.4
+- Import specifics as select or textarea depending on the type selected in JTL-Wawi
 
 1.4.2.0
 -------

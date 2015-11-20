@@ -91,6 +91,13 @@ class Specific
             $frontendLabels[$storeId] = $specificI18n->getName();
         }
 
+        if ($specific->getType() === 'SELECTBOX') {
+            $frontendType = 'multiselect';
+        }
+        else {
+            $frontendType = 'textarea';
+        }
+
         Logger::write('Creating specific: ' . $attributeCode, Logger::DEBUG);
         $attributeData = array(
             'attribute_code' => $attributeCode,
@@ -106,7 +113,7 @@ class Specific
             'used_in_product_listing' => 1,
             'used_for_sort_by' => 1,
             'is_configurable' => 0,
-            'frontend_input' => 'multiselect',
+            'frontend_input' => $frontendType,
             'is_wysiwyg_enabled' => 0,
             'is_unique' => 0,
             'is_required' => 0,
