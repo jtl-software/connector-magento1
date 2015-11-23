@@ -1041,6 +1041,9 @@ class Product
 
         $products = \Mage::getResourceModel('catalog/product_collection')
             ->addAttributeToSelect('*')
+            ->addAttributeToFilter('status', array(
+                'in' => array('simple', 'configurable')
+            ))
             ->addAttributeToFilter('jtl_erp_id',
                 array(
                     array('eq' => 0),
@@ -1402,6 +1405,9 @@ class Product
             $productModel = \Mage::getModel('catalog/product');
             $productCollection = $productModel->getCollection()
                 ->addAttributeToSelect('*')
+                ->addAttributeToFilter('status', array(
+                    'in' => array('simple', 'configurable')
+                ))
                 ->addAttributeToFilter('jtl_erp_id',
                     array(
                         array('eq' => 0),

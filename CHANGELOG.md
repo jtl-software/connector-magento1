@@ -1,5 +1,6 @@
 1.4.4.0 (unreleased)
 --------------------
+- Limit all operations to simple and configurable products
 
 1.4.3.0
 -------
