@@ -1072,35 +1072,6 @@ class Product
         return $result;
     }
 
-    private function pullChildProducts(QueryFilter $filter)
-    {
-        Magento::getInstance();        
-        $stores = Magento::getInstance()->getStoreMapping();
-        $defaultStoreId = reset($stores);
-        $defaultLocale = key($stores);
-        Magento::getInstance()->setCurrentStore($defaultStoreId);
-        
-        $parentId = $filter->getFilter('parentId');
-        $product = \Mage::getModel('catalog/product')->load($parentId);
-        if (is_null($product)) {
-            return array();
-        }
-
-        $childProducts = \Mage::getModel('catalog/product_type_configurable')
-                    ->getUsedProducts(null,$product);  
-
-        $result = array();
-        foreach ($childProducts as $productItem) {            
-            $product = $this->magentoToConnector($productItem);
-
-            if (!is_null($product)) {
-                $result[] = $product;
-            }
-        }
-
-        return $result;
-    }
-
     public function processStockLevelChange(ProductStockLevel $stockLevel)
     {
         $identity = $stockLevel->getProductId();
