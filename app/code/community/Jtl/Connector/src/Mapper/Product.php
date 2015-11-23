@@ -1041,7 +1041,7 @@ class Product
 
         $products = \Mage::getResourceModel('catalog/product_collection')
             ->addAttributeToSelect('*')
-            ->addAttributeToFilter('type', array(
+            ->addAttributeToFilter('type_id', array(
                 'in' => array('simple', 'configurable')
             ))
             ->addAttributeToFilter('jtl_erp_id',
@@ -1376,7 +1376,7 @@ class Product
             $productModel = \Mage::getModel('catalog/product');
             $productCollection = $productModel->getCollection()
                 ->addAttributeToSelect('*')
-                ->addAttributeToFilter('type', array(
+                ->addAttributeToFilter('type_id', array(
                     'in' => array('simple', 'configurable')
                 ))
                 ->addAttributeToFilter('jtl_erp_id',
