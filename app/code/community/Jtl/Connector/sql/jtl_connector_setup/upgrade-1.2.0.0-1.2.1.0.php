@@ -13,6 +13,5 @@ $sql = "
       PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
     ";
-error_log($sql);
 $installer->run($sql);
 $installer->endSetup();
