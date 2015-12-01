@@ -1072,7 +1072,7 @@ class Product
         return $result;
     }
 
-    public function processStockLevelChange(ProductStockLevel $stockLevel)
+    public function processStockLevelChange(ConnectorProductStockLevel $stockLevel)
     {
         $identity = $stockLevel->getProductId();
         $hostId = $identity->getHost();
