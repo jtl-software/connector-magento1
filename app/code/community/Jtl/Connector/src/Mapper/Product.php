@@ -1041,6 +1041,9 @@ class Product
 
         $products = \Mage::getResourceModel('catalog/product_collection')
             ->addAttributeToSelect('*')
+            ->addAttributeToFilter('type_id', array(
+                'in' => array('simple', 'configurable')
+            ))
             ->addAttributeToFilter('jtl_erp_id',
                 array(
                     array('eq' => 0),
@@ -1069,36 +1072,7 @@ class Product
         return $result;
     }
 
-    private function pullChildProducts(QueryFilter $filter)
-    {
-        Magento::getInstance();        
-        $stores = Magento::getInstance()->getStoreMapping();
-        $defaultStoreId = reset($stores);
-        $defaultLocale = key($stores);
-        Magento::getInstance()->setCurrentStore($defaultStoreId);
-        
-        $parentId = $filter->getFilter('parentId');
-        $product = \Mage::getModel('catalog/product')->load($parentId);
-        if (is_null($product)) {
-            return array();
-        }
-
-        $childProducts = \Mage::getModel('catalog/product_type_configurable')
-                    ->getUsedProducts(null,$product);  
-
-        $result = array();
-        foreach ($childProducts as $productItem) {            
-            $product = $this->magentoToConnector($productItem);
-
-            if (!is_null($product)) {
-                $result[] = $product;
-            }
-        }
-
-        return $result;
-    }
-
-    public function processStockLevelChange(ProductStockLevel $stockLevel)
+    public function processStockLevelChange(ConnectorProductStockLevel $stockLevel)
     {
         $identity = $stockLevel->getProductId();
         $hostId = $identity->getHost();
@@ -1402,6 +1376,9 @@ class Product
             $productModel = \Mage::getModel('catalog/product');
             $productCollection = $productModel->getCollection()
                 ->addAttributeToSelect('*')
+                ->addAttributeToFilter('type_id', array(
+                    'in' => array('simple', 'configurable')
+                ))
                 ->addAttributeToFilter('jtl_erp_id',
                     array(
                         array('eq' => 0),

@@ -163,7 +163,7 @@ class Order
                 $item->setVat((double)$magento_item->tax_percent);
                 $item->setPrice((double)$magento_item->getPriceInclTax() / (1 + (double)$magento_item->tax_percent / 100.0));
                 $item->setQuantity((double)$magento_item->getQtyOrdered());
-                $item->setType('product');
+                $item->setType(ConnectorCustomerOrderItem::TYPE_PRODUCT);
                 $item->setUnique(NULL);
                 // $item->setConfigItemId(NULL);
 
@@ -239,8 +239,6 @@ class Order
             $item = new ConnectorCustomerOrderItem();
             $item->setId(new Identity($order->entity_id . '-shipment'));
             $item->setCustomerOrderId(new Identity($order->entity_id));
-            // $item->setProductId(NULL);
-            // $item->setShippingClassId(NULL);
             $item->setName($order->shipping_description);
             $item->setSku('');
             $item->setVat((double)$shippingTaxRate);
@@ -248,9 +246,22 @@ class Order
             $item->setQuantity(1.0);
             $item->setType(ConnectorCustomerOrderItem::TYPE_SHIPPING);
             $item->setUnique(NULL);
-            // $item->setConfigItemId(NULL);
-
             $customerOrder->addItem($item);
+
+            // Discount item
+            if ((double)$order->discount_amount < 0) {
+                $item = new ConnectorCustomerOrderItem();
+                $item->setCustomerOrderId(new Identity($order->entity_id));
+                $item->setName($order->discount_description);
+                $item->setSku('');
+                $item->setVat((double)$shippingTaxRate);
+                $item->setPrice($order->discount_amount / (1 + $shippingTaxRate / 100.0));
+                $item->setQuantity(1.0);
+                $item->setType(ConnectorCustomerOrderItem::TYPE_DISCOUNT);
+                $item->setUnique(NULL);
+
+                $customerOrder->addItem($item);
+            }
 
             $shippingAddressEntry = $order->getShippingAddress();
             $shippingAddress = new ConnectorCustomerOrderShippingAddress();

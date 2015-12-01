@@ -13,6 +13,5 @@ $sql = "
       CONSTRAINT `link_specificvalue_option_id` FOREIGN KEY (`option_id`) REFERENCES `eav_attribute_option` (`option_id`) ON DELETE CASCADE ON UPDATE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
     ";
-error_log($sql);
 $installer->run($sql);
 $installer->endSetup();
