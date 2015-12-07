@@ -1,6 +1,7 @@
 1.4.5.0 (unreleased)
 --------------------
 - Fix image pull queries
+- Recognize already shipped orders
 
 1.4.4.0
 -------
