@@ -123,7 +123,7 @@ class Image
                 ' . \Mage::getSingleton('core/resource')->getTableName('jtl_connector_link_image') . ' li
                 ON li.`endpoint_id` = gv.`value_id` AND li.`foreign_key` = g.`entity_id` AND li.`relation_type` = \'product\'
               WHERE
-                gv.store_id = ' . $defaultStoreId . ' AND (gv.disabled = 0 OR gv.store_id = 0) AND li.`jtl_erp_id` IS NULL
+                gv.disabled = 0 AND (gv.store_id = \' . $defaultStoreId . \' OR gv.store_id = 0) AND li.`jtl_erp_id` IS NULL
               LIMIT ' . (int)$limit;
 
         $images = $_readConnection->fetchAll($imageSql);
@@ -419,7 +419,7 @@ class Image
                 ' . \Mage::getSingleton('core/resource')->getTableName('jtl_connector_link_image') . ' li
                 ON li.`endpoint_id` = gv.`value_id` AND li.`foreign_key` = g.`entity_id` AND li.`relation_type` = \'product\'
               WHERE
-                gv.store_id = ' . $defaultStoreId . ' AND (gv.disabled = 0 OR gv.store_id = 0) AND li.`jtl_erp_id` IS NULL';
+                gv.disabled = 0 AND (gv.store_id = ' . $defaultStoreId . ' OR gv.store_id = 0) AND li.`jtl_erp_id` IS NULL';
 
             return (int)$_readConnection->fetchOne($statisticSql);
         }

@@ -1,5 +1,6 @@
 1.4.5.0 (unreleased)
 --------------------
+- Fix image pull queries
 
 1.4.4.0
 -------
