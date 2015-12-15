@@ -56,7 +56,7 @@ class Image
     {
         $result = array();
 
-        $rootCategoryId = \Mage::getStoreConfig('jtl_connector/general/root_category');
+        $rootCategoryId = \Mage::app()->getWebsite()->getDefaultStore()->getRootCategoryId();
         $rootCategory = \Mage::getModel('catalog/category')
             ->load($rootCategoryId);
 
@@ -372,7 +372,7 @@ class Image
     private function getUnmappedCategoryImageCount()
     {
         try {
-            $rootCategoryId = \Mage::getStoreConfig('jtl_connector/general/root_category');
+            $rootCategoryId = \Mage::app()->getWebsite()->getDefaultStore()->getRootCategoryId();
             $rootCategory = \Mage::getModel('catalog/category')
                 ->load($rootCategoryId);
 

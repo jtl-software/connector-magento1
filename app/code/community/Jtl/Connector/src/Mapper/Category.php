@@ -32,7 +32,7 @@ class Category
     {
         Magento::getInstance();
 
-        $this->rootCategoryId = \Mage::getStoreConfig('jtl_connector/general/root_category');
+        $this->rootCategoryId = \Mage::app()->getWebsite()->getDefaultStore()->getRootCategoryId();
 
         $this->stores = Magento::getInstance()->getStoreMapping();
         $this->defaultLocale = key($this->stores);
@@ -91,7 +91,7 @@ class Category
         Logger::write('parent host : ' . $category->getParentCategoryId()->getHost(), Logger::ERROR, 'general');
         if ((int)$category->getParentCategoryId()->getHost() == 0) {
             $parentCategory = \Mage::getModel('catalog/category')
-                ->load(\Mage::getStoreConfig('jtl_connector/general/root_category'));
+                ->load($this->rootCategoryId);
         }
         else {
             $parentCategoryHostId = $category->getParentCategoryId()->getHost();
