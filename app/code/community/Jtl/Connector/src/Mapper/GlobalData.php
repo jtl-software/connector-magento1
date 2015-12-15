@@ -165,7 +165,6 @@ class GlobalData
 	{
 		Magento::getInstance();
         $stores = StoreMapper::getInstance()->getMappingForWebsite();
-        var_dump($stores);
 
         $result = array();
         foreach ($stores as $localeName => $store_id) {
