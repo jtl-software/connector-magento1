@@ -1,6 +1,6 @@
 <?php
 
-namespace Jtl\Connector\Magento\Utilities;
+namespace jtl\Connector\Magento\Utilities;
 
 use jtl\Connector\Core\Utilities\Singleton;
 
