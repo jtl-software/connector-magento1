@@ -53,7 +53,6 @@ class Magento extends Singleton
      */
     protected function __construct()
     {
-        \Mage::app()->setCurrentStore(\Mage_Core_Model_App::ADMIN_STORE_ID);
         $configStoreMapping = unserialize(\Mage::getStoreConfig('jtl_connector/general/store_mapping'));
         foreach ($configStoreMapping as $mapping) {
             $this->_storeMapping[$mapping['locale']] = $mapping['store'];
