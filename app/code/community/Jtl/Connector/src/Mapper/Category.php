@@ -10,6 +10,7 @@ use jtl\Connector\Core\Logger\Logger;
 use jtl\Connector\Core\Model\QueryFilter;
 use jtl\Connector\Magento\Magento;
 use jtl\Connector\Magento\Utilities\ArrayTools;
+use jtl\Connector\Magento\Utilities\StoreMapper;
 use jtl\Connector\Model\Category as ConnectorCategory;
 use jtl\Connector\Model\CategoryI18n as ConnectorCategoryI18n;
 use jtl\Connector\Model\Identity;
@@ -34,7 +35,7 @@ class Category
 
         $this->rootCategoryId = \Mage::app()->getWebsite()->getDefaultStore()->getRootCategoryId();
 
-        $this->stores = Magento::getInstance()->getStoreMapping();
+        $this->stores = StoreMapper::getInstance()->getMappingForWebsite();
         $this->defaultLocale = key($this->stores);
         $this->defaultStoreId = current($this->stores);
     }
@@ -221,11 +222,6 @@ class Category
     {
         Magento::getInstance();        
         
-        $stores = Magento::getInstance()->getStoreMapping();
-        reset($stores);
-        $defaultLocale = key($stores);
-        $defaultStoreId = array_shift($stores);
-
         $hostId = $category->getId()->getHost();
 
         // Skip empty objects
@@ -268,12 +264,8 @@ class Category
     public function pull(QueryFilter $filter)
     {
         Magento::getInstance();        
-        
-        $stores = Magento::getInstance()->getStoreMapping();
-        $defaultStoreId = reset($stores);
-        $defaultLocale = key($stores);
 
-        Magento::getInstance()->setCurrentStore($defaultStoreId);
+        Magento::getInstance()->setCurrentStore($this->defaultStoreId);
 
         $rootCategory = \Mage::getModel('catalog/category')
             ->load($this->rootCategoryId);
@@ -312,7 +304,7 @@ class Category
                 $category->setParentCategoryId(new Identity($model->parent_id, $parentModel->getJtlErpId()));
             }
 
-            foreach ($stores as $locale => $storeId) {
+            foreach ($this->stores as $locale => $storeId) {
                 $model = \Mage::getModel('catalog/category');
                 $model->setStoreId($storeId);
                 $model->load($categoryId);
