@@ -19,7 +19,7 @@ class StoreMapper extends Singleton
     public function getLocaleFromStore($store, $website = null)
     {
         if (is_null($website)) {
-            $website = \Mage::app()->getWebsite();
+            $website = \Mage::app()->getWebsite()->getId();
         }
 
         if ($this->isLocaleResultCached($store, $website)) {
@@ -42,7 +42,7 @@ class StoreMapper extends Singleton
     public function getStoreFromLocale($locale, $website = null)
     {
         if (is_null($website)) {
-            $website = \Mage::app()->getWebsite();
+            $website = \Mage::app()->getWebsite()->getId();
         }
 
         if ($this->isStoreResultCached($locale, $website)) {
@@ -65,7 +65,7 @@ class StoreMapper extends Singleton
     public function getMappingForWebsite($website = null)
     {
         if (is_null($website)) {
-            $website = \Mage::app()->getWebsite();
+            $website = \Mage::app()->getWebsite()->getId();
         }
 
         if ($this->isMappingResultCached($website)) {
@@ -93,7 +93,7 @@ class StoreMapper extends Singleton
         if (!array_key_exists($this->_localeResultCache, $website))
             return false;
 
-        return is_array($this->_localeResultCache[$website] && array_key_exists($this->_localeResultCache[$website], $store);
+        return is_array($this->_localeResultCache[$website]) && array_key_exists($this->_localeResultCache[$website], $store);
     }
 
     private function storeStoreResult($locale, $website, $store)
@@ -106,7 +106,7 @@ class StoreMapper extends Singleton
         if (!array_key_exists($this->_storeResultCache, $website))
             return false;
 
-        return is_array($this->_storeResultCache[$website] && array_key_exists($this->_storeResultCache[$website], $locale);
+        return is_array($this->_storeResultCache[$website]) && array_key_exists($this->_storeResultCache[$website], $locale);
     }
 
     private function storeMappingResult($website, array $mapping)

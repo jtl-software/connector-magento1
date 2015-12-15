@@ -164,7 +164,8 @@ class GlobalData
 	public function pullLanguages()
 	{
 		Magento::getInstance();
-        $stores = StoreMapper::getInstance()->getStoreMapping();
+        $stores = StoreMapper::getInstance()->getMappingForWebsite();
+        var_dump($stores);
 
         $result = array();
         foreach ($stores as $localeName => $store_id) {
