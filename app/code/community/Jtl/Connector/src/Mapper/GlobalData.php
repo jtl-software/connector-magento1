@@ -7,6 +7,7 @@
 namespace jtl\Connector\Magento\Mapper;
 
 use jtl\Connector\Magento\Magento;
+use Jtl\Connector\Magento\Utilities\StoreMapper;
 use jtl\Connector\Model\CrossSellingGroup as ConnectorCrossSellingGroup;
 use jtl\Connector\Model\CrossSellingGroupI18n as ConnectorCrossSellingGroupI18n;
 use jtl\Connector\Model\Currency as ConnectorCurrency;
@@ -163,7 +164,7 @@ class GlobalData
 	public function pullLanguages()
 	{
 		Magento::getInstance();
-        $stores = Magento::getInstance()->getStoreMapping();
+        $stores = StoreMapper::getInstance()->getStoreMapping();
 
         $result = array();
         foreach ($stores as $localeName => $store_id) {

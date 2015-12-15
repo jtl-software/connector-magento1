@@ -9,6 +9,7 @@ class StoreMapper extends Singleton
     private $_storeMapping;
     private $_localeResultCache = array();
     private $_storeResultCache = array();
+    private $_mappingResultCache = array();
 
     protected function __construct()
     {
@@ -61,6 +62,27 @@ class StoreMapper extends Singleton
         return null;
     }
 
+    public function getMappingForWebsite($website = null)
+    {
+        if (is_null($website)) {
+            $website = \Mage::app()->getWebsite();
+        }
+
+        if ($this->isMappingResultCached($website)) {
+            return $this->_mappingResultCache[$website];
+        }
+
+        $mapping = array();
+        foreach ($this->_storeMapping as $mapEntry) {
+            if ($mapEntry['website'] === $website) {
+                $mapping[$mapEntry['locale']] = $mapEntry['store'];
+            }
+        }
+
+        $this->storeMappingResult($website, $mapping);
+        return $mapping;
+    }
+
     private function storeLocaleResult($store, $website, $locale)
     {
         $this->_localeResultCache[$website][$store] = $locale;
@@ -68,7 +90,7 @@ class StoreMapper extends Singleton
 
     private function isLocaleResultCached($store, $website)
     {
-        if (!array_key_exists($_localeResultCache, $website))
+        if (!array_key_exists($this->_localeResultCache, $website))
             return false;
 
         return is_array($this->_localeResultCache[$website] && array_key_exists($this->_localeResultCache[$website], $store);
@@ -81,9 +103,19 @@ class StoreMapper extends Singleton
 
     private function isStoreResultCached($locale, $website)
     {
-        if (!array_key_exists($_storeResultCache, $website))
+        if (!array_key_exists($this->_storeResultCache, $website))
             return false;
 
         return is_array($this->_storeResultCache[$website] && array_key_exists($this->_storeResultCache[$website], $locale);
+    }
+
+    private function storeMappingResult($website, array $mapping)
+    {
+        $this->_mappingResultCache[$website] = $mapping;
+    }
+
+    private function isMappingResultCached($website)
+    {
+        return array_key_exists($this->_mappingResultCache, $website);
     }
 }
