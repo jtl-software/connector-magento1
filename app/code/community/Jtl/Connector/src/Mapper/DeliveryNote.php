@@ -3,6 +3,7 @@
 namespace jtl\Connector\Magento\Mapper;
 
 use jtl\Connector\Model\DeliveryNote as ConnectorDeliveryNote;
+use jtl\Connector\Model\Identity;
 
 /**
  * Description of DeliveryNote
@@ -20,8 +21,16 @@ class DeliveryNote
         $result = new ConnectorDeliveryNote();
         $result->setCustomerOrderId($deliveryNote->getCustomerOrderId());
 
-        if (!$order->canShip())
+        if (!$order->canShip()) {
+            try {
+                $shipment = $order->getShipmentsCollection()->getFirstItem();
+                $result->setId(new Identity($shipment->getIncrementId(), $deliveryNote->getId()->getHost()));
+            }
+            catch (\Exception $e) {
+            }
+
             return $result;
+        }
 
         $shipmentItems = array();
         foreach ($order->getAllItems() as $item) {
@@ -60,6 +69,7 @@ class DeliveryNote
             }
         }
 
+        $result->setId(new Identity($shipmentId, $deliveryNote->getId()->getHost()));
         return $result;
     }
 
