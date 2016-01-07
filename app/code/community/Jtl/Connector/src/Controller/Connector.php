@@ -97,9 +97,9 @@ class Connector extends AbstractController
                 case 'm':
                     return (int)$value;
                 case 'k':
-                    return floor($value / 1024);
+                    return (int)floor($value / 1024);
                 default:
-                    return floor($value / 1048576);
+                    return (int)floor($value / 1048576);
             }
 
             return (int) $value;
