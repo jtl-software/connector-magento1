@@ -138,6 +138,13 @@ class Order
             $payment = $order->getPayment();
             $code = $payment->getMethodInstance()->getCode();
 
+            if ($order->hasShipments() > 0) {
+                $customerOrder->setStatus(ConnectorCustomerOrder::STATUS_SHIPPED);
+            }
+            else {
+                $customerOrder->setStatus(ConnectorCustomerOrder::STATUS_NEW);
+            }
+
             if (array_key_exists($code, self::$paymentMethods))
                 $customerOrder->setPaymentModuleCode(self::$paymentMethods[$code]);
             else

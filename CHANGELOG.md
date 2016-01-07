@@ -1,5 +1,12 @@
-1.4.5.0 (unreleased)
+1.4.6.0 (unreleased)
 --------------------
+
+1.4.5.0
+-------
+- Fix image pull queries
+- Recognize already shipped orders
+- Fix missing $websiteId while updating products
+- Ensure that all creations of delivery notes return valid ID pairs
 
 1.4.4.0
 -------
