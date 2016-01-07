@@ -1142,6 +1142,7 @@ class Product
 
         $tierPrice = array();
         $groupPrice = array();
+        $websiteId = \Mage::app()->getStore()->getWebsiteId();
         foreach ($prices as $currentPrice) {
             if ($currentPrice->getCustomerGroupId()->getHost() === 0)
                 continue;

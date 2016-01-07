@@ -2,6 +2,7 @@
 --------------------
 - Fix image pull queries
 - Recognize already shipped orders
+- Fix missing $websiteId while updating products
 
 1.4.4.0
 -------
