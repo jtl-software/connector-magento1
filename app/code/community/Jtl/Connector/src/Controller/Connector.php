@@ -93,10 +93,13 @@ class Connector extends AbstractController
             $unit = strtolower($value[strlen($value) - 1]);
             switch ($unit) {
                 case 'g':
+                    $value = substr($value, 0, strlen($value) - 1);
                     return ($value * 1024);
                 case 'm':
+                    $value = substr($value, 0, strlen($value) - 1);
                     return (int)$value;
                 case 'k':
+                    $value = substr($value, 0, strlen($value) - 1);
                     return (int)floor($value / 1024);
                 default:
                     return (int)floor($value / 1048576);
