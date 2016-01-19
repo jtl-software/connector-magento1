@@ -1087,7 +1087,7 @@ class Product
         $stockItem = \Mage::getModel('cataloginventory/stock_item')
             ->loadByProduct($model);
         $stockItem->setQty($stockLevel->getStockLevel());
-        $stockItem->setIsInStock($stockLevel->getStockLevel() > 0 ? 1 : 0);
+        $stockItem->setIsInStock(($model->getBackOrders() == \Mage_CatalogInventory_Model_Stock::BACKORDERS_NO || $stockLevel->getStockLevel() > 0) ? 1 : 0);
         $stockItem->save();
 
         return true;
