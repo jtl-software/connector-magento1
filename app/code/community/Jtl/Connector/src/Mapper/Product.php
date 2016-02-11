@@ -1279,6 +1279,8 @@ class Product
         // Reload model
         $tempProduct = \Mage::getModel('catalog/product')
             ->load($model->getId());
+        $tempProduct->setTierPrice(array('website_id' => 0));
+        $tempProduct->setGroupPrice(array('website_id' => 0));
 
         // Admin Store ID (default language)
         $productI18n = ArrayTools::filterOneByLanguage($product->getI18ns(), LocaleMapper::localeToLanguageIso($this->defaultLocale));
@@ -1343,6 +1345,9 @@ class Product
 
         $tempProduct = \Mage::getModel('catalog/product')
             ->load($model->entity_id);
+        $tempProduct->setTierPrice(array('website_id' => 0));
+        $tempProduct->setGroupPrice(array('website_id' => 0));
+
         if ($this->isParent($product)) {
             $tempProduct->setStockData(array( 
                 'use_config_manage_stock' => 0,
