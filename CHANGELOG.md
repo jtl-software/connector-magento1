@@ -1,6 +1,7 @@
-1.4.6.0 (unreleased)
+1.5.0.0 (unreleased)
 --------------------
 - Fix backorders settings when product_stock_level.push sets stock level to 0 while backorders should be allowed
+- Update to jtl/connector 2.2.9 and transmit gross prices in order records
 
 1.4.5.0
 -------
