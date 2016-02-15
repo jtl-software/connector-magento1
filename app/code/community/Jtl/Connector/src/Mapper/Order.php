@@ -169,6 +169,7 @@ class Order
                 $item->setSku($magento_item->sku);
                 $item->setVat((double)$magento_item->tax_percent);
                 $item->setPrice((double)$magento_item->getPriceInclTax() / (1 + (double)$magento_item->tax_percent / 100.0));
+                $item->setPriceGross((double)$magento_item->getPriceInclTax());
                 $item->setQuantity((double)$magento_item->getQtyOrdered());
                 $item->setType(ConnectorCustomerOrderItem::TYPE_PRODUCT);
                 $item->setUnique(NULL);
@@ -250,6 +251,7 @@ class Order
             $item->setSku('');
             $item->setVat((double)$shippingTaxRate);
             $item->setPrice($shippingGrossAmount / (1 + $shippingTaxRate / 100.0));
+            $item->setPriceGross($shippingGrossAmount);
             $item->setQuantity(1.0);
             $item->setType(ConnectorCustomerOrderItem::TYPE_SHIPPING);
             $item->setUnique(NULL);
@@ -263,6 +265,7 @@ class Order
                 $item->setSku('');
                 $item->setVat((double)$shippingTaxRate);
                 $item->setPrice($order->discount_amount / (1 + $shippingTaxRate / 100.0));
+                $item->setPriceGross($order->discount_amount);
                 $item->setQuantity(1.0);
                 $item->setType(ConnectorCustomerOrderItem::TYPE_DISCOUNT);
                 $item->setUnique(NULL);
