@@ -545,7 +545,7 @@ class Product
         $defaultGroup = \Mage::getModel('eav/entity_attribute_group')
             ->getCollection()
             ->addFieldToFilter('attribute_set_id', $attrSet->getId())
-            ->setOrder('sort_order', ASC)
+            ->setOrder('sort_order', 'ASC')
             ->getFirstItem();
 
         $i = 1000;
