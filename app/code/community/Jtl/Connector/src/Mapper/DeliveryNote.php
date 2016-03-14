@@ -23,8 +23,11 @@ class DeliveryNote
 
         if (!$order->canShip()) {
             try {
-                $shipment = $order->getShipmentsCollection()->getFirstItem();
-                $result->setId(new Identity($shipment->getIncrementId(), $deliveryNote->getId()->getHost()));
+                $shipments = $order->getShipmentsCollection();
+                if ($shipments !== null) {
+                    $shipment = $shipments->getFirstItem();
+                    $result->setId(new Identity($shipment->getIncrementId(), $deliveryNote->getId()->getHost()));
+                }
             }
             catch (\Exception $e) {
             }
